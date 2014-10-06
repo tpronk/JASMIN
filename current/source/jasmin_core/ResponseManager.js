@@ -129,7 +129,7 @@ ResponseManager.prototype.activate = function(
                 for( var id in this.activeResponses[ mouseType ][ "buttons" ] )
                 {
                     // callback for this.response, binding mouseType, label, and id
-                    attach = function( mouseType, label, myId )
+                    attach = function( mouseType, label, id )
                     {
                         var myLabel     = label;
                         var myMouseType = mouseType;
