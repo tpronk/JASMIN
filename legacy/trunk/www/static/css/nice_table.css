@@ -1,0 +1,46 @@
+/* Table style: Labeled */
+.LabeledTable
+{
+	padding-left:   8px;    
+    padding-right:  8px;
+	padding-top:    8px;
+}
+.LabeledTableLabel
+{
+	padding-right:  8px;
+	padding-bottom: 8px;
+	font-weight:    bold;
+}
+
+.LabeledTableValue
+{
+	padding-bottom: 8px;
+}
+
+/* Table style: Iconed */
+.TopAlignedTable
+{
+	padding-top:    8px;
+}
+
+.TopAlignedTableLabel
+{
+	padding-right:  8px;
+	padding-bottom: 8px;
+	vertical-align: top;
+}
+
+.TopAlignedTableValue
+{
+	padding-bottom: 8px;
+	vertical-align: top;
+}
+
+/* Table style: VerticalTight */
+.VerticalTightTable
+{
+}
+.VerticalTightTableLabel
+{
+	padding-right:  8px;
+}

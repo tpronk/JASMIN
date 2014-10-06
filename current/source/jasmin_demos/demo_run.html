@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<!--
+Copyright 2014, Thomas Pronk
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. 
+
+
+A container web page to run the module demos in:
+* It loads jQuery and jquery mobile CSS in the head
+* A pre element with id "textHere" for text output and a div with id "graphicsHere" for graphic output
+* Decodes the url parameter to load the right demo script
+-->
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <!-- jQuery -->
+        <link rel="stylesheet" type="text/css" href="../jasmin_ext/jquery.mobile.structure.css" />
+        <script type="text/javascript" src="../jasmin_ext/jquery.js"></script>
+        <!-- jQuery mobile structure (needed for jquery.mobile.js -->
+
+        
+        <script type="text/javascript">
+            // For reporting in text output
+            report = function( source, message )
+            {
+                $( "#text_here" ).append( source + ": " + message + "\n" );
+            }
+            
+            // Special case for demo script (we cannot pass load function as callback since load is not defined until demo script is loaded)
+            getDemoScript = function( url )
+            {
+                getScripts( [ url ], getDemoScriptDone );
+            }            
+            
+            getDemoScriptDone = function()
+            {
+                load();
+            }            
+
+            // Loading a script at url, on success call callback
+            getScripts = function( urls, callback )
+            {
+                scriptsToLoad   = urls;
+                currentCallback = callback;
+                getScript( 0 );
+            }
+            
+            getScript = function( scriptsToLoadCounter )
+            {
+                if( scriptsToLoadCounter < scriptsToLoad.length )
+                {
+                    url = scriptsToLoad[ scriptsToLoadCounter ];
+                    report( "run_demo", "getScript downloading " + ( scriptsToLoadCounter + 1 ) + "/" + scriptsToLoad.length + ": " + url );
+                    var request = jQuery.ajax({
+                        type: "GET",
+                        crossDomain: true,
+                        dataType: "script",
+                        url: url
+                    } );
+                    request.done( function(){
+                            report( "run_demo", "getScript downloading success" );
+                            getScript( scriptsToLoadCounter + 1 );
+                    } );
+                    request.fail( function( errorData ){
+                            report( "run_demo", "getScript downloading fail:" + JSON.stringify( errorData ) );
+                    } );                    
+                } else {
+                    currentCallback();
+                }
+            };
+            
+            // Get get argument from url
+            urlParam = function(name){
+                var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+                if (results==null){
+                   return null;
+                }
+                else{
+                   return results[1] || 0;
+                }
+            };
+            
+            // Path to jasmin base dir
+            var jasminPath = "../";
+            
+            $( document ).ready( function() {
+                // Which demo file to load? From select or from input?
+                var demoFile = urlParam( "demo_pick" );
+                if( demoFile === "none" )
+                {
+                    demoFile = urlParam( "demo_type" ) ;
+                }
+                getDemoScript( demoFile );
+           } );
+        </script>
+    </head>
+<body>
+<div id="graphics_here"></div>
+<pre id="text_here"></pre>
+</body>
+</html>

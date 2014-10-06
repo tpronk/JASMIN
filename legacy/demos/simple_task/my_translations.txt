@@ -1,0 +1,14 @@
+﻿term	value
+task_too_slow	You've waited too long before responding. Try to respond more quickly.
+task_invalid_key	You've pressed an invalid key.
+task_release_keys	You can let go of the keyboard keys now.
+click_to_focus	The study has been paused; click here to continue. 
+task_red_x_on_error	If you press the wrong key, then a red X appears. You can correct it by pressing the correct key.
+task_fast_but_accurate	This task is aimed at speed, so try to respond as quick as possible, without making too many mistakes.
+simple_task_slide_1	Welcome to "burger or salad"
+simple_task_slide_2	#[simple_task_task_keys]
+simple_task_task_keys	If the picture shows a #[category_left], then press "e". If the picture shows a #[category_right], then press "i".
+simple_task_slide_keys_first	Press "i" to continue...
+simple_task_slide_keys_later	Press "i" to continue or "e" to go back...
+salad	salad
+burger	burger

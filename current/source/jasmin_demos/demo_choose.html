@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<!--
+Copyright 2014, Thomas Pronk
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. 
+
+Form with drop-down menu and input field for picking a demo file
+-->    
+
+<html>
+    <body style="background-color: #EEEEEE;">
+<form action="demo_run.html">
+    <table cellpadding="8">
+        <tr>
+            <td>
+                Demo File (pick)
+            </td>
+            <td>
+                <select name="demo_pick">
+                    <option value="none">
+                        Use file that I type in below
+                    </option>
+                    <option value="demo_AjaxManager.js">
+                        demo_AjaxManager.js
+                    </option>   
+                    <option value="demo_AjaxManager_flush.js">
+                        demo_AjaxManager_flush.js
+                    </option>   
+                    <option value="demo_EventManager.js">
+                        demo_EventManager.js
+                    </option>
+                    <option value="demo_Loader.js">
+                        demo_Loader.js
+                    </option>                    
+                    <option value="demo_ResponseManager_keyboard.js">
+                        demo_ResponseManager_keyboard.js
+                    </option>  
+                    <option value="demo_ResponseManager_pointer.js">
+                        demo_ResponseManager_pointer.js
+                    </option>
+                    <option value="demo_ScalableCanvas_basics.js">
+                        demo_ScalableCanvas_basics.js
+                    </option>   
+                    <option value="demo_SyncTimer.js">
+                        demo_SyncTimer.js
+                    </option>  
+                    <option value="demo_Translator.js">
+                        demo_Translator.js
+                    </option>                      
+                </select>                
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Demo File (type)
+            </td>
+            <td>
+                <input name="demo_type" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="submit" value="Launch Demo">              
+            </td>
+        </tr>           
+    </table>
+</form> 
+</body>
+</html>

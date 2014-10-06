@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: ResponseManager.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: ResponseManager.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//Copyright 2014, Thomas Pronk
+//
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+//
+//http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License. 
+
+/**
+ * A list of possible pointer responses, both for touch and mouse 
+ * @private
+ */
+ResponseManager.prototype.pointerDeviceEvents = {
+    /** vmouse; triggered both by touch and mouse, requires jquery mobile */
+    "vmouse" : {
+        "down" : "vmousedown",
+        "up"   : "vmouseup"
+    },
+    /** mouse; triggered only by mouse */
+    "mouse" : {
+        "down" : "mousedown",
+        "up"   : "mouseup"
+    },
+    /** mouse; triggered only by touch, requires jquery mobile */
+    "touch" : {
+        "down" : "touchstart",
+        "up"   : "touchend"
+    }
+};
+
+/**
+ * ResponseManager manages keyboard, touch, and mouse responses.
+ * See &lt;a href="../source/jasmin_demos/demo_choose.html">these demos &lt;/a> for
+ * usage examples. Requires jQuery for keyboard and mouse handling (keydown,
+ * keyup, mousedown, mouseup). Requires jQuery mobile for touch handing 
+ * (vmousedown, vmouseup, touchstart, touchend)
+ * @requires jasmin_ext/jquery.js
+ * @requires jasmin_ext/jquery.mobile.js
+ * @constructor
+ * @param {Window} window Window to manage responses of
+ */
+function ResponseManager( window )
+{
+    // Start inactive
+    this.active = false;
+    
+    // Save window ref
+    this.window = window;
+    
+    // Attach keyboard event handlers
+    var self = this;
+    this.window.$( this.window.document ).keydown( function( event ) {
+        self.response( "keydown", event );
+    } );
+    this.window.$( this.window.document ).keyup( function( event ) {
+        self.response( "keyup", event );
+    } );
+    
+    // Make a list of the pointerDeviceEvents
+    this.pointerDeviceEventsList = [];
+    for( var i in this.pointerDeviceEvents )
+    {
+        for( var j in this.pointerDeviceEvents[i] )
+        {
+            this.pointerDeviceEventsList.push( this.pointerDeviceEvents[i][j] );
+        }
+    }
+}
+
+/**
+ * Activate; ResponseManager calls callbackResponse if a response was given
+ * that is allowed by activeResponses
+ * @public
+ * @param {Object}    activeResponses   An associative array defining responses that stop the event (if any). See &lt;a href="../source/jasmin_demos/demo_choose.html">these demos &lt;/a> for examples.
+ * @param {Function}  callbackResponse  Callback called upon a response
+ * @param {String}   name               Name of this activation for logging. Default = noname
+ */
+ResponseManager.prototype.activate = function(
+    activeResponses,    
+    callbackResponse,
+    name
+) {
+    // Store settings
+    this.activeResponses  = activeResponses;
+    this.callbackResponse = callbackResponse;
+    this.name             = name === undefined? "noname" : name;
+    this.active           = true;
+    
+    // Clear logging vars
+    this.clearLoggingVars();
+    
+    // Activate mouse handlers
+    var self = this;
+    var mouseType;
+    
+    // Check each possible pointer event
+    for( var j in this.pointerDeviceEventsList )
+    {
+        mouseType = this.pointerDeviceEventsList[ j ];
+        
+        // Is this response type in activeResponses?
+        if( this.activeResponses[ mouseType ] !== undefined )
+        {
+            // It is, check if type is "all" then attach to window
+            if( this.activeResponses[ mouseType ][ "type" ] === "all" )
+            {
+                // Mode is "all", trigger on any response on window
+                var myMouseType = mouseType;
+                this.window.$( this.window.document ).bind( 
+                    mouseType,
+                    "all",
+                    function( event ) {
+                        //alert( "all");
+                        self.response( myMouseType, event, "all", undefined );
+                    } 
+                );
+            };
+            
+            // Also attach to element in buttons 
+            if( this.activeResponses[ mouseType ][ "buttons" ] !== undefined )
+            {
+                var attach;
+                for( var id in this.activeResponses[ mouseType ][ "buttons" ] )
+                {
+                    // callback for this.response, binding mouseType, label, and id
+                    attach = function( mouseType, label, myId )
+                    {
+                        var myLabel     = label;
+                        var myMouseType = mouseType;
+                        var myId        = id;
+                        
+                        $( id ).bind( 
+                            myMouseType,
+                            myLabel,
+                            function( event ) {
+                                self.response( myMouseType, event, myId, myLabel );
+                            } 
+                        );                
+                    };
+                    
+                    attach( 
+                        mouseType,
+                        this.activeResponses[ mouseType ][ "buttons" ][ id ],
+                        id
+                    );
+                }
+            }
+        }
+    }
+};
+
+/**
+ * Every keyboard and registered touch event triggers a callback to response,
+ * in which is determined if we should call callbackResponse
+ * @private
+ * @param {String}    mode  Type of response (keydown, vmouseup etc.) 
+ * @param {Object}    event  Data about the event that triggered the response
+ * @param {String}    pointerId    ID of pointer event (if any) 
+ * @param {String}    pointerLabel    Label of pointer event (if any) 
+ */
+ResponseManager.prototype.response = function( mode, event, pointerId, pointerLabel ) {
+    //report( "ResponseManager.response", JSON.stringify( [ mode, id ] ) );
+    
+    // Only register responses if active
+    if( this.active ) {
+        // Parse response, does it end the timedEvent?
+        var critical = this.parseResponse( mode, event, pointerId, pointerLabel  );
+        if( critical ) {
+            // Stop event bubbling
+            event.stopPropagation(); 
+            event.preventDefault();   
+    
+            // Store logging vars
+            this.updateResponseLog();
+    
+            // Do callback
+            this.callbackResponse();
+        }
+    }
+};
+
+
+// Check if this response is critical, and parse it on the way
+ResponseManager.prototype.parseResponse = function( mode, event, id, label ) {
+    // Log time of response
+    var time = window.performance.now();
+    
+    // Assume not critical
+    var critical = false;
+            
+    // Is this mode defined?
+    if( this.activeResponses[ mode ] !== undefined ) {    
+        // On a keyboard response, check key
+        if( 
+               mode === "keydown" 
+            || mode === "keyup"
+        ) {       
+            // The id is keycode based on event.which
+            id = event.which;
+                
+            // Is the response a valid buton?
+            if(
+                   this.activeResponses[ mode ][ "buttons" ]                !== undefined 
+                &amp;&amp; this.activeResponses[ mode ][ "buttons" ][ event.which ] !== undefined 
+            ) {
+                // Yes; assign label
+                label = this.activeResponses[ mode ][ "buttons" ][ id ];
+            }
+
+            // Yes, are all buttons critical?
+            if( this.activeResponses[ mode ][ "type" ] === "all" )
+            {
+                // All buttons critical, so this one too
+                critical = true;
+
+            // Not all buttons critical, is this response defined in buttons?
+            } else if( label !== undefined ) {
+                // Response is defined, so response is critical
+                critical = true;               
+            }
+        }
+        
+        // On a mouse response, assume critical
+        if( this.pointerDeviceEventsList.indexOf( mode ) !== -1 )  {
+            // No need to setup label and id, but let's check if they are the same
+            critical = true;
+        }
+    }
+    
+    // Save logging vars to this
+    this.critical = critical;
+    this.mode     = mode;
+    this.id       = id;
+    this.label    = label;
+    this.time     = time;
+ 
+    return critical;
+};
+
+
+/**
+ * Deactivate; don't call responseCallback on any response anymore
+ * @public
+ */
+ResponseManager.prototype.deactivate = function() {
+    // Stop event
+    this.active = false;    
+    
+    // Update responseLog
+    this.updateResponseLog();
+    
+    // Remove mouse handlers
+	if( this.activeResponses !== undefined )
+	{
+		var mouseType;
+		for( var j in this.pointerDeviceEventsList ) {
+			mouseType = this.pointerDeviceEventsList[ j ];
+			if( this.activeResponses[ mouseType ] !== undefined ) {
+				// If all responses unbind document
+				if( this.activeResponses[ mouseType ][ "type" ] === "all" ) {
+					this.window.$( this.window.document ).unbind( 
+						mouseType
+					);
+				}	
+                
+                for( var i in this.activeResponses[ mouseType ][ "buttons" ] ) {
+                    $( i ).unbind( mouseType );
+				}
+			}
+		}    
+	}
+};
+
+
+/**
+ * Store all logging vars in responseLog
+ * @private
+ */
+ResponseManager.prototype.updateResponseLog = function() {
+    this.responseLog = {
+        "name"      : this.name,
+        "critical"  : this.critical,
+        "mode"      : this.mode,
+        "id"        : this.id,
+        "label"     : this.label,
+        "time"      : this.time
+    };
+};
+
+/**
+ * Get previous responseLog
+ * @private
+ */
+ResponseManager.prototype.getResponseLog = function() {
+    return( this.responseLog );
+};
+
+// Clear logging vars
+ResponseManager.prototype.clearLoggingVars = function() {
+    /**
+     * Logging: was response critical (true/false)
+     * @instance
+     */
+    this.critical = undefined;
+    /**
+     * Logging: what type of response (keydown, touchend, etc.)
+     * @instance
+     */
+    this.mode = undefined;
+    /**
+     * Logging: what was the id (keycode for keyboard, css selector for pointer)
+     * @instance
+     */
+    this.id = undefined;
+    /**
+     * Logging: what was the corresponding label in buttons (if any)
+     * @instance
+     */
+    this.label = undefined;
+    /**
+     * Logging: at what time was the response made?
+     * @instance
+     */
+    this.time = undefined;
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AjaxManager.html">AjaxManager</a></li><li><a href="EventManager.html">EventManager</a></li><li><a href="Loader.html">Loader</a></li><li><a href="ResponseManager.html">ResponseManager</a></li><li><a href="ScalableCanvas.html">ScalableCanvas</a></li><li><a href="SyncTimer.html">SyncTimer</a></li><li><a href="Translator.html">Translator</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Mon Oct 06 2014 03:09:54 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

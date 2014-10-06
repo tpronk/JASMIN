@@ -1,0 +1,122 @@
+/* 8px white (#ffffff) */
+.rr_white_8_top_left {
+}
+
+.rr_white_8_top_right {
+	display: block;
+	background-repeat: repeat;
+	background-position: 10px 0px;
+}
+
+.rr_white_8_bottom_left {
+	display: block;
+	background-repeat: no-repeat;
+	background-position: 0px -8px;
+}
+
+.rr_white_8_bottom_right {
+	display: block;
+	width:  8px;
+	height: 8px;
+	background-repeat: no-repeat;
+	background-position: -8px -8px;
+}
+
+.rr_white_8_horizontal_edge {
+	height: 8px;
+	background-color: #ffffff;
+}
+
+.rr_white_8_vertical_edge {
+	width: 8px;
+	background-color: #ffffff;
+}
+
+.rr_white_8_content {
+	background-color: #ffffff;
+}
+
+/* 8px grey (#dddddd) */
+.rr_grey_8_top_left {
+}
+
+.rr_grey_8_top_right {
+	display: block;
+	background-repeat: repeat;
+	background-position: 10px 0px;
+}
+
+.rr_grey_8_bottom_left {
+	display: block;
+	background-repeat: no-repeat;
+	background-position: 0px -8px;
+}
+
+.rr_grey_8_bottom_right {
+	display: block;
+	width:  8px;
+	height: 8px;
+	background-repeat: no-repeat;
+	background-position: -8px -8px;
+}
+
+.rr_grey_8_horizontal_edge {
+	height: 8px;
+	background-color: #dddddd;
+}
+
+.rr_grey_8_vertical_edge {
+	width: 8px;
+	background-color: #dddddd;
+}
+
+.rr_grey_8_content {
+	background-color: #dddddd;
+}
+
+/* 4px grey (#dddddd) */
+.rr_grey_4_top_left {
+	display: block;
+	width:  4px;
+	height: 4px;
+	background-repeat: no-repeat;
+	background-position: 0px 0px;
+}
+
+.rr_grey_4_top_right {
+	display: block;
+	width:  4px;
+	height: 4px;
+	background-repeat: repeat;
+	background-position: 4px 0px;
+}
+
+.rr_grey_4_bottom_left {
+	display: block;
+	width:  4px;
+	height: 4px;
+	background-repeat: no-repeat;
+	background-position: 0px -2px;
+}
+
+.rr_grey_4_bottom_right {
+	display: block;
+	width:  4px;
+	height: 4px;
+	background-repeat: no-repeat;
+	background-position: -4px -4px;
+}
+
+.rr_grey_4_horizontal_edge {
+	height: 4px;
+	background-color: #dddddd;
+}
+
+.rr_grey_4_vertical_edge {
+	width: 4px;
+	background-color: #dddddd;
+}
+
+.rr_grey_4_content {
+	background-color: #dddddd;
+}
