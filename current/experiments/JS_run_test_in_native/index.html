@@ -17,7 +17,7 @@
                       async:    true,
                       data:     "data=" +  encodeURI( JSON.stringify( sendMe ) ),
                       dataType: dataType,
-                      type:     "POST",
+                      type:     "GET",
                       context:  this,
                       success:  function( data, status ) {
                          ajaxReceive( true, data, status, callback );
@@ -65,7 +65,7 @@
                 // TEST AJAX: Post and receive JSON
                 $( "#output" ).append( "Sending JSON\n" );
                 var sendMe = { "event" : "test", "value" : [1,2,3] };
-                ajaxSend( "some_json.json", "json", sendMe, doneJSON );                
+                ajaxSend( "some_json.js", "text", sendMe, doneJSON );                
             } );
         </script>
     </head>
