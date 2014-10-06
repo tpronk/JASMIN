@@ -52,10 +52,10 @@ translateStuff = function() {
     translator.addTranslations( translations );
         
     // Show a simple translation
-    report( demoName, translator.translate( "intro" ) );
+    report( demoName, translator.translateTerm( "intro" ) );
     
     // Show that terms in translations are translated too
-    report( demoName, translator.translate( "intro2" ) );
+    report( demoName, translator.translateTerm( "intro2" ) );
     
     // Add a callback 
     report( 

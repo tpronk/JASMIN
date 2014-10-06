@@ -65,7 +65,7 @@ Translator.prototype.addTranslations = function( translations )
  * @param   {Boolean} pretty     For any terms we cannot find translations of: if true, return term surrounded with "!", if false return undefined (default = true)
  * @public
  */
-Translator.prototype.translate_term = function( term, callbacks, pretty )
+Translator.prototype.translateTerm = function( term, callbacks, pretty )
 {
     // Pretty true by default
     pretty = pretty === undefined? true: pretty;
@@ -152,7 +152,7 @@ Translator.prototype.translate = function( haystack, callbacks, pretty )
             term = regExpTag.exec( tag );
             
             // Translate term
-            translation = this.translate_term( term, callbacks );
+            translation = this.translateTerm( term, callbacks );
             
             // Replace tag by translated term
             haystack = haystack.replace( regExpTerm, translation );

@@ -14,23 +14,38 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. 
 
+****************
+*** RUNME.html
 
-A container web page to run the module demos in:
+First shows a dropdown from which to pick a demo, then starts load this demo
+(by calling the load function that each demo should provide). Additionally, this
+page provides a simple container to run the module demos in:
 * It loads jQuery and jquery mobile CSS in the head
 * A pre element with id "textHere" for text output and a div with id "graphicsHere" for graphic output
-* Decodes the url parameter to load the right demo script
 -->
 <html>
     <head>
         <title></title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <!-- jQuery -->
+        <!-- jQuery mobile structure (needed for jquery mobile) -->
         <link rel="stylesheet" type="text/css" href="../jasmin_ext/jquery.mobile.structure.css" />
+        <!-- jQuery -->
         <script type="text/javascript" src="../jasmin_ext/jquery.js"></script>
-        <!-- jQuery mobile structure (needed for jquery.mobile.js -->
-
         
         <script type="text/javascript">
+            // Demo keys and files for drop-down and loading right file
+            var demos = {
+                "demo_AjaxManager" : "demo_AjaxManager.js",
+                "demo_AjaxManager_flush" : "demo_AjaxManager_flush.js",
+                "demo_EventManager" : "demo_EventManager.js",
+                "demo_Loader" :	"demo_Loader.js",
+                "demo_ResponseManager_keyboard" : "demo_ResponseManager_keyboard.js",
+                "demo_ResponseManager_pointer" : "demo_ResponseManager_pointer.js",
+                "demo_ScalableCanvas_basics" : "demo_ScalableCanvas_basics.js",
+                "demo_SyncTimer" : "demo_SyncTimer.js",
+                "demo_Translator.js" : "demo_Translator.js"
+            };
+            
             // For reporting in text output
             report = function( source, message )
             {
@@ -94,18 +109,44 @@ A container web page to run the module demos in:
             // Path to jasmin base dir
             var jasminPath = "../";
             
-            $( document ).ready( function() {
-                // Which demo file to load? From select or from input?
-                var demoFile = urlParam( "demo_pick" );
-                if( demoFile === "none" )
-                {
-                    demoFile = urlParam( "demo_type" ) ;
+           // At onload, check if there is a demo in the get. If so, use that. If not, show drop-down
+           $( document ).ready( function() { 
+               var demoFile = urlParam( "demo" );
+               
+               if( demoFile !== null && demoFile !== "none" ) {
+                   // demo in get; load it
+                   getDemoScript( demos[ demoFile ] );
+               } else {
+                   // no demo in get; show drop-down
+                   var demoSelector = $( "<select>" ).attr( "name", "demo" );
+                   for( var key in demos ) {
+                       demoSelector.append( $( "<option>" ).attr( "value", key ).text( demos[ key ] ) );
+                   }
+                   $( "#form_here" ).append( demoSelector );
+                   $( "#form_here" ).append( $( "<input>" ).attr( { "type" : "submit", "value" : "Launch Demo"  } ) );
+               }
+               
+               //$( "#demo_selector" ).val( "none" )
+           } );            
+            
+            loadDemo = function() {
+                
+                
+                // Get selected demoFile
+                var demoFile = $( "#demo_selector" ).val();
+                 
+                // If not "none"; hide drop-down and start
+                if( demoFile !== "none" ) {
+                    $( "#demo_selector_here" ).hide();
+                    getDemoScript( demoFile );
                 }
-                getDemoScript( demoFile );
-           } );
+           };
+           
+
         </script>
     </head>
 <body>
+<form action="RUNME.html" id="form_here"></form>
 <div id="graphics_here"></div>
 <pre id="text_here"></pre>
 </body>
