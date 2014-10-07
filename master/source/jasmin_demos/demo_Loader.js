@@ -45,21 +45,16 @@ start = function()
     io = new RequestManager( fail, report, report );
     loader = new Loader( io );
 
-    // Specify all icludes you want to load here; css or js
-    // Note that includes is an indexed array
-    var includes = [
-        [ "css", "demo_RequestManager_css.css"   ],
-        [ "js",  "demo_RequestManager_script.js" ]
-    ];
-
     // Specify all data you want to load here; special case for img, all else is passed to jQuery.ajax as dataType
     // Note that includes is an associative array
-    var data = {
+    var requests = {
+        "css1"       : [ "css", "demo_RequestManager_css.css"   ],
+        "j1"         : [ "js",  "demo_RequestManager_script.js" ],
         "my_json"    : [ "json", "demo_RequestManager_json.json" ],
         "my_picture" : [ "img",  "demo_RequestManager_img.jpg" ]
     };
 
-    loader.load( includes, data, allLoaded, progressCallback );
+    loader.load( requests, allLoaded, progressCallback );
 };
 
 progressCallback = function( progress ) {
