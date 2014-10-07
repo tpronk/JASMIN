@@ -1,5 +1,0 @@
-[
-    {"requestId":3,"data":"answer requestId 3 once"},
-    {"requestId":3,"data":"answer requestId 3 twice"},
-    {"requestId":5,"data":"this requestId does not exist"}
-]

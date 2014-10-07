@@ -42,172 +42,119 @@
 
 
 /**
- * Thw Loader loads a set of json requests and images and calls a callback after all are
- * loaded. Povides another callback to report on progress.
- * @param   {AjaxManager} ajaxManager  For json requests
- * @param   {Function}    fail         Called if loader fails
+ * The Loader provides a short API for requesting a set of includes (js/css) 
+ * and data (json/text/img/etc.).
+  * @param   {RequestManager} requestManager  Handles the requests
+  * @require RequestManager
  * @class
  */
-function Loader( ajaxManager, fail )
-{
-    this.ajaxManager     = ajaxManager;
-	this.fail            = fail;
+function Loader( requestManager ) {
+    this.requestManager = requestManager;
 };
 
 /**
- * Load a set of requests and images
- * @param {Object}   json               JSON Requests to ajax handler
- * @param {Object}   images             Images
- * @param {Function} callback           Callback when done
+ * Load a set of includes and data
+ * @param {Array}    includes           Indexed array of includes to load, each element of includes should be an indexed array with the first element specifying type of include "js" and "css", and the second element specifying the url/src
+ * @param {Object}   data               Associative array of data to load, each element having the same structure as for includes. All values of type except "img" are passed as dataType to jQuery.ajax (via RequestManager)
+ * @param {Function} allLoaded          Callback called when all is loaded with the argument being the data downloaded (as an associative array)
  * @param {Function} progressCallback   Callback for updating progress; this function receives one argument, being progress (ranging from 0 to 100)
  * @public
  */
-Loader.prototype.load = function( 
-    json,          
-    images,            
-    callback,          
-    progressCallback
-)
-{
-    this.requests         = {};
-    this.images           = images;
-    this.callback         = callback;
+Loader.prototype.load = function( includes, data, allLoaded, progressCallback ) {
+    this.allLoaded        = allLoaded;
     this.progressCallback = progressCallback;
     
-    this.totalCount      = 0;  // Total number of loads 
-    this.totalCounter    = 0;  // Number of load that are done
+    this.replies  = {};    // Results of data requests
+    this.loadCounter = 0;  // Counting progress
+    this.loadTotal   = 0;  // Counting total
 
-    // Helper vars for images &amp; counters
-    this.imageMap     = [];  // Maps indexes in imageArray to keys in images
-    this.imageArray   = [];
-    this.imageResults = {};
-    this.imageCounter = 0;
-    var i;
-    for( i in this.images )
-    {
-        this.totalCount++;
-        this.imageMap.push( i );
-        this.imageArray.push( this.images[i] );
-    }
+    // Make requests for includes
+    this.makeRequests( 
+        includes, 
+        function() {}
+    );
 
-    // Helper vars for requests &amp;&amp; counters
-    this.requestsMap    = {}; // Maps requestIds to keys in requests 
-    this.replies        = {};
-    this.requestCounter = 0;
-    this.requestCount   = 0;
-    var requestsArray   = [];
-    
-    var self = this;
-    var request;
-    var callback;
-    // All requests count as 1 in the total
-    for( var i in json )
-    {
-        this.requestCount++;
-        request = {};
-        request[ "data" ]     = json[i];
-        request[ "done" ]     = false;
-        closure = function( index ) {
-            var myIndex = index;
-            return function( data ) {
-                self.requestSuccess( myIndex, data ); 
-            }
-        };
-        request[ "callback" ] = closure( i );
-        
-        this.requests[i] = request;
-        requestsArray.push( request );
-    }
-    
-    // If any ajax requests, first send those
-    if( this.requestCount > 0 ) 
-    {
-        this.totalCount++;
-        this.ajaxManager.sendMulti( 
-            requestsArray, 
-            false 
-        );
-
-        this.ajaxManager.flush();
-    } else {
-        // Else, go to images
-        this.loadImage();
-    }
-    
+    // Report 0 progress
     this.progress();
+
+    // Make requests for data; put reply via callback in replies
+    var self = this;
+    this.makeRequests( 
+        data, 
+        function( key, reply ) {
+            self.replies[ key ] = reply;
+        }
+    );
+
+    // Flush and call callback
+    this.requestManager.flush( function() { 
+        self.allLoaded( self.replies );
+        //alert( JSON.stringify( this.replies ));
+    } );
 };
-
-/**
- * Process a successfully completed request. Once all requests are in, we continue with the images
- * @param data               Data returned by the request
- * @private
- */
-Loader.prototype.requestSuccess = function( index, reply )
-{
-   // Process reply only if not yet done
-   if( !this.requests[ index ][ "done" ] )
-   {
-       this.requests[ index ][ "done" ] = true;
-       this.requestCounter++;
-       this.replies[ index ] = reply;
-
-       // Done? update and go to images
-       if( this.requestCounter === this.requestCount )
-       {
-           this.totalCounter++;
-           this.progress();
-           //this.imageFailCounter = 0;
-           this.loadImage();
-       }
-   }
-};
-
-/**
- * Load next image. Once all images are loaded, we are done, so the callback is called
- * @private
- */
-Loader.prototype.loadImage = function()
-{
-    // Show progress
-    this.progress();    
     
-    // More images to go?
+ Loader.prototype.makeRequests = function( requests, callback ) {
     var self = this;
-    if( this.imageCounter &lt; this.imageArray.length )
-    {
-        this.imageResults[ this.imageMap[ this.imageCounter ] ] =
-            $( "&lt;img>" ).attr( 
-                "src", this.imageArray[ this.imageCounter ]
-            ).load( function() {
-                self.imageCounter++;
-                self.totalCounter++;
-                self.loadImage();
-                //setTimeout( function() { self.loadImage() }, 1000 );
-            } ).error( function() {
-				self.fail( "Loader: Could not load " + self.imageArray[ self.imageCounter ] );
-			} );
+    for( var key in requests ) {
+        this.loadTotal++;        
+        
+        // This closure sets up the right request and binds its arguments to the callback function
+        var closure = function( key, fileType, url, callback ) {
+            var requestType, request;
+            switch( fileType ) {
+                
+                // Determine what kind of request to make
+                case "js":
+                    requestType = RequestManager.TYPE_AJAX;
+                    request = {
+                        "url"      : url,
+                        "dataType" : "script"
+                    };
+                    break;
+                case "css":
+                    requestType = RequestManager.TYPE_AJAX;
+                    request = {
+                        "url"      : url,
+                        "dataType" : "text"
+                    };
+                    break;
+                case "img":
+                    requestType = RequestManager.TYPE_IMG;
+                    request = url;
+                    break;
+                default:
+                    requestType = RequestManager.TYPE_AJAX;
+                    request = {
+                        "url"      : url,
+                        "dataType" : fileType
+                    };           
+                    break;                 
+            }            
+            
+            // Do it
+            self.requestManager.request(
+                requestType,
+                request, 
+                function( reply ) {
+                    // Special case for CSS; put in head
+                    if( fileType === "css" ) {
+                        $( '&lt;link rel="stylesheet" type="text/css" href="' + url + '" />' ).appendTo( "head" );
+                    }
+                    callback( key, reply );
+                    self.loadCounter++;
+                    self.progress();
+                }
+            );            
+        };
+        closure( key, requests[key][0], requests[key][1], callback );
     }
-    else
-    {
-        // All loaded
-        this.callback( this.replies, this.imageResults );   
-    }
-};
-
-/**
- * Update progress display
- * @private
- */
-Loader.prototype.progress = function()
-{
-    // Update progress
-    var self = this;
-    if( this.progressCallback !== undefined )
-    {
-        this.progressCallback(  Math.round( 100 * self.totalCounter / self.totalCount ) );
-    }
-};
-</code></pre>
+};    
+    
+// Calls progressCallback with progress (scored 0 to 100)
+Loader.prototype.progress = function() {
+    this.progressCallback( Math.round( 100 * this.loadCounter / this.loadTotal ) );
+    //alert( "XXX");
+};</code></pre>
         </article>
     </section>
 
@@ -217,13 +164,13 @@ Loader.prototype.progress = function()
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AjaxManager.html">AjaxManager</a></li><li><a href="EventManager.html">EventManager</a></li><li><a href="Loader.html">Loader</a></li><li><a href="ResponseManager.html">ResponseManager</a></li><li><a href="ScalableCanvas.html">ScalableCanvas</a></li><li><a href="SyncTimer.html">SyncTimer</a></li><li><a href="Translator.html">Translator</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="EventManager.html">EventManager</a></li><li><a href="Loader.html">Loader</a></li><li><a href="RequestManager.html">RequestManager</a></li><li><a href="ResponseManager.html">ResponseManager</a></li><li><a href="ScalableCanvas.html">ScalableCanvas</a></li><li><a href="SyncTimer.html">SyncTimer</a></li><li><a href="Translator.html">Translator</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Mon Oct 06 2014 03:09:54 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Tue Oct 07 2014 04:57:00 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

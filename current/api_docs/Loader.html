@@ -41,7 +41,7 @@
         
 <dt>
     
-        <h4 class="name" id="Loader"><span class="type-signature"></span>new Loader<span class="signature">(ajaxManager, fail)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="Loader"><span class="type-signature"></span>new Loader<span class="signature">(requestManager)</span><span class="type-signature"></span></h4>
 
         
     
@@ -50,7 +50,7 @@
 
     
     <div class="description">
-        Thw Loader loads a set of json requests and images and calls a callback after all areloaded. Povides another callback to report on progress.
+        The Loader provides a short API for requesting a set of includes (js/css) and data (json/text/img/etc.).
     </div>
     
 
@@ -84,13 +84,13 @@
 
         <tr>
             
-                <td class="name"><code>ajaxManager</code></td>
+                <td class="name"><code>requestManager</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="AjaxManager.html">AjaxManager</a></span>
+<span class="param-type"><a href="RequestManager.html">RequestManager</a></span>
 
 
             
@@ -100,30 +100,7 @@
 
             
 
-            <td class="description last">For json requests</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>fail</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Called if loader fails</td>
+            <td class="description last">Handles the requests</td>
         </tr>
 
     
@@ -210,7 +187,7 @@
             
 <dt>
     
-        <h4 class="name" id="load"><span class="type-signature"></span>load<span class="signature">(json, images, callback, progressCallback)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="load"><span class="type-signature"></span>load<span class="signature">(includes, data, allLoaded, progressCallback)</span><span class="type-signature"></span></h4>
 
         
     
@@ -219,7 +196,7 @@
 
     
     <div class="description">
-        Load a set of requests and images
+        Load a set of includes and data
     </div>
     
 
@@ -253,7 +230,30 @@
 
         <tr>
             
-                <td class="name"><code>json</code></td>
+                <td class="name"><code>includes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indexed array of includes to load, each element of includes should be an indexed array with the first element specifying type of include "js" and "css", and the second element specifying the url/src</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
             
 
             <td class="type">
@@ -269,37 +269,14 @@
 
             
 
-            <td class="description last">JSON Requests to ajax handler</td>
+            <td class="description last">Associative array of data to load, each element having the same structure as for includes. All values of type except "img" are passed as dataType to jQuery.ajax (via RequestManager)</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>images</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Images</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>allLoaded</code></td>
             
 
             <td class="type">
@@ -315,7 +292,7 @@
 
             
 
-            <td class="description last">Callback when done</td>
+            <td class="description last">Callback called when all is loaded with the argument being the data downloaded (as an associative array)</td>
         </tr>
 
     
@@ -376,7 +353,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Loader.js.html">Loader.js</a>, <a href="Loader.js.html#line37">line 37</a>
+        <a href="Loader.js.html">Loader.js</a>, <a href="Loader.js.html#line35">line 35</a>
     </li></ul></dd>
     
 
@@ -419,13 +396,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AjaxManager.html">AjaxManager</a></li><li><a href="EventManager.html">EventManager</a></li><li><a href="Loader.html">Loader</a></li><li><a href="ResponseManager.html">ResponseManager</a></li><li><a href="ScalableCanvas.html">ScalableCanvas</a></li><li><a href="SyncTimer.html">SyncTimer</a></li><li><a href="Translator.html">Translator</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="EventManager.html">EventManager</a></li><li><a href="Loader.html">Loader</a></li><li><a href="RequestManager.html">RequestManager</a></li><li><a href="ResponseManager.html">ResponseManager</a></li><li><a href="ScalableCanvas.html">ScalableCanvas</a></li><li><a href="SyncTimer.html">SyncTimer</a></li><li><a href="Translator.html">Translator</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Mon Oct 06 2014 03:09:54 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Tue Oct 07 2014 04:57:00 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

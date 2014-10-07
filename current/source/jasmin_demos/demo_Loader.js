@@ -24,7 +24,7 @@ var demoName   = "demo_Loader.js";
 load = function() {
     // Load ScalableCanvas JS file
     getScripts( [
-            jasminPath + "jasmin_core/AjaxManager.js",
+            jasminPath + "jasmin_core/RequestManager.js",
             jasminPath + "jasmin_core/Loader.js"
         ],
         start
@@ -40,52 +40,37 @@ fail = function( message )
 // Called on load, setup AjaxManager, Loader, and start loading
 start = function()
 {
-    // Construct AjaxManager but disable periodicalSending
-    ajax = new AjaxManager(
-        "demo_Loader.json",                // Target URL
-        "demo",                            // id; identifies current session
-        fail,                              // fail callback
-        report,                            // report callback
-        4000,                              // timeBetweenRetries
-        4,                                 // maxRetries
-        false                              // peridocalSending
-    );
-
-    loader = new Loader(
-        ajax,
-        fail
-    );
-
-    var requests = {
-        "request0" : "data of request 0",
-        "request1" : "data of request 1"
-    };
+    report( demoName, "<span class='red'>Loading includes and data...</span>" );    
     
-    var images = {
-        "burger" : "demo_Loader_burger.jpg",
-        "salad"  : "demo_Loader_salad.jpg"
+    io = new RequestManager( fail, report, report );
+    loader = new Loader( io );
+
+    // Specify all icludes you want to load here; css or js
+    // Note that includes is an indexed array
+    var includes = [
+        [ "css", "demo_RequestManager_css.css"   ],
+        [ "js",  "demo_RequestManager_script.js" ]
+    ];
+
+    // Specify all data you want to load here; special case for img, all else is passed to jQuery.ajax as dataType
+    // Note that includes is an associative array
+    var data = {
+        "my_json"    : [ "json", "demo_RequestManager_json.json" ],
+        "my_picture" : [ "img",  "demo_RequestManager_img.jpg" ]
     };
 
-    loader.load(
-        requests,          
-        images,            
-        allLoaded,          
-        progressCallback
-    );
-}
+    loader.load( includes, data, allLoaded, progressCallback );
+};
 
 progressCallback = function( progress ) {
     report( demoName, "Progress: " + progress );
 };
 
-allLoaded = function( jsonResults, imageResults ) {
-    report( demoName, "All Loaded. json: " + JSON.stringify( jsonResults ) );
-    $( "#graphics_here" ).append( imageResults[ "burger" ].css( {
+// All loaded, show my_json and my_picture
+allLoaded = function( replies ) {
+    report( demoName, "All loaded, my_json = " + JSON.stringify( replies[ "my_json" ] ) );
+    $( "#graphics_here" ).append( replies[ "my_picture" ].css( {
         "width"  : "200px",
         "height" : "200px"
     } ) );
-    $( "#graphics_here" ).append( imageResults[ "salad" ].css( {
-        "width"  : "200px",
-        "height" : "200px"
-    } ) );    
 };

@@ -13,12 +13,12 @@
 // limitations under the License. 
 
 // ****************
-// *** demo_ScalableCanvas_basics
+// *** demo_ScalableCanvas
 //
 // Demonstrates how ScalableCanvas scales stimuli
 
 // Name of this demo
-var demoName   = "demo_ScalableCanvas_basics.js";
+var demoName   = "demo_ScalableCanvas.js";
 
 // Called on page load
 load = function() {

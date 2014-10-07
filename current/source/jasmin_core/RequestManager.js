@@ -255,8 +255,8 @@ RequestManager.prototype.ajaxRequest = function( stateId, transactionId )
   
     // Report ajax
     this.report(
-       "RequestManager.ajaxSend",
-       "stateId = " + stateId + ", transactionId = " + transactionId
+       "RequestManager.ajaxRequest",
+       "stateId = " + stateId + ", transactionId = " + transactionId + ", ajaxArgs = " + JSON.stringify( ajaxArgs )
     );    
    
     // Send
@@ -281,12 +281,23 @@ RequestManager.prototype.ajaxRequest = function( stateId, transactionId )
 
 // Downloading an img
 RequestManager.prototype.imgRequest = function( stateId, transactionId ) {
-    var imgRequest = this.states[ stateId ][ "request" ];
+    var url = this.states[ stateId ][ "request" ];
+
+    // Report ajax
+    this.report(
+       "RequestManager.imgRequest",
+       "stateId = " + stateId + ", transactionId = " + transactionId + ", url = " + JSON.stringify( url )
+    );    
 
     var self = this;
     this.states[ stateId ][ "reply" ] = $( "<img>" ).attr( 
-        "src", imgRequest
+        "src", url
     ).load( function() {
+        // Report replies
+        self.report(
+            "RequestManager img load",
+            "stateId " + stateId + ", transactionId " + transactionId 
+        );        
         self.success( stateId, self.states[ stateId ][ "reply" ] );
     } ).error( function() {
         self.error( 
@@ -295,24 +306,6 @@ RequestManager.prototype.imgRequest = function( stateId, transactionId ) {
         );        
     } );
 };
-
-// Downloading an img
-RequestManager.prototype.cssRequest = function( stateId, transactionId ) {
-    var imgRequest = this.states[ stateId ][ "request" ];
-
-    var self = this;
-    this.states[ stateId ][ "reply" ] = $( "<img>" ).attr( 
-        "src", imgRequest
-    ).load( function() {
-        self.success( stateId, self.states[ stateId ][ "reply" ] );
-    } ).error( function() {
-        self.error( 
-            "RequestManager img error", 
-            "stateId " + stateId + ", transactionId " + transactionId
-        );        
-    } );
-};
-
 
 /**
  * On success, handle request; call callback with argument reply and remove state
@@ -338,7 +331,8 @@ RequestManager.prototype.success = function( stateId, reply ) {
     }
     
     // If flushing; check if all requests are sent, then call flushCallback
-    if( this.flushCallback !== undefined && $.isEmptyObject( this.states ) ) {
+    if( this.flushing && $.isEmptyObject( this.states ) ) {
+        this.flushing = false;
         this.flushCallback();
         this.flushCallback = undefined;
     }    
@@ -370,6 +364,7 @@ RequestManager.prototype.check = function()
  * @param {Function} flushCallback After flushing this callback is called
  */
 RequestManager.prototype.flush = function( flushCallback ) {
+    this.flushing      = true;
 	this.flushCallback = flushCallback;
 	
     if( $.isEmptyObject( this.states ) )
@@ -381,5 +376,5 @@ RequestManager.prototype.flush = function( flushCallback ) {
         this.flushCallback = undefined;
     }
     
-    this.retry( true );
+    this.check();
 };

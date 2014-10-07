@@ -27,7 +27,7 @@ load = function() {
     getScripts( [
             jasminPath + "jasmin_core/RequestManager.js"
         ],
-        ajaxStart
+        start
     );
 };
 
@@ -38,9 +38,9 @@ fail = function( message )
 };
         
 // Called on load, setup RequestManager and do a request
-ajaxStart = function()
+start = function()
 {
-    // Construct RequestManager
+    // Construct RequestManager but set it to inactive
     io = new RequestManager( fail, report, report );
     demoJSON();
 }
