@@ -6,6 +6,7 @@ How this repository is structured:
 * **current** The current JASMIN; refactored, documented, and released open source
   * **api_docs** API documentation of each JASMIN module based on JSDoc 3
   * **experiments** Small scripts to try out things
+  * **minified** Minified version of jasmin_core (via Closure compiler)
   * **source** Source code
     * **jasmin_apps** Applications built with JASMIN
     * **jasmin_core** The JASMIN library
