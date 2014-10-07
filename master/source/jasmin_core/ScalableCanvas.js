@@ -15,7 +15,7 @@ function ScalableCanvas( target, aspectRatio, rescaleInterval )
     this.nodes           = {};        // DOM Nodes to manage
     this.scalables       = {};        // CSS to scale 
     this.lastWidth       = false;     // Width of last scale measurement
-}
+};
 
 /**
  * Start scaling contents
@@ -24,8 +24,8 @@ ScalableCanvas.prototype.start = function()
 {
     var self = this;
     self.rescale( true );
-    this.timer = setInterval( function() { self.rescale() }, self.rescaleInterval );
-}
+    this.timer = setInterval( function() { self.rescale(); }, self.rescaleInterval );
+};
 
 /**
  * Stop scaling contents
@@ -33,7 +33,7 @@ ScalableCanvas.prototype.start = function()
 ScalableCanvas.prototype.stop = function()
 {
     clearInterval( this.timer );
-}
+};
 
 /**
  * Add a sprite to the canvas
@@ -52,7 +52,7 @@ ScalableCanvas.prototype.addSprite = function( id, node, scalable )
     // Setup vars
     this.nodes[     id ] = node;
     this.scalables[ id ] = scalable;
-}
+};
 
 /**
  * Add a set of sprites to the canvas via addSprite
@@ -69,7 +69,7 @@ ScalableCanvas.prototype.addSprites = function( sprites )
             sprites[ i ][ "scalable" ]
         );
     }    
-}
+};
 
 
 /**
@@ -80,7 +80,7 @@ ScalableCanvas.prototype.addSprites = function( sprites )
 ScalableCanvas.prototype.getSprite = function( id )
 {
     return( this.nodes[ id ] );
-}
+};
 
 // Check rescale, and do if required (or force == true)
 ScalableCanvas.prototype.rescale = function( force )
@@ -100,7 +100,7 @@ ScalableCanvas.prototype.rescale = function( force )
     //alert( vardump( [ targetWidth, targetHeight ] ) );
 
     // No force and no change in scale? No need to rescale    
-    if( force === undefined && this.lastWidth == targetWidth && this.lastHeight == targetHeight )
+    if( force === undefined && this.lastWidth === targetWidth && this.lastHeight === targetHeight )
     {
         return;
     } else {
@@ -109,7 +109,6 @@ ScalableCanvas.prototype.rescale = function( force )
     }
     
     // To maintain aspect ratio, scale to width or height
-    this.scale;
     this.offsetLeft = 0;
     this.offsetTop  = 0;
 
@@ -130,7 +129,7 @@ ScalableCanvas.prototype.rescale = function( force )
     {
         this.rescaleSprite( i );
     }
-}
+};
 
 // Rescale a sprite
 ScalableCanvas.prototype.rescaleSprite = function( i )
@@ -146,7 +145,7 @@ ScalableCanvas.prototype.rescaleSprite = function( i )
                 offset = this.offsetLeft;
                 break;
             case "top":
-                offset = this.offsetTop
+                offset = this.offsetTop;
                 //alert( this.target.y );
                 break;
             default:
@@ -156,7 +155,7 @@ ScalableCanvas.prototype.rescaleSprite = function( i )
         scaledValue = this.scalables[i][j] * this.scale + offset;
         
         // Round values for left, top, width, and height
-        if( j == "left" || j == "top" || j == "width" || j == "height" )
+        if( j === "left" || j === "top" || j === "width" || j === "height" )
         {
             scaledValue = Math.floor( scaledValue );
         }
@@ -166,4 +165,4 @@ ScalableCanvas.prototype.rescaleSprite = function( i )
 
     // Apply
     this.nodes[i].css( css );
-}
+};

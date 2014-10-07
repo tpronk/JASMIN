@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License. 
 
-// requestAnimationFrame polyfill by Erik Möller
+// requestAnimationFrame polyfill by Erik Mï¿½ller
 // fixes from Paul Irish and Tino Zijdel
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
@@ -40,7 +40,7 @@
             clearTimeout(id);
         };
 }());
-// end of requestAnimationFrame polyfill by Erik Möller
+// end of requestAnimationFrame polyfill by Erik Mï¿½ller
 
 /**
  * State SyncTimer.NOT_SYNCED if not synchronized yet [call sync()]
@@ -281,7 +281,7 @@ SyncTimer.prototype.updateTimeoutLog = function() {
         "timeStopped"   : this.round( this.timeStopped, 1000 ),
         "canceled"      : this.canceled,
         "timeout"       : this.round( this.timeout, 1000 ),
-        "realized"      : this.round( this.realized, 1000 ),        
+        "realized"      : this.round( this.realized, 1000 )
     };
 };
     

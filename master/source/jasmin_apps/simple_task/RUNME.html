@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<!--
+Copyright 2014, Thomas Pronk
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. 
+
+****************
+*** RUNME.html
+
+Sets up a small environment for a task to run in:
+- Shows a spinner to tell the participant we're loading
+- Sets up paths to jasmin and binaries
+- Loads jQuery, RequestManager (log error/fail to console) and Loader
+- Loads "my_script.js" and calls load with arguments:
+    pathJasmin
+    pathBinaries
+    requestManager
+    loader
+
+-->
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <!-- Load basic includes -->
+        <script type="text/javascript" src="../../jasmin_ext/jquery.js"></script>
+        <script type="text/javascript" src="../../jasmin_core/RequestManager.js"></script>
+        <script type="text/javascript" src="../../jasmin_core/Loader.js"></script>
+        <script type="text/javascript" src="my_script.js"></script>        
+        
+        <script type="text/javascript">
+            $( document ).ready( function() { 
+                // Paths
+                var pathJasmin   = "../../";
+                var pathBinaries = "../../../../binaries/";
+
+                // Modules
+                var requestManager = new RequestManager( 
+                     // fail callback
+                     function( message ) { console.log( message ); },
+                     // error callback
+                     function( source, message ) { console.log( source + ": " + message ); }
+                );
+                var loader = new Loader( requestManager );
+                 
+                // Load "my_script.js"
+                loader.load( 
+                    [ [ "js", "my_script.js" ] ],
+                    {},
+                    function() {
+                        load( 
+                            pathJasmin,
+                            pathBinaries,
+                            requestManager,
+                            loader
+                        );
+                    }
+                );
+           } );                
+        </script>
+    </head>
+<body>
+</body>
+</html>

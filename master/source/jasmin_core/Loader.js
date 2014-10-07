@@ -29,12 +29,12 @@ function Loader( requestManager ) {
  * @param {Array}    includes           Indexed array of includes to load, each element of includes should be an indexed array with the first element specifying type of include "js" and "css", and the second element specifying the url/src
  * @param {Object}   data               Associative array of data to load, each element having the same structure as for includes. All values of type except "img" are passed as dataType to jQuery.ajax (via RequestManager)
  * @param {Function} allLoaded          Callback called when all is loaded with the argument being the data downloaded (as an associative array)
- * @param {Function} progressCallback   Callback for updating progress; this function receives one argument, being progress (ranging from 0 to 100)
+ * @param {Function} progressCallback   (option) Callback for updating progress; this function receives one argument, being progress (ranging from 0 to 100)
  * @public
  */
 Loader.prototype.load = function( includes, data, allLoaded, progressCallback ) {
     this.allLoaded        = allLoaded;
-    this.progressCallback = progressCallback;
+    this.progressCallback = progressCallback == undefined? function() {} : progressCallback;
     
     this.replies  = {};    // Results of data requests
     this.loadCounter = 0;  // Counting progress
