@@ -2,6 +2,7 @@ JASMIN
 ======
 
 How this repository is structured:
+* **binaries** Such as pictures used in readme & apps
 * **legacy** The old JASMIN; not open source
 * **master** The current JASMIN; refactored, documented, and released open source
   * **api_docs** API documentation of each JASMIN module based on JSDoc 3
