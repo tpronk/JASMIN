@@ -3,9 +3,9 @@ How this repository is structured:
 * **binaries** Such as pictures used in readme & apps
 * **legacy** The old JASMIN; not open source
 * **master** The current JASMIN; refactored, documented, and released open source
-  * **api_docs** API documentation of each JASMIN module based on JSDoc 3
+  * **api_docs** API documentation of each JASMIN module 
   * **experiments** Small scripts to try out things
-  * **minified** Minified version of jasmin_core (via Closure compiler)
+  * **minified** Minified version 
   * **source** Source code
     * **jasmin_apps** Applications built with JASMIN
     * **jasmin_core** The JASMIN library
@@ -38,7 +38,7 @@ The legacy JASMIN library has a lot of features and works quite well. However, t
 # JASMIN Upgrade: Approach
 Each of the JASMIN modules:
 * Is refactored and upgraded, see: **master/source/jasmin_core**
-* Has the API is documented via JSDoc, see: **master/apidocs**
+* Has the API is documented via JSDoc 3, see: **master/apidocs**
 * Is demoed and tested via one or more examples, see **master/source/jasmin_demos**
 
 In a later stage, JASMIN applications are built to illustrate how the library can be used to program a response time tasks. As apps evolve we hope to have them serve as more complex examples and provide guidelines for best practices.
