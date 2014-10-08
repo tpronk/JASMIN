@@ -21,7 +21,7 @@ The legacy JASMIN library has a lot of features and works quite well. However, t
 JASMIN Architecture
 ===================
 The graph below shows the JASMIN architecture. An arrow from module A tomodule B means that A requires B. All modules except those marked with a star require jQuery. Green modules have been upgraded and red modules are still to go.
-
+![JASMIN Architecture](binaries/images/JASMIN_architecture.jpg)
 
 JASMIN Approach
 ===============
