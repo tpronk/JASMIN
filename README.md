@@ -14,7 +14,7 @@ How this repository is structured:
 
 
 # Upgrade Project
-The legacy JASMIN library has a lot of features and works quite well. However, this library is not open source, not very easy to use, and a bit outdated in some regards. The master JASMIN library aimed to be open surce, proving upgraded modules that are accessible and up-to-date.
+The legacy JASMIN library has a lot of features and works quite well. However, this library is not open source, not very easy to use, and a bit outdated in some regards. The master JASMIN library is aimed to be open surce, proving upgraded modules that are accessible and up-to-date.
 
 # Architecture
 The graph below shows the JASMIN architecture. An arrow from module A tomodule B means that A requires B. All modules except those marked with a star require jQuery. Green modules have been upgraded and red modules are still to go.
