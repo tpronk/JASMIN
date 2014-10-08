@@ -14,7 +14,7 @@
 // 
 // 
 // ****************
-// *** Translator
+// *** demo_Translator
 //
 // Demonstrates how the Translator translates terms, incorporates custom callbacks,
 // and supports honorifics (such as t-form and v-form)
@@ -53,6 +53,9 @@ translateStuff = function() {
         
     // Show a simple translation
     report( demoName, translator.translateTerm( "intro" ) );
+
+    // Note that the result is the same as
+    report( demoName, translator.translate( "#[intro]" ) );
     
     // Show that terms in translations are translated too
     report( demoName, translator.translateTerm( "intro2" ) );
@@ -74,14 +77,14 @@ translateStuff = function() {
 
     // Set honorific to v-form -> v_hello is used (if available)
     translator.setHonorific( "v" );
-    report( demoName, translator.translate( "hello" ) );
+    report( demoName, translator.translateTerm( "hello" ) );
      
     // Set honorific to t-form -> t_hello is used (if available)
     translator.setHonorific( "t" );
-    report( demoName, translator.translate( "hello" ) );
+    report( demoName, translator.translateTerm( "hello" ) );
     
     // For nohonorific there is no t- or v-form available; just use nohonorific
     translator.setHonorific( "t" );
-    report( demoName, translator.translate( "nohonorific" ) );    
+    report( demoName, translator.translateTerm( "nohonorific" ) );    
           
 };

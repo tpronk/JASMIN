@@ -59,7 +59,7 @@ Translator.prototype.addTranslations = function( translations )
 }
 
 /**
- * Translate a single term 
+ * Translate a single term (not surrounded by #[])
  * @param   {String}  haystack   Text containing 0 or more terms
  * @param   {Object}  callbacks  list of terms with callbacks; if a callback exists for a term, and it returns a value, then use that value instead of the translation
  * @param   {Boolean} pretty     For any terms we cannot find translations of: if true, return term surrounded with "!", if false return undefined (default = true)
@@ -74,7 +74,7 @@ Translator.prototype.translateTerm = function( term, callbacks, pretty )
     if( callbacks !== undefined && callbacks[ term ] !== undefined )
     {
         // Callback found, use it to get translation
-        return this.substitute(
+        return this.translate(
             callbacks[ term ](),
             callbacks
         );
@@ -110,7 +110,7 @@ Translator.prototype.translateTerm = function( term, callbacks, pretty )
     else
     {
         // Tes, return substituted translation
-        return this.substitute( 
+        return this.translate( 
             translation,
             callbacks
         );
@@ -118,7 +118,9 @@ Translator.prototype.translateTerm = function( term, callbacks, pretty )
 }
 
 /**
- * Find terms in haystack, replace each by its translation, return haystack
+ * Translate a text that contains 0 or more terms: Find terms in haystack
+ * (as identified by #[this_is_a_term], replace each by its translation, 
+ * return haystack
  * @param   {String}  haystack   Text containing 0 or more terms
  * @param   {Object}  callbacks  list of terms with callbacks; if a callback exists for a term, and it returns a value, then use that value instead of the translation
  * @param   {Boolean} pretty     For any terms we cannot find translations of: if true, return term surrounded with "!", if false return undefined (default = true)
