@@ -71,10 +71,10 @@ setupDemo = function() {
     );    
 
     // Create an EventManager and sync
-    eventManager = new EventManager( window );
+    eventManager = new jasmin.EventManager( window );
     
     // Create Slideshow
-    slideshow = new Slideshow(
+    slideshow = new jasmin.Slideshow(
         // target; html of this HTMLElement will be set to slide
         $( "#slide_container"),  
         eventManager,

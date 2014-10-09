@@ -1,13 +1,33 @@
+//Copyright 2014, Thomas Pronk
+//
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+//
+//http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License. 
+
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
+
 /**
  * Translator translates texts via a term-rewrite system. Provides the option
  * to attach callbacks to terms and to set an honorific.
  * @constructor
  */
-function Translator()
+jasmin.Translator = function()
 {
     this.translations = {};
     this.honorific    = undefined;
-}
+};
 
 /**
  * Extend function based on Prototype: merge two (associative) arrays, named
@@ -19,7 +39,7 @@ function Translator()
  */
 // Extend function from Prototype, see:
 // 
-Translator.prototype.extend = function(destination, source) {
+jasmin.Translator.prototype.extend = function(destination, source) {
     for (var property in source) {
         if (source.hasOwnProperty(property)) {
             destination[property] = source[property];
@@ -37,17 +57,17 @@ Translator.prototype.extend = function(destination, source) {
  * @param {String} honorific Honorific to use (can be any String)
  * @public
  */
-Translator.prototype.setHonorific = function( honorific )
+jasmin.Translator.prototype.setHonorific = function( honorific )
 {
     this.honorific = honorific;
-}
+};
 
 /**
  * Add a set of translations
  * @param {Object}  translations Associative array of translations to add. Each key is a term, the values having keys: value for translation and status for status of translation
  * @public
  */
-Translator.prototype.addTranslations = function( translations )
+jasmin.Translator.prototype.addTranslations = function( translations )
 {
     // Add/overwrite existing translations with new (first arg true = deep copy)
     // TP 201-10-02, moved to native JavaScript function so that Translator does
@@ -56,16 +76,16 @@ Translator.prototype.addTranslations = function( translations )
     // $.extend( true, this.translations, translations );
     //this.substitute();
     //alert( vardump( this.translations ) );    
-}
+};
 
 /**
  * Translate a single term (not surrounded by #[])
- * @param   {String}  haystack   Text containing 0 or more terms
+ * @param   {String}  term       Term to translate
  * @param   {Object}  callbacks  list of terms with callbacks; if a callback exists for a term, and it returns a value, then use that value instead of the translation
  * @param   {Boolean} pretty     For any terms we cannot find translations of: if true, return term surrounded with "!", if false return undefined (default = true)
  * @public
  */
-Translator.prototype.translateTerm = function( term, callbacks, pretty )
+jasmin.Translator.prototype.translateTerm = function( term, callbacks, pretty )
 {
     // Pretty true by default
     pretty = pretty === undefined? true: pretty;
@@ -115,7 +135,7 @@ Translator.prototype.translateTerm = function( term, callbacks, pretty )
             callbacks
         );
     }
-}
+};
 
 /**
  * Translate a text that contains 0 or more terms: Find terms in haystack
@@ -126,7 +146,7 @@ Translator.prototype.translateTerm = function( term, callbacks, pretty )
  * @param   {Boolean} pretty     For any terms we cannot find translations of: if true, return term surrounded with "!", if false return undefined (default = true)
  * @public
  */
-Translator.prototype.translate = function( haystack, callbacks, pretty )
+jasmin.Translator.prototype.translate = function( haystack, callbacks, pretty )
 {
     // Pretty true by default
     pretty = pretty === undefined? true: pretty;
@@ -162,4 +182,4 @@ Translator.prototype.translate = function( haystack, callbacks, pretty )
     }
     
     return haystack;
-}
+};

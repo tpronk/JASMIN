@@ -12,6 +12,12 @@
 //See the License for the specific language governing permissions and
 //limitations under the License. 
 
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
+
 /**
  * EventManager creates a SyncTimer to time events and ResponseManager to
  * register responses in order to present events that can end on both a 
@@ -25,10 +31,10 @@
  * @constructor
  * @param {Window} window Window to manage responses of
  */
-function EventManager( window )
+jasmin.EventManager = function( window )
 {
-    this.responseManager = new ResponseManager( window );
-    this.syncTimer       = new SyncTimer();
+    this.responseManager = new jasmin.ResponseManager( window );
+    this.syncTimer       = new jasmin.SyncTimer();
     
     this.callbackDone = undefined;
 };
@@ -37,7 +43,7 @@ function EventManager( window )
  * Start synchronizing with clock; wrapper for SyncTimer.sync
  * @param {Function} callbackSynced Called when synced
  */
-EventManager.prototype.sync = function( callbackSynced )
+jasmin.EventManager.prototype.sync = function( callbackSynced )
 {
     this.syncTimer.sync( function() {
         callbackSynced();
@@ -53,7 +59,7 @@ EventManager.prototype.sync = function( callbackSynced )
  * @param {Object}   activeResponses  An associative array defining responses that stop the event (if any). See <a href="../source/jasmin_demos/demo_choose.html">these demos </a> for examples.
  * @param {String}   name             Name of this timeout for logging. Default = noname
  */
-EventManager.prototype.startEvent = function( timeout, callbackDraw, callbackDone, activeResponses, name ) {
+jasmin.EventManager.prototype.startEvent = function( timeout, callbackDraw, callbackDone, activeResponses, name ) {
     // Clear logging vars
     this.clearLoggingVars();
 
@@ -90,7 +96,7 @@ EventManager.prototype.startEvent = function( timeout, callbackDraw, callbackDon
  * @param (string) endReason Why the event ended: timeout, response, or cancel
  * @private
  */
-EventManager.prototype.endEvent = function( endReason ) {
+jasmin.EventManager.prototype.endEvent = function( endReason ) {
     // Don't register responses anumore
     this.responseManager.deactivate();
     
@@ -121,7 +127,7 @@ EventManager.prototype.endEvent = function( endReason ) {
  * is canceled; callbackDone is not called
  * @public
  */
-EventManager.prototype.cancelEvent = function() {
+jasmin.EventManager.prototype.cancelEvent = function() {
     this.endEvent( "cancel" );
 };
 
@@ -131,7 +137,7 @@ EventManager.prototype.cancelEvent = function() {
  * Store all logging vars in responseLog
  * @private
  */
-EventManager.prototype.updateEventLog = function() {
+jasmin.EventManager.prototype.updateEventLog = function() {
     this.eventLog = {
         "na" : this.name,
         "rt" : this.rt,
@@ -147,12 +153,12 @@ EventManager.prototype.updateEventLog = function() {
  * @returns (Object) Associative array with eventLog variables
  * @public
  */
-EventManager.prototype.getEventLog = function() {
+jasmin.EventManager.prototype.getEventLog = function() {
     return( this.eventLog );
 };
 
 // Clear logging vars
-EventManager.prototype.clearLoggingVars = function() {
+jasmin.EventManager.prototype.clearLoggingVars = function() {
     /**
      * Logging var: Name of this event
      * @instance

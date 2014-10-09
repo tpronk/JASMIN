@@ -12,6 +12,13 @@
 //See the License for the specific language governing permissions and
 //limitations under the License. 
 
+
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
+
 /** 
  * TableLogger logs data in a a table format with named variables as columns
  * and unnamed rows
@@ -20,20 +27,20 @@
  * @param {Object}   na        A value to represent the absence of a value when logs are retrieved in indexed format. Default = null
  * @constructor
  */
-function TableLogger( columns, fail, na )
+jasmin.TableLogger = function( columns, fail, na )
 {
     this.columns = columns;
     this.fail    = fail;
     this.na      = na;
     
     this.clearLogs();
-}
+};
 
 /** 
  * Clear all rows from  logs (but not columns)
  * @public
  */
-TableLogger.prototype.clearLogs = function()
+jasmin.TableLogger.prototype.clearLogs = function()
 {
     this.logs = [];
 };
@@ -43,7 +50,7 @@ TableLogger.prototype.clearLogs = function()
  * @param   {Object}  logMe   Associative array in which keys identify columns and values are the values to log this row
  * @public
  */
-TableLogger.prototype.log = function( logMe )
+jasmin.TableLogger.prototype.log = function( logMe )
 {
     // If fail defined, check columns
     if( this.fail !== undefined ) {
@@ -63,7 +70,7 @@ TableLogger.prototype.log = function( logMe )
  * @param   {boolean} associative  If true, each row in the logs returned is an associative array of the form column => value. If false, each row is an indexed array (with missing value filled in with this.na), the first row containing column names
  * @public
  */
-TableLogger.prototype.getLogs = function( associative )
+jasmin.TableLogger.prototype.getLogs = function( associative )
 {
     if( associative ) {
         return this.logs;

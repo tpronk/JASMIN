@@ -111,7 +111,7 @@ startCanvas = function()
     };
      
     // Construct canvas
-    var canvas      = new ScalableCanvas( 
+    var canvas      = new jasmin.ScalableCanvas( 
         $( "#graphics_here" ),  // container div; note though that canvas scales to the window
         1.6                     // aspectRatio (x/y). A value of 1.6 gives this range of coordinates: x[0:1.6] and y[0:1]
         // rescaleInterval (number of ms between checking rescaling), 1000 by default

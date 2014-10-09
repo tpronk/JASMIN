@@ -46,7 +46,7 @@ var translations = {
 // Run the actual demo's
 translateStuff = function() {
     // Construct new instance
-    translator = new Translator();
+    translator = new jasmin.Translator();
     
     // Loads translations into translator
     translator.addTranslations( translations );
@@ -63,7 +63,7 @@ translateStuff = function() {
     // Add a callback 
     report( 
         demoName, 
-        translator.translate( 
+        translator.translateTerm( 
             "score",
             // translationCallbacks; every term is this array is translated as
             // the function returned by the corresponding callback function 

@@ -41,7 +41,7 @@ fail = function( message )
 start = function()
 {
     // Construct RequestManager but set it to inactive
-    io = new RequestManager( fail, report, report );
+    io = new jasmin.RequestManager( fail, report, report );
     demoJSON();
 }
 
@@ -49,7 +49,7 @@ demoJSON = function() {
     report( demoName, "Sending a JSON request to demo_demo_RequestManager_json.json" );
 
     io.request(
-        RequestManager.TYPE_AJAX,
+        jasmin.REQUEST_MANAGER_TYPE_AJAX,
         {
             "url"      : "demo_RequestManager_json.json",
             "dataType" : "json"
@@ -64,7 +64,7 @@ demoJS = function( reply )
     report( demoName, "Downloading JS from demo_RequestManager_script.js" );
     
     io.request(
-        RequestManager.TYPE_AJAX,
+        jasmin.REQUEST_MANAGER_TYPE_AJAX,
         {
             "url"      : "demo_RequestManager_script.js",
             "dataType" : "script"
@@ -79,7 +79,7 @@ demoImg = function( reply )
     report( demoName, "Downloading image from demo_RequestManager_img.jpg" );
     
     io.request(
-        RequestManager.TYPE_IMG,
+        jasmin.REQUEST_MANAGER_TYPE_IMG,
         "demo_RequestManager_img.jpg",
         demoCSS
     );    
@@ -94,7 +94,7 @@ demoCSS = function( reply )
     
     report( demoName, "Downloading CSS from demo_RequestManager_css.css" );    
     io.request(
-        RequestManager.TYPE_AJAX,
+        jasmin.REQUEST_MANAGER_TYPE_AJAX,
         {
             "url"      : "demo_RequestManager_css.css",
             "dataType" : "text"

@@ -12,6 +12,12 @@
 //See the License for the specific language governing permissions and
 //limitations under the License. 
 
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
+
 // requestAnimationFrame polyfill by Erik M�ller
 // fixes from Paul Irish and Tino Zijdel
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
@@ -43,25 +49,25 @@
 // end of requestAnimationFrame polyfill by Erik M�ller
 
 /**
- * State SyncTimer.NOT_SYNCED if not synchronized yet [call sync()]
+ * State jasmin.SYNC_TIMER_NOT_SYNCED if not synchronized yet [call sync()]
  */
-SyncTimer.NOT_SYNCED = 0;
+jasmin.SYNC_TIMER_NOT_SYNCED = 0;
 /**
- * State SyncTimer.WAITING if no timeout is running, 
+ * State jasmin.SYNC_TIMER_WAITING if no timeout is running, 
  */
-SyncTimer.WAITING    = 1;
+jasmin.SYNC_TIMER_WAITING    = 1;
 /**
- * State SyncTimer.REQUESTED if a timeout has been requested (but we haven't drawn yet
+ * State jasmin.SYNC_TIMER_REQUESTED if a timeout has been requested (but we haven't drawn yet
  */
-SyncTimer.REQUESTED  = 2;
+jasmin.SYNC_TIMER_REQUESTED  = 2;
 /**
- * State SyncTimer.DRAWN when stimuli have been drawn
+ * State jasmin.SYNC_TIMER_DRAWN when stimuli have been drawn
  */
-SyncTimer.DRAWN      = 3;
+jasmin.SYNC_TIMER_DRAWN      = 3;
 /**
- * State SyncTimer.DRAWN when stimuli have been shown (actual timeout starts here)
+ * State jasmin.SYNC_TIMER_DRAWN when stimuli have been shown (actual timeout starts here)
  */
-SyncTimer.SHOWN      = 4;
+jasmin.SYNC_TIMER_SHOWN      = 4;
 
 /**
  * This timer synchronizes to requesAnimationFrame so that all callbacks are
@@ -70,12 +76,12 @@ SyncTimer.SHOWN      = 4;
  * @param {function} report Reporting function for reporting timing info
  * @constructor
  */
-function SyncTimer() {
+jasmin.SyncTimer = function() {
     // Save report
     this.report = report === undefined? function() {}: report;
     
     // state: Not synced at start
-    this.state = SyncTimer.NOT_SYNCED;
+    this.state = jasmin.SYNC_TIMER_NOT_SYNCED;
     
     // Set to true if we are handling a synchronized callback (a function being
     // executed via requiresAnimationFrame
@@ -83,7 +89,7 @@ function SyncTimer() {
 };
 
 // Clears logging vars; not used anymore
-SyncTimer.prototype.clearLoggingVars = function() {
+jasmin.SyncTimer.prototype.clearLoggingVars = function() {
     /**
      * Logging var: when a timeout was requested 
      * @instance
@@ -115,7 +121,7 @@ SyncTimer.prototype.clearLoggingVars = function() {
  * Start synchronizing with clock; ready when two refreshes have taken place
  * @@param {Function} callbackSynced Called when synced
  */
-SyncTimer.prototype.sync = function( callbackSynced ) {
+jasmin.SyncTimer.prototype.sync = function( callbackSynced ) {
     this.callbackDone = callbackSynced;
     
     var self = this;
@@ -128,7 +134,7 @@ SyncTimer.prototype.sync = function( callbackSynced ) {
  * Called first refresh (when framePrev is not yet defined)
  * @private
  */
-SyncTimer.prototype.refreshFirst = function() {
+jasmin.SyncTimer.prototype.refreshFirst = function() {
     // First refresh; store current time
     this.frameNow = window.performance.now();
     
@@ -137,7 +143,7 @@ SyncTimer.prototype.refreshFirst = function() {
     var self = this;
     window.requestAnimationFrame( function() {
         self.name        = "sync";
-        self.state       = SyncTimer.SHOWN;
+        self.state       = jasmin.SYNC_TIMER_SHOWN;
         self.timeToErase = window.performance.now();
         self.refresh();
     } );
@@ -147,7 +153,7 @@ SyncTimer.prototype.refreshFirst = function() {
  * Called every refresh; calculate frame duration and check for timeouts
  * @private
  */
-SyncTimer.prototype.refresh = function()  {
+jasmin.SyncTimer.prototype.refresh = function()  {
     // Store previous refresh time
     this.framePrev = this.frameNow; 
     // Get current
@@ -159,13 +165,13 @@ SyncTimer.prototype.refresh = function()  {
     switch( this.state )
     {
         // A draw was requested; draw
-        case SyncTimer.REQUESTED:
+        case jasmin.SYNC_TIMER_REQUESTED:
             this.callbackDraw();
             this.timeDrawnNew = window.performance.now();
-            this.state = SyncTimer.DRAWN;
+            this.state = jasmin.SYNC_TIMER_DRAWN;
             break;
         // Stimuli were drawn; show
-        case SyncTimer.DRAWN:
+        case jasmin.SYNC_TIMER_DRAWN:
             // timeShown of new event
             this.timeShownNew = window.performance.now();
             // calculate difference between current and new show times -> realized
@@ -184,18 +190,18 @@ SyncTimer.prototype.refresh = function()  {
             {
                 this.timeToErase  = this.timeShown + this.timeout;
             }
-            this.state = SyncTimer.SHOWN;
+            this.state = jasmin.SYNC_TIMER_SHOWN;
             // Note no break, after show we immediately go check for timeouts
             // So if your timeout = 1, the callback may be called immediately
             // instead of next refresh.
         // Stimuli are being shown; check for timeout
-        case SyncTimer.SHOWN:
+        case jasmin.SYNC_TIMER_SHOWN:
             // If timeout is set and it's now later than Stop minus half a refresh less, call callback
             if( this.timeout !== -1 && this.frameNow > this.timeToErase - 1.5 * this.frameDur ) {
                 this.timeStopped = window.performance.now();
 //                this.realized    = this.timeStopped - this.timeShown;
                 this.canceled = false;            // Event was not canceled
-                this.state = SyncTimer.WAITING;   // We are not active anymore
+                this.state = jasmin.SYNC_TIMER_WAITING;   // We are not active anymore
                 this.synchronousCallback = true;  // This callback is synchronized
                 this.callbackDone();
                 this.synchronousCallback = false; // But after this not anymore
@@ -220,9 +226,9 @@ SyncTimer.prototype.refresh = function()  {
  * @param {Function} callbackDone Callback called on timeout
  * @param {String}   name         Name of this timeout for logging. Default = noname
  */
-SyncTimer.prototype.setTimeout = function( timeout, callbackDraw, callbackDone, name ) {
+jasmin.SyncTimer.prototype.setTimeout = function( timeout, callbackDraw, callbackDone, name ) {
     // Show alert if trying to setTimeout while not synced
-    if( this.state === SyncTimer.NOT_SYNCED )
+    if( this.state === jasmin.SYNC_TIMER_NOT_SYNCED )
     {
         alert( "SyncTimer.setTimeout called but state == NOT_SYNCED; call sync first" );
     }
@@ -242,9 +248,9 @@ SyncTimer.prototype.setTimeout = function( timeout, callbackDraw, callbackDone, 
         // Synchronized; drawn is same moment as requested
         this.timeDrawnNew = this.timeRequestedNew;
         this.callbackDraw();
-        this.state = SyncTimer.DRAWN;
+        this.state = jasmin.SYNC_TIMER_DRAWN;
     } else {
-        this.state = SyncTimer.REQUESTED;
+        this.state = jasmin.SYNC_TIMER_REQUESTED;
     }
 };
 
@@ -253,18 +259,18 @@ SyncTimer.prototype.setTimeout = function( timeout, callbackDraw, callbackDone, 
  * Cancel a timeout; callbackDone is not called anymore
  * @public
  */
-SyncTimer.prototype.cancelTimeout = function() {
+jasmin.SyncTimer.prototype.cancelTimeout = function() {
     this.timeStopped = window.performance.now();
     this.realized = this.timeStopped - this.timeShown;
     this.canceled = true;
-    this.state = SyncTimer.WAITING;
+    this.state = jasmin.SYNC_TIMER_WAITING;
 };
 
 /**
  * Convenience function: rounding number to x precision
  * @private
  */
-SyncTimer.prototype.round = function( number, precision ) {
+jasmin.SyncTimer.prototype.round = function( number, precision ) {
     return Math.round( number * precision ) / precision;
 };
 
@@ -272,7 +278,7 @@ SyncTimer.prototype.round = function( number, precision ) {
  * Updates timeout log
  * @private
  */
-SyncTimer.prototype.updateTimeoutLog = function() {
+jasmin.SyncTimer.prototype.updateTimeoutLog = function() {
     this.timeoutLog = {
         "na" : this.name,
         "tr" : this.round( this.timeRequested, 1000 ),
@@ -296,6 +302,6 @@ SyncTimer.prototype.updateTimeoutLog = function() {
  * @returns (Object) Associative array with timeoutLog variables
  * @public
  */
-SyncTimer.prototype.getPrevTimeoutLog = function() {
+jasmin.SyncTimer.prototype.getPrevTimeoutLog = function() {
     return this.timeoutLog; 
 };

@@ -38,7 +38,7 @@ fail = function( message ) {
 
 logStuff = function() {
     // Construct a TableLogger
-    logger = new TableLogger( 
+    logger = new jasmin.TableLogger( 
         [ 
             "trial", 
             "response"

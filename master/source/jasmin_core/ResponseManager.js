@@ -12,11 +12,17 @@
 //See the License for the specific language governing permissions and
 //limitations under the License. 
 
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
+
 /**
  * A list of possible pointer responses, both for touch and mouse 
  * @private
  */
-ResponseManager.prototype.pointerDeviceEvents = {
+jasmin.POINTER_EVENTS = {
     /** vmouse; triggered both by touch and mouse, requires jquery mobile */
     "vmouse" : {
         "down" : "vmousedown",
@@ -45,7 +51,7 @@ ResponseManager.prototype.pointerDeviceEvents = {
  * @constructor
  * @param {Window} window Window to manage responses of
  */
-function ResponseManager( window )
+jasmin.ResponseManager = function( window )
 {
     // Start inactive
     this.active = false;
@@ -62,13 +68,13 @@ function ResponseManager( window )
         self.response( "keyup", event );
     } );
     
-    // Make a list of the pointerDeviceEvents
+    // Make a list of the jasmin.POINTER_EVENTS
     this.pointerDeviceEventsList = [];
-    for( var i in this.pointerDeviceEvents )
+    for( var i in jasmin.POINTER_EVENTS )
     {
-        for( var j in this.pointerDeviceEvents[i] )
+        for( var j in jasmin.POINTER_EVENTS[i] )
         {
-            this.pointerDeviceEventsList.push( this.pointerDeviceEvents[i][j] );
+            this.pointerDeviceEventsList.push( jasmin.POINTER_EVENTS[i][j] );
         }
     }
 }
@@ -81,7 +87,7 @@ function ResponseManager( window )
  * @param {Function}  callbackResponse  Callback called upon a response
  * @param {String}    name               Name of this activation for logging. Default = noname
  */
-ResponseManager.prototype.activate = function(
+jasmin.ResponseManager.prototype.activate = function(
     activeResponses,    
     callbackResponse,
     name
@@ -164,7 +170,7 @@ ResponseManager.prototype.activate = function(
  * @param {String}    pointerId    ID of pointer event (if any) 
  * @param {String}    pointerLabel    Label of pointer event (if any) 
  */
-ResponseManager.prototype.response = function( mode, event, pointerId, pointerLabel ) {
+jasmin.ResponseManager.prototype.response = function( mode, event, pointerId, pointerLabel ) {
     //report( "ResponseManager.response", JSON.stringify( [ mode, id ] ) );
     
     // Only register responses if active
@@ -187,7 +193,7 @@ ResponseManager.prototype.response = function( mode, event, pointerId, pointerLa
 
 
 // Check if this response is critical, and parse it on the way
-ResponseManager.prototype.parseResponse = function( mode, event, id, label ) {
+jasmin.ResponseManager.prototype.parseResponse = function( mode, event, id, label ) {
     // Log time of response
     var time = window.performance.now();
     
@@ -248,7 +254,7 @@ ResponseManager.prototype.parseResponse = function( mode, event, id, label ) {
  * Deactivate; don't call responseCallback on any response anymore
  * @public
  */
-ResponseManager.prototype.deactivate = function() {
+jasmin.ResponseManager.prototype.deactivate = function() {
     // Stop event
     this.active = false;    
     
@@ -282,7 +288,7 @@ ResponseManager.prototype.deactivate = function() {
  * Store all logging vars in responseLog
  * @private
  */
-ResponseManager.prototype.updateResponseLog = function() {
+jasmin.ResponseManager.prototype.updateResponseLog = function() {
     this.responseLog = {
         "na"     : this.name,
         "cr"     : this.critical,
@@ -299,12 +305,12 @@ ResponseManager.prototype.updateResponseLog = function() {
  * @returns (Object) Associative array with responseLog variables
  * @public
  */
-ResponseManager.prototype.getResponseLog = function() {
+jasmin.ResponseManager.prototype.getResponseLog = function() {
     return( this.responseLog );
 };
 
 // Clear logging vars
-ResponseManager.prototype.clearLoggingVars = function() {
+jasmin.ResponseManager.prototype.clearLoggingVars = function() {
     /**
      * Logging var: was response critical (true/false)
      * @instance

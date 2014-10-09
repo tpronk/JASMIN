@@ -12,6 +12,12 @@
 //See the License for the specific language governing permissions and
 //limitations under the License. 
 
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
+
 /**
  * Slideshow presents Slideshows 
  * @constructor
@@ -22,7 +28,7 @@
  * @param {int}          buttonDelay      number of ms to wait until showing buttonTexts and registering responses, default value = 0 (immediately show buttons)
  * 
  */
-function Slideshow( target, eventManager, activeResponses, buttonTexts, buttonDelay ) {
+jasmin.Slideshow = function( target, eventManager, activeResponses, buttonTexts, buttonDelay ) {
     this.eventManager    = eventManager;
     this.target          = target;
     this.activeResponses = activeResponses;
@@ -35,7 +41,7 @@ function Slideshow( target, eventManager, activeResponses, buttonTexts, buttonDe
  *  @param {array}        slides               Array of slides to show (containing plain or HTML)
  *  @param {Function}     callbackDone         Function called when Slideshow is done 
  */
-Slideshow.prototype.show = function( 
+jasmin.Slideshow.prototype.show = function( 
     slides,     
     callbackDone
 ) {
@@ -50,7 +56,7 @@ Slideshow.prototype.show = function(
 };
 
 // Show a slide if any left, else callback
-Slideshow.prototype.showSlide = function() {
+jasmin.Slideshow.prototype.showSlide = function() {
     // No slides left? callback
     if( this.slideCounter >= this.slides.length ) {
         this.callbackDone();
@@ -89,7 +95,7 @@ Slideshow.prototype.showSlide = function() {
 };
 
 // Add buttons and start registering responses
-Slideshow.prototype.showButtons = function()
+jasmin.Slideshow.prototype.showButtons = function()
 {
     var slideContent = this.slides[ this.slideCounter ];
 
@@ -122,7 +128,7 @@ Slideshow.prototype.showButtons = function()
 };
     
 // Response given; go to next/previous slide slide
-Slideshow.prototype.response = function()
+jasmin.Slideshow.prototype.response = function()
 {
     var buttonPressed = eventManager.responseLabel;
     

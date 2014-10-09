@@ -64,7 +64,7 @@ setupDemo = function() {
 
 
     // Create a ResponseManager
-    responseManager = new ResponseManager( window );    
+    responseManager = new jasmin.ResponseManager( window );    
     
     // Start touchRespnose
     allTouchResponseStart();

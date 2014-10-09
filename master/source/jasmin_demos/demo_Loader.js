@@ -42,16 +42,16 @@ start = function()
 {
     report( demoName, "<span class='red'>Loading includes and data...</span>" );    
     
-    io = new RequestManager( fail, report, report );
-    loader = new Loader( io );
+    io = new jasmin.RequestManager( fail, report, report );
+    loader = new jasmin.Loader( io );
 
     // Specify all data you want to load here; special case for img, all else is passed to jQuery.ajax as dataType
     // Note that includes is an associative array
     var requests = {
-        "css1"       : [ "css", "demo_RequestManager_css.css"   ],
-        "j1"         : [ "js",  "demo_RequestManager_script.js" ],
-        "my_json"    : [ "json", "demo_RequestManager_json.json" ],
-        "my_picture" : [ "img",  "demo_RequestManager_img.jpg" ]
+        "css1"       : [ "css",    "demo_RequestManager_css.css"   ],
+        "j1"         : [ "script", "demo_RequestManager_script.js" ],
+        "my_json"    : [ "json",   "demo_RequestManager_json.json" ],
+        "my_picture" : [ "img",    "demo_RequestManager_img.jpg" ]
     };
 
     loader.load( requests, allLoaded, progressCallback );

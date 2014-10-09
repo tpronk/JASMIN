@@ -65,7 +65,7 @@ setupDemo = function() {
 
     // Create an EventManager. Attach window to allow the EventManager to respond 
     // to everything that happens in the window
-    eventManager = new EventManager( window );
+    eventManager = new jasmin.EventManager( window );
     
     // Start touchRespnose after syncing
     currentType  = "all";

@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
 
 /**
  * The Loader provides a short API for making a set of requests (to get js/css/json/text/img/etc.). 
@@ -19,7 +24,7 @@
  * @require RequestManager
  * @class
  */
-function Loader( requestManager ) {
+jasmin.Loader = function( requestManager ) {
     this.requestManager = requestManager;
 };
 
@@ -30,9 +35,9 @@ function Loader( requestManager ) {
  * @param {Function} progressCallback   (optional) callback for updating progress; this function receives one argument, being the progress made so far (ranging from 0 to 100)
  * @public
  */
-Loader.prototype.load = function( requests, allLoaded, progressCallback ) {
+jasmin.Loader.prototype.load = function( requests, allLoaded, progressCallback ) {
     this.allLoaded        = allLoaded;
-    this.progressCallback = progressCallback == undefined? function() {} : progressCallback;
+    this.progressCallback = progressCallback === undefined? function() {} : progressCallback;
     
     this.replies  = {};    // Results of data requests
     this.loadCounter = 0;  // Counting progress
@@ -51,40 +56,33 @@ Loader.prototype.load = function( requests, allLoaded, progressCallback ) {
     } );
 };
     
- Loader.prototype.doRequests = function( requests ) {
+ jasmin.Loader.prototype.doRequests = function( requests ) {
     var self = this;
     for( var key in requests ) {
         this.loadTotal++;        
         
         // This closure sets up the right request and binds its arguments to the callback function
-        var closure = function( key, fileType, url ) {
+        var closure = function( key, dataType, url ) {
             var requestType, request;
             
             // Determine what kind of request to make
-            switch( fileType ) {
-                case "js":
-                    requestType = RequestManager.TYPE_AJAX;
-                    request = {
-                        "url"      : url,
-                        "dataType" : "script"
-                    };
-                    break;
+            switch( dataType ) {
                 case "css":
-                    requestType = RequestManager.TYPE_AJAX;
+                    requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
                     request = {
                         "url"      : url,
                         "dataType" : "text"
                     };
                     break;
                 case "img":
-                    requestType = RequestManager.TYPE_IMG;
+                    requestType = jasmin.REQUEST_MANAGER_TYPE_IMG;
                     request = url;
                     break;
                 default:
-                    requestType = RequestManager.TYPE_AJAX;
+                    requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
                     request = {
                         "url"      : url,
-                        "dataType" : fileType
+                        "dataType" : dataType
                     };           
                     break;                 
             }            
@@ -95,7 +93,7 @@ Loader.prototype.load = function( requests, allLoaded, progressCallback ) {
                 request, 
                 function( reply ) {
                     // Special case for CSS; put in head
-                    if( fileType === "css" ) {
+                    if( dataType === "css" ) {
                         $( '<link rel="stylesheet" type="text/css" href="' + url + '" />' ).appendTo( "head" );
                     }
                     self.replies[ key ] = reply;
@@ -109,6 +107,6 @@ Loader.prototype.load = function( requests, allLoaded, progressCallback ) {
 };    
     
 // Calls progressCallback with progress (scored 0 to 100)
-Loader.prototype.progress = function() {
+jasmin.Loader.prototype.progress = function() {
     this.progressCallback( Math.round( 100 * this.loadCounter / this.loadTotal ) );
 };

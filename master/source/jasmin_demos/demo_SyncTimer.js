@@ -51,7 +51,7 @@ setupDemo = function() {
     );
 
     // Create a SyncTimer
-    syncTimer = new SyncTimer( report );    
+    syncTimer = new jasmin.SyncTimer( report );    
     
     // Sync it; calls startRed when done
     //report( demoName, "Syncing, then starting events that last " + eventDuration + " ms" );

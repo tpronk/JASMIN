@@ -1,3 +1,23 @@
+//Copyright 2014, Thomas Pronk
+//
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+//
+//http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License. 
+
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
+
 /**
  * ScalableCanvas scales a set of sprites on a vistual canvas to uniformly fit to a container DIV
  * @constructor
@@ -5,7 +25,7 @@
  * @param {float}      aspectRatio       Width to height ratio
  * @param {int}        rescaleInterval   Interval (in ms) between checking if canvas should be rescaled and rescaling
  */
-function ScalableCanvas( target, aspectRatio, rescaleInterval )
+jasmin.ScalableCanvas = function( target, aspectRatio, rescaleInterval )
 {
     // Globals
     this.target          = target;
@@ -20,7 +40,7 @@ function ScalableCanvas( target, aspectRatio, rescaleInterval )
 /**
  * Start scaling contents
  */
-ScalableCanvas.prototype.start = function()
+jasmin.ScalableCanvas.prototype.start = function()
 {
     var self = this;
     self.rescale( true );
@@ -30,7 +50,7 @@ ScalableCanvas.prototype.start = function()
 /**
  * Stop scaling contents
  */
-ScalableCanvas.prototype.stop = function()
+jasmin.ScalableCanvas.prototype.stop = function()
 {
     clearInterval( this.timer );
 };
@@ -41,7 +61,7 @@ ScalableCanvas.prototype.stop = function()
  * @param {jQuery}     node              jQuery node
  * @param {Object}     scalable          Associative array structured: {key: value}, containing CSS properties to scale
  */
-ScalableCanvas.prototype.addSprite = function( id, node, scalable )
+jasmin.ScalableCanvas.prototype.addSprite = function( id, node, scalable )
 {
     // Set positioning to absolute
     node.css( "position", "absolute" );
@@ -58,7 +78,7 @@ ScalableCanvas.prototype.addSprite = function( id, node, scalable )
  * Add a set of sprites to the canvas via addSprite
  * @param {Object}     sprites           Associative array structured { id: { "sprite": sprite, "scalable": scalable } },
  */
-ScalableCanvas.prototype.addSprites = function( sprites )
+jasmin.ScalableCanvas.prototype.addSprites = function( sprites )
 {
     // add sprites to canvas
     for( var i in sprites )
@@ -77,13 +97,13 @@ ScalableCanvas.prototype.addSprites = function( sprites )
  * @param {String}     id                index of sprite
  * @return associated sprite;
  */
-ScalableCanvas.prototype.getSprite = function( id )
+jasmin.ScalableCanvas.prototype.getSprite = function( id )
 {
     return( this.nodes[ id ] );
 };
 
 // Check rescale, and do if required (or force == true)
-ScalableCanvas.prototype.rescale = function( force )
+jasmin.ScalableCanvas.prototype.rescale = function( force )
 {
     // Current dimensions of (relatively scaled) div
 
@@ -132,7 +152,7 @@ ScalableCanvas.prototype.rescale = function( force )
 };
 
 // Rescale a sprite
-ScalableCanvas.prototype.rescaleSprite = function( i )
+jasmin.ScalableCanvas.prototype.rescaleSprite = function( i )
 {
     // Construct css
     var css = {}, offset, scaledValue;
