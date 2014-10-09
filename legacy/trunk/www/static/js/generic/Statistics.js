@@ -12,10 +12,10 @@ Statistics.mean = function( scores )
         count++;
     }
 
-    // If count <= 0, mean is zero
+    // If count === 0, mean is undefined
     if( count <= 0 )
     {
-        return 0;
+        return undefined;
     }
         
     

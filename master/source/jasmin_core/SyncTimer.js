@@ -85,27 +85,27 @@ function SyncTimer() {
 // Clears logging vars; not used anymore
 SyncTimer.prototype.clearLoggingVars = function() {
     /**
-     * Logging: when a timeout was requested 
+     * Logging var: when a timeout was requested 
      * @instance
      */
     this.timeRequested = undefined; 
     /**
-     * Logging: when graphics were drawn
+     * Logging var: when graphics were drawn
      * @instance
      */
     this.timeDrawn     = undefined; 
     /**
-     * Logging: when graphics were shown; here the timeout actually starts
+     * Logging var: when graphics were shown; here the timeout actually starts
      * @instance
      */
     this.timeShown     = undefined;
     /**
-     * Logging: when event was stopped
+     * Logging var: when event was stopped
      * @instance
      */
     this.timeStopped   = undefined; 
     /**
-     * Logging: whether timeout was canceled (true/false)
+     * Logging var: whether timeout was canceled (true/false)
      * @instance
      */
     this.canceled      = undefined; 
@@ -274,19 +274,26 @@ SyncTimer.prototype.round = function( number, precision ) {
  */
 SyncTimer.prototype.updateTimeoutLog = function() {
     this.timeoutLog = {
-        "name"          : this.name,
-        "timeRequested" : this.round( this.timeRequested, 1000 ),
-        "timeDrawn"     : this.round( this.timeDrawn, 1000 ),
-        "timeShown"     : this.round( this.timeShown, 1000 ),
-        "timeStopped"   : this.round( this.timeStopped, 1000 ),
-        "canceled"      : this.canceled,
-        "timeout"       : this.round( this.timeout, 1000 ),
-        "realized"      : this.round( this.realized, 1000 )
+        "na" : this.name,
+        "tr" : this.round( this.timeRequested, 1000 ),
+        "td" : this.round( this.timeDrawn, 1000 ),
+        "ts" : this.round( this.timeShown, 1000 ),
+        "tt" : this.round( this.timeStopped, 1000 ),
+        "ca" : this.canceled,
+        "ti" : this.round( this.timeout, 1000 ),
+        "re" : this.round( this.realized, 1000 )
     };
 };
     
 /**
  * Returns an associative array with all the variables logged of previous event
+ * @public
+ */
+/**
+ * Get PREVIOUS timeoutLog; a timeoutLog is ready after callbackDraw of the NEXT
+ * timeout is being called. See logging vars for an overview of values stored in 
+ * timeoutLog
+ * @returns (Object) Associative array with timeoutLog variables
  * @public
  */
 SyncTimer.prototype.getPrevTimeoutLog = function() {

@@ -101,7 +101,8 @@ EventManager.prototype.endEvent = function( endReason ) {
     
     // Calculate rt on response
     if( endReason === "response" ) {
-        this.rt = this.responseManager.time - this.syncTimer.timeShown;
+        this.rt            = this.responseManager.time - this.syncTimer.timeShown;
+        this.responseLabel = this.responseManager.label;
     }
     
     this.endReason = endReason;
@@ -132,15 +133,19 @@ EventManager.prototype.cancelEvent = function() {
  */
 EventManager.prototype.updateEventLog = function() {
     this.eventLog = {
-        "name"      : this.name,
-        "rt"        : this.rt,
-        "endReason" : this.endReason
+        "na" : this.name,
+        "rt" : this.rt,
+        "er" : this.endReason,
+        "rl" : this.responseLabel
     };
 };
 
 /**
- * Get previous responseLog
- * @private
+ * Get past eventLog; the eventLog is ready when callbackDone is being called.
+ * See logging vars for an overview of values stored in eventLog
+ * in eventLog
+ * @returns (Object) Associative array with eventLog variables
+ * @public
  */
 EventManager.prototype.getEventLog = function() {
     return( this.eventLog );
@@ -149,18 +154,24 @@ EventManager.prototype.getEventLog = function() {
 // Clear logging vars
 EventManager.prototype.clearLoggingVars = function() {
     /**
-     * Name of this event
+     * Logging var: Name of this event
      * @instance
      */
     this.name = undefined;
     /**
-     * Time between SyncTimer.timeShown and responseManager.time (if any response was given this event)
+     * Logging var: Time between syncTimer.timeShown and responseManager.time (if any response was given this event)
      * @instance
      */
     this.rt = undefined;
     /**
-     * Reason that this event stopped. "response" = because of a (critical) response, "timeout" because of timeout, "cancel" event was canceled via cancelEvent
+     * Logging var: Reason that this event stopped. "response" = because of a (critical) response, "timeout" because of timeout, "cancel" event was canceled via cancelEvent
      * @instance
      */
     this.endReason = undefined;    
+    
+    /**
+     * Logging var: If this event was ended by a response, the label of this response
+     * @instance
+     */
+    this.responseLabel = undefined;    
 };

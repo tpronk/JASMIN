@@ -79,7 +79,7 @@ function ResponseManager( window )
  * @public
  * @param {Object}    activeResponses   An associative array defining responses that stop the event (if any). See <a href="../source/jasmin_demos/demo_choose.html">these demos </a> for examples.
  * @param {Function}  callbackResponse  Callback called upon a response
- * @param {String}   name               Name of this activation for logging. Default = noname
+ * @param {String}    name               Name of this activation for logging. Default = noname
  */
 ResponseManager.prototype.activate = function(
     activeResponses,    
@@ -284,18 +284,20 @@ ResponseManager.prototype.deactivate = function() {
  */
 ResponseManager.prototype.updateResponseLog = function() {
     this.responseLog = {
-        "name"      : this.name,
-        "critical"  : this.critical,
-        "mode"      : this.mode,
-        "id"        : this.id,
-        "label"     : this.label,
-        "time"      : this.time
+        "na"     : this.name,
+        "cr"     : this.critical,
+        "mo"     : this.mode,
+        "id"     : this.id,
+        "la"     : this.label,
+        "ti"     : this.time
     };
 };
 
 /**
- * Get previous responseLog
- * @private
+ * Get past responseLog; a responseLog is ready when callbackResponse being called
+ * See logging vars for an overview of values stored in responseLog
+ * @returns (Object) Associative array with responseLog variables
+ * @public
  */
 ResponseManager.prototype.getResponseLog = function() {
     return( this.responseLog );
@@ -304,27 +306,27 @@ ResponseManager.prototype.getResponseLog = function() {
 // Clear logging vars
 ResponseManager.prototype.clearLoggingVars = function() {
     /**
-     * Logging: was response critical (true/false)
+     * Logging var: was response critical (true/false)
      * @instance
      */
     this.critical = undefined;
     /**
-     * Logging: what type of response (keydown, touchend, etc.)
+     * Logging var: what type of response (keydown, touchend, etc.)
      * @instance
      */
     this.mode = undefined;
     /**
-     * Logging: what was the id (keycode for keyboard, css selector for pointer)
+     * Logging var: what was the id (keycode for keyboard, css selector for pointer)
      * @instance
      */
     this.id = undefined;
     /**
-     * Logging: what was the corresponding label in buttons (if any)
+     * Logging var: what was the corresponding label in buttons (if any)
      * @instance
      */
     this.label = undefined;
     /**
-     * Logging: at what time was the response made?
+     * Logging var: at what time was the response made?
      * @instance
      */
     this.time = undefined;

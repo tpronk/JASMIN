@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Loader</title>
+    <title>JSDoc: Class: Slideshow</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Loader</h1>
+    <h1 class="page-title">Class: Slideshow</h1>
 
     
 
@@ -29,7 +29,7 @@
 <header>
     
         <h2>
-        Loader
+        Slideshow
         </h2>
         
     
@@ -41,7 +41,7 @@
         
 <dt>
     
-        <h4 class="name" id="Loader"><span class="type-signature"></span>new Loader<span class="signature">(requestManager)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="Slideshow"><span class="type-signature"></span>new Slideshow<span class="signature">(target, eventManager, activeResponses, buttonTexts, buttonDelay)</span><span class="type-signature"></span></h4>
 
         
     
@@ -50,7 +50,7 @@
 
     
     <div class="description">
-        The Loader provides a short API for making a set of requests (to get js/css/json/text/img/etc.).
+        Slideshow presents Slideshows
     </div>
     
 
@@ -84,13 +84,13 @@
 
         <tr>
             
-                <td class="name"><code>requestManager</code></td>
+                <td class="name"><code>target</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="RequestManager.html">RequestManager</a></span>
+<span class="param-type">HTMLElement</span>
 
 
             
@@ -100,7 +100,99 @@
 
             
 
-            <td class="description last">Uses this to Handle the requests</td>
+            <td class="description last">Where to put slide in</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>eventManager</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="EventManager.html">EventManager</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">EventManager to manage delayed button activation and slidehow responses</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>activeResponses</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Responses for going to next/previous slide, see for details EventManager.startEvent. Buttons labeled "next" will let the slideshow go to next slide, while buttons labeled "previous" go to the previous slide. Recommended to use "up" type events (keyup/vmouseup).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>buttonTexts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Associative array with texts instructing how to go to the next/previous slide, displayed two lines below slide content. Keys of buttonTexts can be "first", "last", or "middle" for first slide, last slide, and any other</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>buttonDelay</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">int</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">number of ms to wait until showing buttonTexts and registering responses, default value = 0 (immediately show buttons)</td>
         </tr>
 
     
@@ -138,7 +230,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Loader.js.html">Loader.js</a>, <a href="Loader.js.html#line22">line 22</a>
+        <a href="Slideshow.js.html">Slideshow.js</a>, <a href="Slideshow.js.html#line25">line 25</a>
     </li></ul></dd>
     
 
@@ -187,7 +279,7 @@
             
 <dt>
     
-        <h4 class="name" id="load"><span class="type-signature"></span>load<span class="signature">(requests, allLoaded, progressCallback)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="show"><span class="type-signature"></span>show<span class="signature">(slides, callbackDone)</span><span class="type-signature"></span></h4>
 
         
     
@@ -196,7 +288,7 @@
 
     
     <div class="description">
-        Perform a set of requests and call a callback with all replies once all replies have completed
+        Show a set of slides in target, then hides target again
     </div>
     
 
@@ -230,13 +322,13 @@
 
         <tr>
             
-                <td class="name"><code>requests</code></td>
+                <td class="name"><code>slides</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array</span>
+<span class="param-type">array</span>
 
 
             
@@ -246,14 +338,14 @@
 
             
 
-            <td class="description last">Associative array, in which the keys identify each request (for retrieving the replies later), while each value is an indexed array in which element 0 identifies the type of request element 1 contains the actual request. For type "img" the image downloader is used, "css" is downloaded via AJAX and put in the page head, any other type is passed on as dataType to a RequestManager AJAX request</td>
+            <td class="description last">Array of slides to show (containing plain or HTML)</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>allLoaded</code></td>
+                <td class="name"><code>callbackDone</code></td>
             
 
             <td class="type">
@@ -269,30 +361,7 @@
 
             
 
-            <td class="description last">called when all is loaded with the argument being the data downloaded (as an associative array)</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>progressCallback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">(optional) callback for updating progress; this function receives one argument, being the progress made so far (ranging from 0 to 100)</td>
+            <td class="description last">Function called when Slideshow is done</td>
         </tr>
 
     
@@ -330,7 +399,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Loader.js.html">Loader.js</a>, <a href="Loader.js.html#line33">line 33</a>
+        <a href="Slideshow.js.html">Slideshow.js</a>, <a href="Slideshow.js.html#line38">line 38</a>
     </li></ul></dd>
     
 
