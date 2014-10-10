@@ -22,7 +22,6 @@ var demoName   = "demo_ScalableCanvas.js";
 
 // Called on page load
 load = function() {
-    // Load ScalableCanvas JS file
     getScripts( [
             jasminPath + "jasmin_core/ScalableCanvas.js"
         ],
@@ -35,7 +34,7 @@ startCanvas = function()
     // Setup two sprites (background & text_box) to add to the canvas. 
     // Note that each sprite has two properties:
     //  * "node" contains the object and CSS properties that not need scaling
-    //  * "scalable" contains the object and CSS properties that do need scaling
+    //  * "scale" contains the object and CSS properties that do need scaling
     var sprites = {
         // A black background; rectangle size of canvas
         "background" :
@@ -47,8 +46,8 @@ startCanvas = function()
                     "background-color" : "#000000",
                     "opacity"          : 1
                 } ),
-            // "scalable" contains the object and CSS properties that do need scaling
-            "scalable" :
+            // "scale" contains the object and CSS properties that do need scaling
+            "scale" :
                 {
                     "width"  : "1.6",
                     "height" : "1",
@@ -78,8 +77,8 @@ startCanvas = function()
                             "display"          : "table-cell"
                         } ).text( "Submit" )
                 ),
-            // scalable; all properties you want to scale
-            "scalable" :            
+            // scale; all properties you want to scale
+            "scale" :            
                 {
                     "width"        :  .8,
                     "height"       :  .4,
@@ -98,8 +97,8 @@ startCanvas = function()
                     "padding"   : "0px",
                     "border"    : "0px",
                 } ),
-            // scalable; all properties you want to scale
-            "scalable" :            
+            // scale; all properties you want to scale
+            "scale" :            
                 {
                     "width"        :  .8,
                     "height"       :  .15,

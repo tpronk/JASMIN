@@ -152,7 +152,7 @@ Statistics.repetitions = function( array, repLength, index )
         }
         
         // Left and right are equal? Increase counter, else reset
-        if( left == right )
+        if( left === right )
         {
             repCounter++;
         } else {

@@ -22,7 +22,6 @@ var demoName   = "demo_EventManager.js";
 
 // Called on page load
 load = function() {
-    // Load EventManager JS file
     getScripts( 
         [
             jasminPath + "jasmin_ext/jquery.mobile.js",

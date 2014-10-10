@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: EventManager</title>
+    <title>JSDoc: Class: SyncTimer</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: EventManager</h1>
+    <h1 class="page-title">Class: SyncTimer</h1>
 
     
 
@@ -29,7 +29,7 @@
 <header>
     
         <h2>
-        EventManager
+        SyncTimer
         </h2>
         
     
@@ -41,7 +41,7 @@
         
 <dt>
     
-        <h4 class="name" id="EventManager"><span class="type-signature"></span>new EventManager<span class="signature">(window)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="SyncTimer"><span class="type-signature"></span>new SyncTimer<span class="signature">(report)</span><span class="type-signature"></span></h4>
 
         
     
@@ -50,7 +50,7 @@
 
     
     <div class="description">
-        EventManager creates a SyncTimer to time events and ResponseManager toregister responses in order to present events that can end on both a timeout and a response. Requires jQuery for keyboard and mouse handling (keydown,keyup, mousedown, mouseup). Requires jQuery mobile for touch handing (vmousedown, vmouseup, touchstart, touchend)
+        This timer synchronizes to requesAnimationFrame so that all callbacks areperformed right after a refresh took place. When setting a timeout it atempts to predict which refresh will take place nearest to the timeout.
     </div>
     
 
@@ -84,13 +84,13 @@
 
         <tr>
             
-                <td class="name"><code>window</code></td>
+                <td class="name"><code>report</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Window</span>
+<span class="param-type">function</span>
 
 
             
@@ -100,7 +100,7 @@
 
             
 
-            <td class="description last">Window to manage responses of</td>
+            <td class="description last">Reporting function for reporting timing info</td>
         </tr>
 
     
@@ -138,7 +138,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="EventManager.js.html">EventManager.js</a>, <a href="EventManager.js.html#line28">line 28</a>
+        <a href="SyncTimer.js.html">SyncTimer.js</a>, <a href="SyncTimer.js.html#line79">line 79</a>
     </li></ul></dd>
     
 
@@ -150,17 +150,6 @@
 </dl>
 
 
-    
-    <h5>Requires:</h5>
-    <ul>
-        <li>module:jQuery</li>
-    
-        <li>module:jQuery</li>
-    
-        <li>module:ResponseManager</li>
-    
-        <li>module:SyncTimer</li>
-    </ul>
     
 
     
@@ -181,18 +170,6 @@
 
     
 
-    
-        <h3 class="subsection-title">Requires</h3>
-
-        <ul>
-            <li>module:jQuery</li>
-        
-            <li>module:jQuery</li>
-        
-            <li>module:ResponseManager</li>
-        
-            <li>module:SyncTimer</li>
-        </ul>
     
 
     
@@ -207,14 +184,14 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="endReason"><span class="type-signature"></span>endReason<span class="type-signature"></span></h4>
+    <h4 class="name" id="canceled"><span class="type-signature"></span>canceled<span class="type-signature"></span></h4>
 
     
 </dt>
 <dd>
     
     <div class="description">
-        Logging var: Reason that this event stopped. "response" = because of a (critical) response, "timeout" because of timeout, "cancel" event was canceled via cancelEvent
+        Logging var: whether timeout was canceled (true/false)
     </div>
     
 
@@ -250,7 +227,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="EventManager.js.html">EventManager.js</a>, <a href="EventManager.js.html#line170">line 170</a>
+        <a href="SyncTimer.js.html">SyncTimer.js</a>, <a href="SyncTimer.js.html#line117">line 117</a>
     </li></ul></dd>
     
 
@@ -270,14 +247,14 @@
         
             
 <dt>
-    <h4 class="name" id="name"><span class="type-signature"></span>name<span class="type-signature"></span></h4>
+    <h4 class="name" id="timeDrawn"><span class="type-signature"></span>timeDrawn<span class="type-signature"></span></h4>
 
     
 </dt>
 <dd>
     
     <div class="description">
-        Logging var: Name of this event
+        Logging var: when graphics were drawn
     </div>
     
 
@@ -313,7 +290,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="EventManager.js.html">EventManager.js</a>, <a href="EventManager.js.html#line160">line 160</a>
+        <a href="SyncTimer.js.html">SyncTimer.js</a>, <a href="SyncTimer.js.html#line102">line 102</a>
     </li></ul></dd>
     
 
@@ -333,14 +310,14 @@
         
             
 <dt>
-    <h4 class="name" id="responseLabel"><span class="type-signature"></span>responseLabel<span class="type-signature"></span></h4>
+    <h4 class="name" id="timeRequested"><span class="type-signature"></span>timeRequested<span class="type-signature"></span></h4>
 
     
 </dt>
 <dd>
     
     <div class="description">
-        Logging var: If this event was ended by a response, the label of this response
+        Logging var: when a timeout was requested
     </div>
     
 
@@ -376,7 +353,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="EventManager.js.html">EventManager.js</a>, <a href="EventManager.js.html#line176">line 176</a>
+        <a href="SyncTimer.js.html">SyncTimer.js</a>, <a href="SyncTimer.js.html#line97">line 97</a>
     </li></ul></dd>
     
 
@@ -396,14 +373,14 @@
         
             
 <dt>
-    <h4 class="name" id="rt"><span class="type-signature"></span>rt<span class="type-signature"></span></h4>
+    <h4 class="name" id="timeShown"><span class="type-signature"></span>timeShown<span class="type-signature"></span></h4>
 
     
 </dt>
 <dd>
     
     <div class="description">
-        Logging var: Time between syncTimer.timeShown and responseManager.time (if any response was given this event)
+        Logging var: when graphics were shown; here the timeout actually starts
     </div>
     
 
@@ -439,7 +416,70 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="EventManager.js.html">EventManager.js</a>, <a href="EventManager.js.html#line165">line 165</a>
+        <a href="SyncTimer.js.html">SyncTimer.js</a>, <a href="SyncTimer.js.html#line107">line 107</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="timeStopped"><span class="type-signature"></span>timeStopped<span class="type-signature"></span></h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        Logging var: when event was stopped
+    </div>
+    
+
+    
+
+    
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="SyncTimer.js.html">SyncTimer.js</a>, <a href="SyncTimer.js.html#line112">line 112</a>
     </li></ul></dd>
     
 
@@ -466,7 +506,7 @@
             
 <dt>
     
-        <h4 class="name" id="cancelEvent"><span class="type-signature"></span>cancelEvent<span class="signature">()</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="cancelTimeout"><span class="type-signature"></span>cancelTimeout<span class="signature">()</span><span class="type-signature"></span></h4>
 
         
     
@@ -475,7 +515,7 @@
 
     
     <div class="description">
-        cancelEvent cancels event, responseManager is deactived and syncTimer timeoutis canceled; callbackDone is not called
+        Cancel a timeout; callbackDone is not called anymore
     </div>
     
 
@@ -515,7 +555,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="EventManager.js.html">EventManager.js</a>, <a href="EventManager.js.html#line124">line 124</a>
+        <a href="SyncTimer.js.html">SyncTimer.js</a>, <a href="SyncTimer.js.html#line262">line 262</a>
     </li></ul></dd>
     
 
@@ -546,7 +586,7 @@
             
 <dt>
     
-        <h4 class="name" id="getEventLog"><span class="type-signature"></span>getEventLog<span class="signature">()</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="getPrevTimeoutLog"><span class="type-signature"></span>getPrevTimeoutLog<span class="signature">()</span><span class="type-signature"></span></h4>
 
         
     
@@ -555,7 +595,7 @@
 
     
     <div class="description">
-        Get past eventLog; the eventLog is ready when callbackDone is being called.See logging vars for an overview of values stored in eventLogin eventLog
+        Get PREVIOUS timeoutLog; a timeoutLog is ready after callbackDraw of the NEXTtimeout is being called. See logging vars for an overview of values stored in timeoutLog
     </div>
     
 
@@ -595,7 +635,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="EventManager.js.html">EventManager.js</a>, <a href="EventManager.js.html#line150">line 150</a>
+        <a href="SyncTimer.js.html">SyncTimer.js</a>, <a href="SyncTimer.js.html#line305">line 305</a>
     </li></ul></dd>
     
 
@@ -622,7 +662,7 @@
     
             
 <div class="param-desc">
-    (Object) Associative array with eventLog variables
+    (Object) Associative array with timeoutLog variables
 </div>
 
 
@@ -636,7 +676,7 @@
             
 <dt>
     
-        <h4 class="name" id="startEvent"><span class="type-signature"></span>startEvent<span class="signature">(timeout, callbackDraw, callbackDone, activeResponses, name)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="setTimeout"><span class="type-signature"></span>setTimeout<span class="signature">(timeout, callbackDraw, callbackDone, name)</span><span class="type-signature"></span></h4>
 
         
     
@@ -645,7 +685,7 @@
 
     
     <div class="description">
-        Start an event that can end on a timeout or a response
+        Set a timeout; callback is called on next requestFrame that is as nearas possible to the timeout.
     </div>
     
 
@@ -748,29 +788,6 @@
 
         <tr>
             
-                <td class="name"><code>activeResponses</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">An associative array defining responses that stop the event (if any). See <a href="../source/jasmin_demos/demo_choose.html">these demos </a> for examples.</td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>name</code></td>
             
 
@@ -825,7 +842,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="EventManager.js.html">EventManager.js</a>, <a href="EventManager.js.html#line56">line 56</a>
+        <a href="SyncTimer.js.html">SyncTimer.js</a>, <a href="SyncTimer.js.html#line229">line 229</a>
     </li></ul></dd>
     
 
@@ -856,7 +873,7 @@
             
 <dt>
     
-        <h4 class="name" id="sync"><span class="type-signature"></span>sync<span class="signature">(callbackSynced)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="sync"><span class="type-signature"></span>sync<span class="signature">()</span><span class="type-signature"></span></h4>
 
         
     
@@ -865,7 +882,7 @@
 
     
     <div class="description">
-        Start synchronizing with clock; wrapper for SyncTimer.sync
+        Start synchronizing with clock; ready when two refreshes have taken place
     </div>
     
 
@@ -873,54 +890,6 @@
 
     
 
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>callbackSynced</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Called when synced</td>
-        </tr>
-
-    
-    </tbody>
-</table>
     
 
     
@@ -953,7 +922,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="EventManager.js.html">EventManager.js</a>, <a href="EventManager.js.html#line40">line 40</a>
+        <a href="SyncTimer.js.html">SyncTimer.js</a>, <a href="SyncTimer.js.html#line124">line 124</a>
     </li></ul></dd>
     
 
@@ -996,13 +965,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="EventManager.html">EventManager</a></li><li><a href="jasmin.TableLogger.html">TableLogger</a></li><li><a href="Loader.html">Loader</a></li><li><a href="RequestManager.html">RequestManager</a></li><li><a href="ResponseManager.html">ResponseManager</a></li><li><a href="ScalableCanvas.html">ScalableCanvas</a></li><li><a href="Slideshow.html">Slideshow</a></li><li><a href="SyncTimer.html">SyncTimer</a></li><li><a href="Translator.html">Translator</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="jasmin.EventManager.html">EventManager</a></li><li><a href="jasmin.Loader.html">Loader</a></li><li><a href="jasmin.RequestManager.html">RequestManager</a></li><li><a href="jasmin.ResponseManager.html">ResponseManager</a></li><li><a href="jasmin.ScalableCanvas.html">ScalableCanvas</a></li><li><a href="jasmin.Slideshow.html">Slideshow</a></li><li><a href="jasmin.Statistics.html">Statistics</a></li><li><a href="jasmin.SyncTimer.html">SyncTimer</a></li><li><a href="jasmin.TableLogger.html">TableLogger</a></li><li><a href="jasmin.Translator.html">Translator</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Thu Oct 09 2014 17:10:16 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Fri Oct 10 2014 01:14:45 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

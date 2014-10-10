@@ -24,7 +24,6 @@ var demoName   = "demo_Translator.js";
 
 // Called on page load
 load = function() {
-    // Load EventManager JS file
     getScripts( [
             jasminPath + "jasmin_core/Translator.js"
         ],

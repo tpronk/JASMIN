@@ -51,7 +51,7 @@ demoJSON = function() {
     io.request(
         jasmin.REQUEST_MANAGER_TYPE_AJAX,
         {
-            "url"      : "demo_RequestManager_json.json",
+            "url"      : "files/demo_RequestManager_json.json",
             "dataType" : "json"
         },
         demoJS
@@ -66,7 +66,7 @@ demoJS = function( reply )
     io.request(
         jasmin.REQUEST_MANAGER_TYPE_AJAX,
         {
-            "url"      : "demo_RequestManager_script.js",
+            "url"      : "files/demo_RequestManager_script.js",
             "dataType" : "script"
         },
         demoImg
@@ -80,7 +80,7 @@ demoImg = function( reply )
     
     io.request(
         jasmin.REQUEST_MANAGER_TYPE_IMG,
-        "demo_RequestManager_img.jpg",
+        "files/demo_RequestManager_img.jpg",
         demoCSS
     );    
 }
@@ -96,7 +96,7 @@ demoCSS = function( reply )
     io.request(
         jasmin.REQUEST_MANAGER_TYPE_AJAX,
         {
-            "url"      : "demo_RequestManager_css.css",
+            "url"      : "files/demo_RequestManager_css.css",
             "dataType" : "text"
         },
         demoDone
@@ -104,6 +104,6 @@ demoCSS = function( reply )
 };
 
 demoDone = function( reply ) {
-    $('<link rel="stylesheet" type="text/css" href="demo_RequestManager_css.css" />' ).appendTo( "head" );
+    $('<link rel="stylesheet" type="text/css" href="files/demo_RequestManager_css.css" />' ).appendTo( "head" );
     report( demoName, "<span class='red'>CSS loaded; this text should be red</span>" );
 };

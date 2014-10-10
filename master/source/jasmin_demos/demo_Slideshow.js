@@ -26,7 +26,6 @@ var demoName   = "demo_ResponseManager_pointer.js";
 
 // Called on page load
 load = function() {
-    // Load EventManager JS file
     getScripts( [
             jasminPath + "jasmin_ext/jquery.mobile.js",
             jasminPath + "jasmin_core/SyncTimer.js",

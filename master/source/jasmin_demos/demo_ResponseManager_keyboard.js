@@ -25,7 +25,6 @@ var demoName   = "demo_ResponseManager_keyboard.js";
 
 // Called on page load
 load = function() {
-    // Load ResponseManager JS file
     getScripts( 
         [
             jasminPath + "jasmin_core/ResponseManager.js"

@@ -1,32 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>JSDoc: Source: ScalableCanvas.js</title>
-
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-</head>
-
-<body>
-
-<div id="main">
-
-    <h1 class="page-title">Source: ScalableCanvas.js</h1>
-
-    
-
-
-
-    
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>//Copyright 2014, Thomas Pronk
+//Copyright 2014, Thomas Pronk
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -85,12 +57,13 @@ jasmin.ScalableCanvas.prototype.stop = function()
 
 /**
  * Add a sprite to the canvas
- * @param {String}     id                index of sprite
+ * @param {String}     key                key of sprite
  * @param {jQuery}     node              jQuery node
  * @param {Object}     scalable          Associative array structured: {key: value}, containing CSS properties to scale
  */
-jasmin.ScalableCanvas.prototype.addSprite = function( id, node, scalable )
+jasmin.ScalableCanvas.prototype.addSprite = function( key, node, scalable )
 {
+    //alert( JSON.stringify( node ) );    
     // Set positioning to absolute
     node.css( "position", "absolute" );
     
@@ -98,13 +71,13 @@ jasmin.ScalableCanvas.prototype.addSprite = function( id, node, scalable )
     this.target.append( node );
     
     // Setup vars
-    this.nodes[     id ] = node;
-    this.scalables[ id ] = scalable;
+    this.nodes[     key ] = node;
+    this.scalables[ key ] = scalable;
 };
 
 /**
  * Add a set of sprites to the canvas via addSprite
- * @param {Object}     sprites           Associative array structured { id: { "sprite": sprite, "scalable": scalable } },
+ * @param {Object}     sprites           Associative array structured { key: { "sprite": sprite, "scalable": scalable } },
  */
 jasmin.ScalableCanvas.prototype.addSprites = function( sprites )
 {
@@ -113,21 +86,22 @@ jasmin.ScalableCanvas.prototype.addSprites = function( sprites )
     {
         this.addSprite( 
             i,
-            sprites[ i ][ "node"     ],
-            sprites[ i ][ "scalable" ]
+            sprites[ i ][ "node"  ],
+            sprites[ i ][ "scale" ]
         );
     }    
 };
 
 
 /**
- * Get a sprite by id
- * @param {String}     id                index of sprite
- * @return associated sprite;
+ * Get a sprite by key
+ * @param {String} key key of sprite (same as was used when adding this sprite via addSprite earlier)
+ * @return {Ijbect} associated sprite;
+ * @public
  */
-jasmin.ScalableCanvas.prototype.getSprite = function( id )
+jasmin.ScalableCanvas.prototype.getSprite = function( key )
 {
-    return( this.nodes[ id ] );
+    return( this.nodes[ key ] );
 };
 
 // Check rescale, and do if required (or force == true)
@@ -148,7 +122,7 @@ jasmin.ScalableCanvas.prototype.rescale = function( force )
     //alert( vardump( [ targetWidth, targetHeight ] ) );
 
     // No force and no change in scale? No need to rescale    
-    if( force === undefined &amp;&amp; this.lastWidth === targetWidth &amp;&amp; this.lastHeight === targetHeight )
+    if( force === undefined && this.lastWidth === targetWidth && this.lastHeight === targetHeight )
     {
         return;
     } else {
@@ -213,26 +187,78 @@ jasmin.ScalableCanvas.prototype.rescaleSprite = function( i )
 
     // Apply
     this.nodes[i].css( css );
-};</code></pre>
-        </article>
-    </section>
+};
 
 
+// Convert indexed array to associative
+convertFileToTranslations = function( data )
+{
+    // Lines to array
+    data = data.split( "\n" );
+    
+    // Get relevant columns
+    var header = rowToArray( data[0] );
+    var indexTerm  = searchStringInArray( "term", header );
+    var indexTrans = searchStringInArray( "value",     header );
+    if( indexTerm  == - 1 ) { alert( "Error: No terms found; no column in translations has the name 'term'" ) }
+    if( indexTrans == - 1 ) { alert( "Error: No translations found; no column in translations has the name 'value'" ) }    
+    
+    var translation, output = {};
+    for( var i = 1; i < data.length; i++ )
+    {
+        translation = rowToArray( data[i] );
+        if( translation.length != 1 )
+        {
+            output[ translation[ indexTerm ] ] = translation[ indexTrans ];
+        }
+    }
+    return output;
+}
 
 
-</div>
+/**
+ * Convert spritesJSON to sprites; one sprite in spritesJSON format is an 
+ * associative array with the following keys:
+ * "key", key of the sprite (as used in canvas), "param", a String instead of 
+ * passed as argument to jQuery to constuct an HTMLElement, "attr" for attributes
+ * of the sprite, "css" for non-scaled CSS and "scale" for scaled CSS
+ * @param {Array} spritesJSON JSON to convert
+ * @return Sprites;
+ * @public
+ */
+jasmin.ScalableCanvas.prototype.spritesFromJSON = function( spritesJSON ) {
+    var sprites = {}, sprite, key;
+    for( var i = 0; i < spritesJSON.length; i++ ) {
+        // Create sprite
+        sprite = {};
+        sprite[ "node" ] = $( 
+            spritesJSON[ i ][ "type" ]
+        ).attr(
+            this.recodeArray( spritesJSON[ i ][ "attr" ],  "p", "v" )
+        ).css( 
+            this.recodeArray( spritesJSON[ i ][ "css" ],  "p", "v" )
+        );
+        sprite[ "scale" ] = this.recodeArray( spritesJSON[ i ][ "scale" ],  "p", "v" );
+        
+        //alert( JSON.stringify( sprite[ "node" ] ) );
+        
+        // Add to canvas at key
+        key = spritesJSON[ i ][ "key" ];
+        sprites[ key ] = sprite;
+    }
+    
+    return sprites;
+};
 
-<nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="jasmin.EventManager.html">EventManager</a></li><li><a href="jasmin.Loader.html">Loader</a></li><li><a href="jasmin.RequestManager.html">RequestManager</a></li><li><a href="jasmin.ResponseManager.html">ResponseManager</a></li><li><a href="jasmin.ScalableCanvas.html">ScalableCanvas</a></li><li><a href="jasmin.Slideshow.html">Slideshow</a></li><li><a href="jasmin.Statistics.html">Statistics</a></li><li><a href="jasmin.SyncTimer.html">SyncTimer</a></li><li><a href="jasmin.TableLogger.html">TableLogger</a></li><li><a href="jasmin.Translator.html">Translator</a></li></ul>
-</nav>
-
-<br clear="both">
-
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Fri Oct 10 2014 01:14:45 GMT+0200 (CEST)
-</footer>
-
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
-</body>
-</html>
+// Convert indexed array of porperty/value to associative array
+// private
+jasmin.ScalableCanvas.prototype.recodeArray = function( array, forKey, forValue) {
+    var result = {};
+    
+    for( var i = 0; i < array.length; i++ )
+    {
+        result[ array[ i ][ forKey ] ] = array[ i ][ forValue ];
+    }
+    
+    return result;
+};

@@ -27,7 +27,6 @@ var eventDuration = 333;
 
 // Called on page load
 load = function() {
-    // Load EventManager JS file
     getScripts( [
             jasminPath + "jasmin_core/SyncTimer.js"
         ],

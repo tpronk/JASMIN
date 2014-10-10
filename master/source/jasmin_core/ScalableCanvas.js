@@ -57,11 +57,11 @@ jasmin.ScalableCanvas.prototype.stop = function()
 
 /**
  * Add a sprite to the canvas
- * @param {String}     id                index of sprite
+ * @param {String}     key                key of sprite
  * @param {jQuery}     node              jQuery node
  * @param {Object}     scalable          Associative array structured: {key: value}, containing CSS properties to scale
  */
-jasmin.ScalableCanvas.prototype.addSprite = function( id, node, scalable )
+jasmin.ScalableCanvas.prototype.addSprite = function( key, node, scalable )
 {
     // Set positioning to absolute
     node.css( "position", "absolute" );
@@ -70,13 +70,13 @@ jasmin.ScalableCanvas.prototype.addSprite = function( id, node, scalable )
     this.target.append( node );
     
     // Setup vars
-    this.nodes[     id ] = node;
-    this.scalables[ id ] = scalable;
+    this.nodes[     key ] = node;
+    this.scalables[ key ] = scalable;
 };
 
 /**
  * Add a set of sprites to the canvas via addSprite
- * @param {Object}     sprites           Associative array structured { id: { "sprite": sprite, "scalable": scalable } },
+ * @param {Object}     sprites           Associative array structured { key: { "sprite": sprite, "scalable": scalable } },
  */
 jasmin.ScalableCanvas.prototype.addSprites = function( sprites )
 {
@@ -86,20 +86,21 @@ jasmin.ScalableCanvas.prototype.addSprites = function( sprites )
         this.addSprite( 
             i,
             sprites[ i ][ "node"     ],
-            sprites[ i ][ "scalable" ]
+            sprites[ i ][ "scale" ]
         );
     }    
 };
 
 
 /**
- * Get a sprite by id
- * @param {String}     id                index of sprite
- * @return associated sprite;
+ * Get a sprite by key
+ * @param {String} key key of sprite (same as was used when adding this sprite via addSprite earlier)
+ * @return {Ijbect} associated sprite;
+ * @public
  */
-jasmin.ScalableCanvas.prototype.getSprite = function( id )
+jasmin.ScalableCanvas.prototype.getSprite = function( key )
 {
-    return( this.nodes[ id ] );
+    return( this.nodes[ key ] );
 };
 
 // Check rescale, and do if required (or force == true)
@@ -185,4 +186,37 @@ jasmin.ScalableCanvas.prototype.rescaleSprite = function( i )
 
     // Apply
     this.nodes[i].css( css );
+};
+
+
+/**
+ * Convert spritesJSON to sprites; one sprite in spritesJSON format is an 
+ * associative array with the following keys:
+ * "key", key of the sprite (as used in canvas), "param", a String instead of 
+ * passed as argument to jQuery to constuct an HTMLElement, "attr" for attributes
+ * of the sprite, "css" for non-scaled CSS and "scale" for scaled CSS
+ * @param {Array} spritesJSON JSON to convert
+ * @return Sprites;
+ * @public
+ */
+jasmin.ScalableCanvas.prototype.spritesFromJSON = function( spritesJSON ) {
+    var sprites = {}, sprite, key;
+    for( var i = 0; i < spritesJSON.length; i++ ) {
+        // Create sprite
+        sprite = {};
+        sprite[ "node" ] = $( 
+            spritesJSON[ i ][ "type" ]
+        ).attr(
+            spritesJSON[ i ][ "attr" ]
+        ).css( 
+            spritesJSON[ i ][ "css" ]
+        );
+        sprite[ "scale" ] = spritesJSON[ i ][ "scale" ];
+        
+        // Add to canvas at key
+        key = spritesJSON[ i ][ "key" ];
+        sprites[ key ] = key;
+    }
+    
+    return sprites;
 };

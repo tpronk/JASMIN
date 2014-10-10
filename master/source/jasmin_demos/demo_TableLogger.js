@@ -23,7 +23,6 @@ var demoName   = "demo_TableLogger.js";
 
 // Called on page load
 load = function() {
-    // Load EventManager JS file
     getScripts( [
             jasminPath + "jasmin_core/TableLogger.js"
         ],

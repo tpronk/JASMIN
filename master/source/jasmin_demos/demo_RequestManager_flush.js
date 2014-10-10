@@ -47,7 +47,7 @@ start = function()
     io.request(
         jasmin.REQUEST_MANAGER_TYPE_AJAX,
         {
-            "url"      : "demo_RequestManager_json.json",
+            "url"      : "files/demo_RequestManager_json.json",
             "dataType" : "json"
         },
         function( reply ) {
@@ -58,7 +58,7 @@ start = function()
     io.request(
         jasmin.REQUEST_MANAGER_TYPE_AJAX,
         {
-            "url"      : "demo_RequestManager_script.js",
+            "url"      : "files/demo_RequestManager_script.js",
             "dataType" : "script"
         },
         function( reply ) {
