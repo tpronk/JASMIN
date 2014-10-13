@@ -1,3 +1,10 @@
+# What is JASMIN?
+JASMIN (Javascript As Sociopsychological Measurement INstrument) is a library of JavaScript modules for administering  response time tasks. JASMIN is aimed to be:
+* **Compatible** with major browsers, both on desktops/laptops and smartphones/tablets
+* **Online and Offline**, use it without an Internet connection or plug it on a website like Qualtrics and LOTUS
+* **Modular**, so you can use parts of it independently
+* **Extensible**, JavaScript is has many more support resources than any propriety experiment platform
+
 # JASMIN
 How this repository is structured:
 * **binaries** Such as pictures used in readme & apps
@@ -11,13 +18,6 @@ How this repository is structured:
     * **jasmin_core** The JASMIN library
     * **jasmin_demos** Demos showing features of each JASMIN module
     * **jasmin_ext** External library used in JASMIN (such as jQuery and Screenfull)
-
-# What is JASMIN?
-JASMIN (Javascript As Sociopsychological Measurement INstrument) is a library of JavaScript modules for administering questionnaires and response time tasks. JASMIN is aimed to be:
-* **Compatible** with major browsers, both on desktops/laptops and smartphones/tablets
-* **Online and Offline**, use it without an Internet connection or plug it on a website like Qualtrics and LOTUS
-* **Modular**, so you can use parts of it independently
-* **Extensible**, JavaScript is has many more support resources than any propriety experiment platform
 
 # Play
 * [Select a task](http://mindsurfer.eu/jasmin_demo2/demos/cbm/config.html): select a paradigm, topic, and language and then run the corresponding task out of more than 100 varieties (like an English Cannabis Approach Avoidance Task, an Italian Alcohol Stroop, a Lithuanian Brief Implicit Association Task). 
