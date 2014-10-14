@@ -63,6 +63,7 @@ jasmin.ScalableCanvas.prototype.stop = function()
  */
 jasmin.ScalableCanvas.prototype.addSprite = function( key, node, scalable )
 {
+    //alert( JSON.stringify( node ) );    
     // Set positioning to absolute
     node.css( "position", "absolute" );
     
@@ -85,7 +86,7 @@ jasmin.ScalableCanvas.prototype.addSprites = function( sprites )
     {
         this.addSprite( 
             i,
-            sprites[ i ][ "node"     ],
+            sprites[ i ][ "node"  ],
             sprites[ i ][ "scale" ]
         );
     }    
@@ -189,33 +190,89 @@ jasmin.ScalableCanvas.prototype.rescaleSprite = function( i )
 };
 
 
+// Convert indexed array to associative
+convertFileToTranslations = function( data )
+{
+    // Lines to array
+    data = data.split( "\n" );
+    
+    // Get relevant columns
+    var header = rowToArray( data[0] );
+    var indexTerm  = searchStringInArray( "term", header );
+    var indexTrans = searchStringInArray( "value",     header );
+    if( indexTerm  == - 1 ) { alert( "Error: No terms found; no column in translations has the name 'term'" ) }
+    if( indexTrans == - 1 ) { alert( "Error: No translations found; no column in translations has the name 'value'" ) }    
+    
+    var translation, output = {};
+    for( var i = 1; i < data.length; i++ )
+    {
+        translation = rowToArray( data[i] );
+        if( translation.length != 1 )
+        {
+            output[ translation[ indexTerm ] ] = translation[ indexTrans ];
+        }
+    }
+    return output;
+}
+
+/**
+ * Extend function based on Prototype: merge two (associative) arrays, named
+ * destination and source. For any keys existing both in destination and source
+ * the values of source is used.
+ * @param {Object} destination 
+ * @param {Object} source
+ * @private
+ */
+jasmin.ScalableCanvas.prototype.extend = function(destination, source) {
+    for (var property in source) {
+        if (source.hasOwnProperty(property)) {
+            destination[property] = source[property];
+        }
+    }
+    return destination;
+};
+
+
 /**
  * Convert spritesJSON to sprites; one sprite in spritesJSON format is an 
  * associative array with the following keys:
  * "key", key of the sprite (as used in canvas), "param", a String instead of 
  * passed as argument to jQuery to constuct an HTMLElement, "attr" for attributes
- * of the sprite, "css" for non-scaled CSS and "scale" for scaled CSS
- * @param {Array} spritesJSON JSON to convert
+ * of the sprite, "css" for non-scaled CSS and "scale" for scaled CSS,
+ * "children", set of HTMLElements to be appended to this one
+ * @param {Array}  spritesJSON JSON to convert
+ * @param {Sprite} include     used internally to append cildren and prevent them from being be included in sprites
  * @return Sprites;
  * @public
  */
-jasmin.ScalableCanvas.prototype.spritesFromJSON = function( spritesJSON ) {
-    var sprites = {}, sprite, key;
-    for( var i = 0; i < spritesJSON.length; i++ ) {
+jasmin.ScalableCanvas.prototype.spritesFromJSON = function( spritesJSON, parent ) {
+    var sprites = {}, sprite, key, childSprites;
+    for( var key in spritesJSON ) {
         // Create sprite
         sprite = {};
         sprite[ "node" ] = $( 
-            spritesJSON[ i ][ "type" ]
+            spritesJSON[ key ][ "type" ]
         ).attr(
-            spritesJSON[ i ][ "attr" ]
+            spritesJSON[ key ][ "attr" ]
         ).css( 
-            spritesJSON[ i ][ "css" ]
+            spritesJSON[ key ][ "css" ]
         );
-        sprite[ "scale" ] = spritesJSON[ i ][ "scale" ];
+        sprite[ "scale" ] = spritesJSON[ key ][ "scale" ];
+       
+        // Add any children
+        if( spritesJSON[ key ][ "children" ] !== undefined ) {
+            childSprites = this.spritesFromJSON( 
+                spritesJSON[ key ][ "children" ],
+                sprite
+            );
+        }
         
-        // Add to canvas at key
-        key = spritesJSON[ i ][ "key" ];
-        sprites[ key ] = key;
+        // If no parent; add to sprites. Else add to parent
+        if( parent === undefined ) {
+            sprites[ key ] = sprite;
+        } else {
+            parent[ "node" ].append( sprite[ "node" ] );
+        }
     }
     
     return sprites;

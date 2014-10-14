@@ -13,7 +13,7 @@
             "height"    : 1.0
         }
     }, 
-    "stim" : {
+    "stimulus" : {
         "type"  : "<div>",
         "attr"  : { 
             "id" : "stimulus_container" 
@@ -22,7 +22,7 @@
             "z-index"          : 2,
             "display"          : "table",
             "text-align"       : "center",
-            "background-color" : "#FF0000" 
+            "background-color" : "#555555" 
         },
         "scale" : { 
             "left"      : 0.35, 
@@ -132,35 +132,5 @@
                 "scale" : {}
             }
         }
-    },
-    "fix" : {
-        "type"  : "<div>",
-        "attr"  : { 
-            "id" : "fix" 
-        },
-        "css"   : { 
-            "z-index" : 6
-        },
-        "scale" : { 
-            "left"      : 0.7, 
-            "top"       : 0.4, 
-            "width"     : 0.2, 
-            "height"    : 0.2
-        }
-    },
-    "incorrect" : {
-        "type"  : "<div>",
-        "attr"  : { 
-            "id" : "wrong" 
-        },
-        "css"   : { 
-            "z-index" : 7
-        },
-        "scale" : { 
-            "left"      : 0.6, 
-            "top"       : 0.3, 
-            "width"     : 0.4, 
-            "height"    : 0.4
-        }
-    }    
+    }        
 }

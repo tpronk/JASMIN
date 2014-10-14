@@ -210,7 +210,7 @@ jasmin.ResponseManager.prototype.parseResponse = function( mode, event, id, labe
             // The id is keycode based on event.which
             id = event.which;
                 
-            // Is the response a valid buton?
+            // Is the response a valid buton? 
             if(
                    this.activeResponses[ mode ][ "buttons" ]                !== undefined 
                 && this.activeResponses[ mode ][ "buttons" ][ event.which ] !== undefined 

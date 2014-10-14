@@ -1,0 +1,29 @@
+{
+    "type": "object",
+    "properties": {
+        "type": {
+            "type"    : "string",
+            "description" : "Type of HTML Element (such as <div> or <p>"
+        },
+        "attr": {
+            "type": "object",
+            "properties": {},
+            "description" : "Attributes of HTML Element (such as id or href)"
+        },
+        "css": {
+            "type": "object",
+            "properties": {},
+            "description" : "CSS properties that are not scaled (such as color)"
+        },              
+        "scale": {
+            "type": "object",
+            "properties": {},
+            "description" : "CSS properties that are scaled (such as width)"
+        },
+        "children": {
+            "type": "object",
+            "properties": {},
+            "description" : "Sprites that are added as children to this Sprite"
+        }
+    }
+}

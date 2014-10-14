@@ -139,10 +139,10 @@ jasmin.EventManager.prototype.cancelEvent = function() {
  */
 jasmin.EventManager.prototype.updateEventLog = function() {
     this.eventLog = {
-        "na" : this.name,
-        "rt" : this.rt,
-        "er" : this.endReason,
-        "rl" : this.responseLabel
+        "name"          : this.name,
+        "rt"            : this.rt,
+        "endReason"     : this.endReason,
+        "responseLabel" : this.responseLabel
     };
 };
 

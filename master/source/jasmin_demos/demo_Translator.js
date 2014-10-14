@@ -60,19 +60,12 @@ translateStuff = function() {
     report( demoName, translator.translateTerm( "intro2" ) );
     
     // Add a callback 
-    report( 
-        demoName, 
-        translator.translateTerm( 
-            "score",
-            // translationCallbacks; every term is this array is translated as
-            // the function returned by the corresponding callback function 
-            {
-                "points" : function() {
-                    return "1000";
-                }
-            }
-        ) 
-    );
+    translator.setCallback( "points", function() {
+        return "1000";
+    } );
+    
+    // Now "#[points]" is replaced by "1000"
+    report( demoName, translator.translateTerm( "score" ) );
 
     // Set honorific to v-form -> v_hello is used (if available)
     translator.setHonorific( "v" );

@@ -51,7 +51,7 @@ jasmin.Slideshow.prototype.show = function(
 
     // Start at first slide
     this.slideCounter       = 0;
-    this.slideFurthest      = 0;
+    this.slideFurthest      = -1;
     this.showSlide();
 };
 
