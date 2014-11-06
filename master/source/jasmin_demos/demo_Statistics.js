@@ -103,5 +103,30 @@ runStatistics = function() {
     report( demoName, JSON.stringify( 
         jasmin.Statistics.fisherYates( nestedSequence ) 
     ) );
+    
+    
+    
+    //get a 100 random integers between 1 and 10 (a JGW addition)
+    randomIntegers = [];
+    
+    while (randomIntegers.length <101)
+    {
+        randomIntegers.push(jasmin.Statistics.randomInt(1,10));        
+    }
+    report( demoName, JSON.stringify(
+            randomIntegers 
+    ) );
+    
+    var x=1;
+    var counts = [0,0,0,0,0,0,0,0,0,0];
+    while (x<10000){
+        counts[jasmin.Statistics.randomInt(1,10)-1]++        
+        x++;
+    };
+    var y=1;
+    while (y<11){
+        report(demoName, y + ": " + counts[y-1]);
+        y++;
+    }
 
 };

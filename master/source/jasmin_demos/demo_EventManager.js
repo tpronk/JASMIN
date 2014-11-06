@@ -67,7 +67,7 @@ setupDemo = function() {
     eventManager = new jasmin.EventManager( window );
     
     // Start touchRespnose after syncing
-    currentType  = "all";
+    currentType  = "all";           //JGW? Where are these initialized?
     currentEvent = 1;
     currentColor = "yellow";
     eventManager.sync( function() {

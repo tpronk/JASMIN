@@ -107,8 +107,11 @@ startCanvas = function()
                     "font-size"    :  .08
                 }    
         }
+        
     };
-     
+    
+    
+    sprites.text_box.node.text("something else");
     // Construct canvas
     var canvas      = new jasmin.ScalableCanvas( 
         $( "#graphics_here" ),  // container div; note though that canvas scales to the window

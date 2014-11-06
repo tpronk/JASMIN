@@ -87,6 +87,25 @@ jasmin.Statistics.fisherYates = function( array ) {
 };
 
 /**
+ * Returns random int between min and max (inclusive)
+ * uniform distribution
+ * 
+ * @param {type} min minimum value
+ * @param {type} max maximum value
+ * @returns {int} resulting integer
+ * @author j.g.wijnen
+ */
+
+jasmin.Statistics.randomInt = function (min, max){
+    
+    var x = Math.random();
+    var diff = max- min + 1;
+    var r = min + x * diff;
+    return Math.floor(r);
+        
+};
+
+/**
  * Check on repeating elements in array. The elements of array may be primitive types
  * (String, int, float, bool), indexed arrays or associative arrays. However, array
  * needs to be able to be expressed in JSON.
