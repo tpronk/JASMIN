@@ -1,0 +1,32 @@
+<html>
+    <script>
+        function A() {
+            this.v = "A";
+        };
+        A.prototype.callMe = function()
+        {
+            alert( "A" );
+        }
+        var a = new A();
+        a.getV = function()
+        {
+            alert( b.getV() );
+        }
+        
+        function B() {
+            this.v = "B";
+        };
+        B.prototype.callMe = function()
+        {
+            alert( "B" );
+        }
+        B.prototype.getV = function()
+        {
+            alert( this.v );
+        }        
+        b = new B();
+        b.getV();
+        
+        
+    </script>
+</html>    

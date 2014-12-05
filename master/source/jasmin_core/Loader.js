@@ -27,7 +27,7 @@ function Loader( requestManager ) {
 /**
  * Load a set of includes and data
  * @param {Array}    includes           Indexed array of includes to load, each element of includes should be an indexed array with the first element specifying type of include "js" and "css", and the second element specifying the url/src
- * @param {Object}   data               Associative array of data to load, each element having the same structure as for includes. All values of type except "img" are passed as dataType to jQuery.ajax (via RequestManager)
+ * @param {Object}   data               Associative array of data to load, each element having the same structure as for includes. All type values are passed as dataType to jQuery.ajax (via RequestManager), except "css" (which is added to the head) and "img", for which the image-requested of the RequestManager is used
  * @param {Function} allLoaded          Callback called when all is loaded with the argument being the data downloaded (as an associative array)
  * @param {Function} progressCallback   (option) Callback for updating progress; this function receives one argument, being progress (ranging from 0 to 100)
  * @public
