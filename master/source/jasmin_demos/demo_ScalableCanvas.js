@@ -22,7 +22,6 @@ var demoName   = "demo_ScalableCanvas.js";
 
 // Called on page load
 load = function() {
-    // Load ScalableCanvas JS file
     getScripts( [
             jasminPath + "jasmin_core/ScalableCanvas.js"
         ],
@@ -35,7 +34,7 @@ startCanvas = function()
     // Setup two sprites (background & text_box) to add to the canvas. 
     // Note that each sprite has two properties:
     //  * "node" contains the object and CSS properties that not need scaling
-    //  * "scalable" contains the object and CSS properties that do need scaling
+    //  * "scale" contains the object and CSS properties that do need scaling
     var sprites = {
         // A black background; rectangle size of canvas
         "background" :
@@ -47,8 +46,8 @@ startCanvas = function()
                     "background-color" : "#000000",
                     "opacity"          : 1
                 } ),
-            // "scalable" contains the object and CSS properties that do need scaling
-            "scalable" :
+            // "scale" contains the object and CSS properties that do need scaling
+            "scale" :
                 {
                     "width"  : "1.6",
                     "height" : "1",
@@ -78,8 +77,8 @@ startCanvas = function()
                             "display"          : "table-cell"
                         } ).text( "Submit" )
                 ),
-            // scalable; all properties you want to scale
-            "scalable" :            
+            // scale; all properties you want to scale
+            "scale" :            
                 {
                     "width"        :  .8,
                     "height"       :  .4,
@@ -98,8 +97,8 @@ startCanvas = function()
                     "padding"   : "0px",
                     "border"    : "0px",
                 } ),
-            // scalable; all properties you want to scale
-            "scalable" :            
+            // scale; all properties you want to scale
+            "scale" :            
                 {
                     "width"        :  .8,
                     "height"       :  .15,
@@ -108,10 +107,13 @@ startCanvas = function()
                     "font-size"    :  .08
                 }    
         }
+        
     };
-     
+    
+    
+    sprites.text_box.node.text("something else");
     // Construct canvas
-    var canvas      = new ScalableCanvas( 
+    var canvas      = new jasmin.ScalableCanvas( 
         $( "#graphics_here" ),  // container div; note though that canvas scales to the window
         1.6                     // aspectRatio (x/y). A value of 1.6 gives this range of coordinates: x[0:1.6] and y[0:1]
         // rescaleInterval (number of ms between checking rescaling), 1000 by default

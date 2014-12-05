@@ -41,7 +41,7 @@ fail = function( message )
 start = function()
 {
     // Construct RequestManager but set it to inactive
-    io = new RequestManager( fail, report, report );
+    io = new jasmin.RequestManager( fail, report, report );
     demoJSON();
 }
 
@@ -49,9 +49,9 @@ demoJSON = function() {
     report( demoName, "Sending a JSON request to demo_demo_RequestManager_json.json" );
 
     io.request(
-        RequestManager.TYPE_AJAX,
+        jasmin.REQUEST_MANAGER_TYPE_AJAX,
         {
-            "url"      : "demo_RequestManager_json.json",
+            "url"      : "files/demo_RequestManager_json.json",
             "dataType" : "json"
         },
         demoJS
@@ -64,9 +64,9 @@ demoJS = function( reply )
     report( demoName, "Downloading JS from demo_RequestManager_script.js" );
     
     io.request(
-        RequestManager.TYPE_AJAX,
+        jasmin.REQUEST_MANAGER_TYPE_AJAX,
         {
-            "url"      : "demo_RequestManager_script.js",
+            "url"      : "files/demo_RequestManager_script.js",
             "dataType" : "script"
         },
         demoImg
@@ -79,8 +79,8 @@ demoImg = function( reply )
     report( demoName, "Downloading image from demo_RequestManager_img.jpg" );
     
     io.request(
-        RequestManager.TYPE_IMG,
-        "demo_RequestManager_img.jpg",
+        jasmin.REQUEST_MANAGER_TYPE_IMG,
+        "files/demo_RequestManager_img.jpg",
         demoCSS
     );    
 }
@@ -94,9 +94,9 @@ demoCSS = function( reply )
     
     report( demoName, "Downloading CSS from demo_RequestManager_css.css" );    
     io.request(
-        RequestManager.TYPE_AJAX,
+        jasmin.REQUEST_MANAGER_TYPE_AJAX,
         {
-            "url"      : "demo_RequestManager_css.css",
+            "url"      : "files/demo_RequestManager_css.css",
             "dataType" : "text"
         },
         demoDone
@@ -104,6 +104,6 @@ demoCSS = function( reply )
 };
 
 demoDone = function( reply ) {
-    $('<link rel="stylesheet" type="text/css" href="demo_RequestManager_css.css" />' ).appendTo( "head" );
+    $('<link rel="stylesheet" type="text/css" href="files/demo_RequestManager_css.css" />' ).appendTo( "head" );
     report( demoName, "<span class='red'>CSS loaded; this text should be red</span>" );
 };

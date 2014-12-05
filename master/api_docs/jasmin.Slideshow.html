@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Class: Slideshow</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Class: Slideshow</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        Slideshow
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+<dt>
+    
+        <h4 class="name" id="Slideshow"><span class="type-signature"></span>new Slideshow<span class="signature">(target, eventManager, activeResponses, buttonTexts, buttonDelay)</span><span class="type-signature"></span></h4>
+
+        
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Slideshow presents Slideshows
+    </div>
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Where to put slide in</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>eventManager</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">EventManager</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">EventManager to manage delayed button activation and slidehow responses</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>activeResponses</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Responses for going to next/previous slide, see for details EventManager.startEvent. Buttons labeled "next" will let the slideshow go to next slide, while buttons labeled "previous" go to the previous slide. Recommended to use "up" type events (keyup/vmouseup).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>buttonTexts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Associative array with texts instructing how to go to the next/previous slide, displayed two lines below slide content. Keys of buttonTexts can be "first", "last", or "middle" for first slide, last slide, and any other</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>buttonDelay</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">int</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">number of ms to wait until showing buttonTexts and registering responses, default value = 0 (immediately show buttons)</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Slideshow.js.html">Slideshow.js</a>, <a href="Slideshow.js.html#line31">line 31</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    
+        <h4 class="name" id="show"><span class="type-signature"></span>show<span class="signature">(slides, callbackDone)</span><span class="type-signature"></span></h4>
+
+        
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Show a set of slides in target, then hides target again
+    </div>
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>slides</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Array of slides to show (containing plain or HTML)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callbackDone</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Function called when Slideshow is done</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Slideshow.js.html">Slideshow.js</a>, <a href="Slideshow.js.html#line44">line 44</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="jasmin.EventManager.html">EventManager</a></li><li><a href="jasmin.Loader.html">Loader</a></li><li><a href="jasmin.RequestManager.html">RequestManager</a></li><li><a href="jasmin.ResponseManager.html">ResponseManager</a></li><li><a href="jasmin.ScalableCanvas.html">ScalableCanvas</a></li><li><a href="jasmin.Slideshow.html">Slideshow</a></li><li><a href="jasmin.Statistics.html">Statistics</a></li><li><a href="jasmin.SyncTimer.html">SyncTimer</a></li><li><a href="jasmin.TableLogger.html">TableLogger</a></li><li><a href="jasmin.Translator.html">Translator</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Fri Oct 10 2014 01:14:45 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

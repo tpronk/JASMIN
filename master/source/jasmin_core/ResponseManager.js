@@ -12,11 +12,17 @@
 //See the License for the specific language governing permissions and
 //limitations under the License. 
 
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
+
 /**
  * A list of possible pointer responses, both for touch and mouse 
  * @private
  */
-ResponseManager.prototype.pointerDeviceEvents = {
+jasmin.POINTER_EVENTS = {
     /** vmouse; triggered both by touch and mouse, requires jquery mobile */
     "vmouse" : {
         "down" : "vmousedown",
@@ -45,7 +51,7 @@ ResponseManager.prototype.pointerDeviceEvents = {
  * @constructor
  * @param {Window} window Window to manage responses of
  */
-function ResponseManager( window )
+jasmin.ResponseManager = function( window )
 {
     // Start inactive
     this.active = false;
@@ -62,13 +68,13 @@ function ResponseManager( window )
         self.response( "keyup", event );
     } );
     
-    // Make a list of the pointerDeviceEvents
+    // Make a list of the jasmin.POINTER_EVENTS
     this.pointerDeviceEventsList = [];
-    for( var i in this.pointerDeviceEvents )
+    for( var i in jasmin.POINTER_EVENTS )
     {
-        for( var j in this.pointerDeviceEvents[i] )
+        for( var j in jasmin.POINTER_EVENTS[i] )
         {
-            this.pointerDeviceEventsList.push( this.pointerDeviceEvents[i][j] );
+            this.pointerDeviceEventsList.push( jasmin.POINTER_EVENTS[i][j] );
         }
     }
 }
@@ -79,9 +85,9 @@ function ResponseManager( window )
  * @public
  * @param {Object}    activeResponses   An associative array defining responses that stop the event (if any). See <a href="../source/jasmin_demos/demo_choose.html">these demos </a> for examples.
  * @param {Function}  callbackResponse  Callback called upon a response
- * @param {String}   name               Name of this activation for logging. Default = noname
+ * @param {String}    name               Name of this activation for logging. Default = noname
  */
-ResponseManager.prototype.activate = function(
+jasmin.ResponseManager.prototype.activate = function(
     activeResponses,    
     callbackResponse,
     name
@@ -164,7 +170,7 @@ ResponseManager.prototype.activate = function(
  * @param {String}    pointerId    ID of pointer event (if any) 
  * @param {String}    pointerLabel    Label of pointer event (if any) 
  */
-ResponseManager.prototype.response = function( mode, event, pointerId, pointerLabel ) {
+jasmin.ResponseManager.prototype.response = function( mode, event, pointerId, pointerLabel ) {
     //report( "ResponseManager.response", JSON.stringify( [ mode, id ] ) );
     
     // Only register responses if active
@@ -187,7 +193,7 @@ ResponseManager.prototype.response = function( mode, event, pointerId, pointerLa
 
 
 // Check if this response is critical, and parse it on the way
-ResponseManager.prototype.parseResponse = function( mode, event, id, label ) {
+jasmin.ResponseManager.prototype.parseResponse = function( mode, event, id, label ) {
     // Log time of response
     var time = window.performance.now();
     
@@ -204,7 +210,7 @@ ResponseManager.prototype.parseResponse = function( mode, event, id, label ) {
             // The id is keycode based on event.which
             id = event.which;
                 
-            // Is the response a valid buton?
+            // Is the response a valid buton? 
             if(
                    this.activeResponses[ mode ][ "buttons" ]                !== undefined 
                 && this.activeResponses[ mode ][ "buttons" ][ event.which ] !== undefined 
@@ -248,7 +254,7 @@ ResponseManager.prototype.parseResponse = function( mode, event, id, label ) {
  * Deactivate; don't call responseCallback on any response anymore
  * @public
  */
-ResponseManager.prototype.deactivate = function() {
+jasmin.ResponseManager.prototype.deactivate = function() {
     // Stop event
     this.active = false;    
     
@@ -282,49 +288,51 @@ ResponseManager.prototype.deactivate = function() {
  * Store all logging vars in responseLog
  * @private
  */
-ResponseManager.prototype.updateResponseLog = function() {
+jasmin.ResponseManager.prototype.updateResponseLog = function() {
     this.responseLog = {
-        "name"      : this.name,
-        "critical"  : this.critical,
-        "mode"      : this.mode,
-        "id"        : this.id,
-        "label"     : this.label,
-        "time"      : this.time
+        "na"     : this.name,
+        "cr"     : this.critical,
+        "mo"     : this.mode,
+        "id"     : this.id,
+        "la"     : this.label,
+        "ti"     : this.time
     };
 };
 
 /**
- * Get previous responseLog
- * @private
+ * Get past responseLog; a responseLog is ready when callbackResponse being called
+ * See logging vars for an overview of values stored in responseLog
+ * @returns (Object) Associative array with responseLog variables
+ * @public
  */
-ResponseManager.prototype.getResponseLog = function() {
+jasmin.ResponseManager.prototype.getResponseLog = function() {
     return( this.responseLog );
 };
 
 // Clear logging vars
-ResponseManager.prototype.clearLoggingVars = function() {
+jasmin.ResponseManager.prototype.clearLoggingVars = function() {
     /**
-     * Logging: was response critical (true/false)
+     * Logging var: was response critical (true/false)
      * @instance
      */
     this.critical = undefined;
     /**
-     * Logging: what type of response (keydown, touchend, etc.)
+     * Logging var: what type of response (keydown, touchend, etc.)
      * @instance
      */
     this.mode = undefined;
     /**
-     * Logging: what was the id (keycode for keyboard, css selector for pointer)
+     * Logging var: what was the id (keycode for keyboard, css selector for pointer)
      * @instance
      */
     this.id = undefined;
     /**
-     * Logging: what was the corresponding label in buttons (if any)
+     * Logging var: what was the corresponding label in buttons (if any)
      * @instance
      */
     this.label = undefined;
     /**
-     * Logging: at what time was the response made?
+     * Logging var: at what time was the response made?
      * @instance
      */
     this.time = undefined;

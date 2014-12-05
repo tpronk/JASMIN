@@ -26,7 +26,6 @@ var demoName   = "demo_ResponseManager_pointer.js";
 
 // Called on page load
 load = function() {
-    // Load EventManager JS file
     getScripts( [
             jasminPath + "jasmin_ext/jquery.mobile.js",
             jasminPath + "jasmin_core/ResponseManager.js"
@@ -64,7 +63,7 @@ setupDemo = function() {
 
 
     // Create a ResponseManager
-    responseManager = new ResponseManager( window );    
+    responseManager = new jasmin.ResponseManager( window );    
     
     // Start touchRespnose
     allTouchResponseStart();

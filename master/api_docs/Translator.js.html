@@ -26,16 +26,36 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
+            <pre class="prettyprint source linenums"><code>//Copyright 2014, Thomas Pronk
+//
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+//
+//http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License. 
+
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
+
+/**
  * Translator translates texts via a term-rewrite system. Provides the option
  * to attach callbacks to terms and to set an honorific.
  * @constructor
  */
-function Translator()
+jasmin.Translator = function()
 {
     this.translations = {};
     this.honorific    = undefined;
-}
+};
 
 /**
  * Extend function based on Prototype: merge two (associative) arrays, named
@@ -47,7 +67,7 @@ function Translator()
  */
 // Extend function from Prototype, see:
 // 
-Translator.prototype.extend = function(destination, source) {
+jasmin.Translator.prototype.extend = function(destination, source) {
     for (var property in source) {
         if (source.hasOwnProperty(property)) {
             destination[property] = source[property];
@@ -65,17 +85,17 @@ Translator.prototype.extend = function(destination, source) {
  * @param {String} honorific Honorific to use (can be any String)
  * @public
  */
-Translator.prototype.setHonorific = function( honorific )
+jasmin.Translator.prototype.setHonorific = function( honorific )
 {
     this.honorific = honorific;
-}
+};
 
 /**
  * Add a set of translations
  * @param {Object}  translations Associative array of translations to add. Each key is a term, the values having keys: value for translation and status for status of translation
  * @public
  */
-Translator.prototype.addTranslations = function( translations )
+jasmin.Translator.prototype.addTranslations = function( translations )
 {
     // Add/overwrite existing translations with new (first arg true = deep copy)
     // TP 201-10-02, moved to native JavaScript function so that Translator does
@@ -84,16 +104,16 @@ Translator.prototype.addTranslations = function( translations )
     // $.extend( true, this.translations, translations );
     //this.substitute();
     //alert( vardump( this.translations ) );    
-}
+};
 
 /**
- * Translate a single term 
- * @param   {String}  haystack   Text containing 0 or more terms
+ * Translate a single term (not surrounded by #[])
+ * @param   {String}  term       Term to translate
  * @param   {Object}  callbacks  list of terms with callbacks; if a callback exists for a term, and it returns a value, then use that value instead of the translation
  * @param   {Boolean} pretty     For any terms we cannot find translations of: if true, return term surrounded with "!", if false return undefined (default = true)
  * @public
  */
-Translator.prototype.translateTerm = function( term, callbacks, pretty )
+jasmin.Translator.prototype.translateTerm = function( term, callbacks, pretty )
 {
     // Pretty true by default
     pretty = pretty === undefined? true: pretty;
@@ -102,7 +122,7 @@ Translator.prototype.translateTerm = function( term, callbacks, pretty )
     if( callbacks !== undefined &amp;&amp; callbacks[ term ] !== undefined )
     {
         // Callback found, use it to get translation
-        return this.substitute(
+        return this.translate(
             callbacks[ term ](),
             callbacks
         );
@@ -138,21 +158,23 @@ Translator.prototype.translateTerm = function( term, callbacks, pretty )
     else
     {
         // Tes, return substituted translation
-        return this.substitute( 
+        return this.translate( 
             translation,
             callbacks
         );
     }
-}
+};
 
 /**
- * Find terms in haystack, replace each by its translation, return haystack
+ * Translate a text that contains 0 or more terms: Find terms in haystack
+ * (as identified by #[this_is_a_term], replace each by its translation, 
+ * return haystack
  * @param   {String}  haystack   Text containing 0 or more terms
  * @param   {Object}  callbacks  list of terms with callbacks; if a callback exists for a term, and it returns a value, then use that value instead of the translation
  * @param   {Boolean} pretty     For any terms we cannot find translations of: if true, return term surrounded with "!", if false return undefined (default = true)
  * @public
  */
-Translator.prototype.translate = function( haystack, callbacks, pretty )
+jasmin.Translator.prototype.translate = function( haystack, callbacks, pretty )
 {
     // Pretty true by default
     pretty = pretty === undefined? true: pretty;
@@ -188,7 +210,7 @@ Translator.prototype.translate = function( haystack, callbacks, pretty )
     }
     
     return haystack;
-}</code></pre>
+};</code></pre>
         </article>
     </section>
 
@@ -198,13 +220,13 @@ Translator.prototype.translate = function( haystack, callbacks, pretty )
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="EventManager.html">EventManager</a></li><li><a href="Loader.html">Loader</a></li><li><a href="RequestManager.html">RequestManager</a></li><li><a href="ResponseManager.html">ResponseManager</a></li><li><a href="ScalableCanvas.html">ScalableCanvas</a></li><li><a href="SyncTimer.html">SyncTimer</a></li><li><a href="Translator.html">Translator</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="jasmin.EventManager.html">EventManager</a></li><li><a href="jasmin.Loader.html">Loader</a></li><li><a href="jasmin.RequestManager.html">RequestManager</a></li><li><a href="jasmin.ResponseManager.html">ResponseManager</a></li><li><a href="jasmin.ScalableCanvas.html">ScalableCanvas</a></li><li><a href="jasmin.Slideshow.html">Slideshow</a></li><li><a href="jasmin.Statistics.html">Statistics</a></li><li><a href="jasmin.SyncTimer.html">SyncTimer</a></li><li><a href="jasmin.TableLogger.html">TableLogger</a></li><li><a href="jasmin.Translator.html">Translator</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Tue Oct 07 2014 04:57:00 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Fri Oct 10 2014 01:14:45 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

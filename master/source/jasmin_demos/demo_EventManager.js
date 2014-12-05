@@ -22,7 +22,6 @@ var demoName   = "demo_EventManager.js";
 
 // Called on page load
 load = function() {
-    // Load EventManager JS file
     getScripts( 
         [
             jasminPath + "jasmin_ext/jquery.mobile.js",
@@ -65,10 +64,10 @@ setupDemo = function() {
 
     // Create an EventManager. Attach window to allow the EventManager to respond 
     // to everything that happens in the window
-    eventManager = new EventManager( window );
+    eventManager = new jasmin.EventManager( window );
     
     // Start touchRespnose after syncing
-    currentType  = "all";
+    currentType  = "all";           //JGW? Where are these initialized?
     currentEvent = 1;
     currentColor = "yellow";
     eventManager.sync( function() {

@@ -25,7 +25,6 @@ var demoName   = "demo_ResponseManager_keyboard.js";
 
 // Called on page load
 load = function() {
-    // Load ResponseManager JS file
     getScripts( 
         [
             jasminPath + "jasmin_core/ResponseManager.js"
@@ -38,7 +37,7 @@ load = function() {
 allKeysResponseStart = function() {
     // Create a ResponseManager. Attach window to allow the ResponseManager to detect
     // everything that happens in the window
-    responseManager = new ResponseManager( window );
+    responseManager = new jasmin.ResponseManager( window );
     
     report( demoName, "Starting an event that registers all keydown responses, E and I key are valid" );
    

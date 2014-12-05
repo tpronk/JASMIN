@@ -14,7 +14,7 @@
 // 
 // 
 // ****************
-// *** Translator
+// *** demo_Translator
 //
 // Demonstrates how the Translator translates terms, incorporates custom callbacks,
 // and supports honorifics (such as t-form and v-form)
@@ -24,7 +24,6 @@ var demoName   = "demo_Translator.js";
 
 // Called on page load
 load = function() {
-    // Load EventManager JS file
     getScripts( [
             jasminPath + "jasmin_core/Translator.js"
         ],
@@ -46,42 +45,38 @@ var translations = {
 // Run the actual demo's
 translateStuff = function() {
     // Construct new instance
-    translator = new Translator();
+    translator = new jasmin.Translator();
     
     // Loads translations into translator
     translator.addTranslations( translations );
         
     // Show a simple translation
     report( demoName, translator.translateTerm( "intro" ) );
+
+    // Note that the result is the same as
+    report( demoName, translator.translate( "#[intro]" ) );
     
     // Show that terms in translations are translated too
     report( demoName, translator.translateTerm( "intro2" ) );
     
     // Add a callback 
-    report( 
-        demoName, 
-        translator.translate( 
-            "score",
-            // translationCallbacks; every term is this array is translated as
-            // the function returned by the corresponding callback function 
-            {
-                "points" : function() {
-                    return "1000";
-                }
-            }
-        ) 
-    );
+    translator.setCallback( "points", function() {
+        return "1000";
+    } );
+    
+    // Now "#[points]" is replaced by "1000"
+    report( demoName, translator.translateTerm( "score" ) );
 
     // Set honorific to v-form -> v_hello is used (if available)
     translator.setHonorific( "v" );
-    report( demoName, translator.translate( "hello" ) );
+    report( demoName, translator.translateTerm( "hello" ) );
      
     // Set honorific to t-form -> t_hello is used (if available)
     translator.setHonorific( "t" );
-    report( demoName, translator.translate( "hello" ) );
+    report( demoName, translator.translateTerm( "hello" ) );
     
     // For nohonorific there is no t- or v-form available; just use nohonorific
     translator.setHonorific( "t" );
-    report( demoName, translator.translate( "nohonorific" ) );    
+    report( demoName, translator.translateTerm( "nohonorific" ) );    
           
 };

@@ -12,6 +12,11 @@
 //See the License for the specific language governing permissions and
 //limitations under the License. 
 
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
 
 /**
  * Features for making AJAX requests, loading CSS and loading images
@@ -29,7 +34,7 @@
  * @param {int}       active              Will always sending and retry requests (true) or only when flushing (false), default = true
  * @param {int}       checkInterval       Number of ms between checking if we should resend anything; default = 300
  */
-function RequestManager( 
+jasmin.RequestManager = function( 
    fail,   
    error,
    report,
@@ -73,18 +78,18 @@ function RequestManager(
  * Constant for AJAX type requests
  * @constant
  */
-RequestManager.TYPE_AJAX = 1;
+jasmin.REQUEST_MANAGER_TYPE_AJAX = 1;
 
 /**
  * Constant for img type requests
  * @constant
  */
-RequestManager.TYPE_IMG = 3;
+jasmin.REQUEST_MANAGER_TYPE_IMG = 2;
 
 
 /**
  * Make a single AJAX request
- * @param {const}    type         RequestManager.TYPE_AJAX (request is passed on to jQuery.ajax or RequestManager.TYPE_IMG (request is url of img)
+ * @param {const}    type         jasmin.REQUEST_MANAGER_TYPE_AJAX (request is passed on to jQuery.ajax or jasmin.REQUEST_MANAGER_TYPE_IMG (request is url of img)
  * @param {Object}   request      The request (what do say to which url)
  * @param {function} callback     Callback called on reply (with data replied by target url as argument)
  * @param {int}      timeout      Overrides default value set in constructor
@@ -92,7 +97,7 @@ RequestManager.TYPE_IMG = 3;
  * @return stateId of the request to be sent
  * @public
  */
-RequestManager.prototype.request = function( type, request, callback, timeout, retries )
+jasmin.RequestManager.prototype.request = function( type, request, callback, timeout, retries )
 {
     // Setup state
     var counter = this.stateCounter;
@@ -124,7 +129,7 @@ RequestManager.prototype.request = function( type, request, callback, timeout, r
  * Send all open states (that should be sent)
  * @private
  */
-RequestManager.prototype.sendOpenRequests = function() {            
+jasmin.RequestManager.prototype.sendOpenRequests = function() {            
     // Only continue if we are active or flushing and didn't fail 
     if( !( ( this.active || this.flushing ) && !this.failed ) ) {
       return;
@@ -142,10 +147,10 @@ RequestManager.prototype.sendOpenRequests = function() {
             transactionId = this.transactionCounter;
             switch( this.states[ stateId ][ "type" ] )
             {
-                case RequestManager.TYPE_AJAX:
+                case jasmin.REQUEST_MANAGER_TYPE_AJAX:
                     this.ajaxRequest( stateId, transactionId );
                     break;
-                case RequestManager.TYPE_IMG:
+                case jasmin.REQUEST_MANAGER_TYPE_IMG:
                     this.imgRequest( stateId, transactionId );
                     break;
             }
@@ -166,7 +171,7 @@ RequestManager.prototype.sendOpenRequests = function() {
  * @return stateIds to retry
  * @private
  */
-RequestManager.prototype.statesToSend = function()
+jasmin.RequestManager.prototype.statesToSend = function()
 {
     var time      = new Date().getTime();        // Get time
     var sendList  = new Array();       // Requests to retry
@@ -248,7 +253,7 @@ RequestManager.prototype.statesToSend = function()
  * @param transactionId
  * @private
  */
-RequestManager.prototype.ajaxRequest = function( stateId, transactionId )
+jasmin.RequestManager.prototype.ajaxRequest = function( stateId, transactionId )
 {
     // arguments to pass to jQuery.ajax
     var ajaxArgs = this.states[ stateId ][ "request" ];
@@ -280,7 +285,7 @@ RequestManager.prototype.ajaxRequest = function( stateId, transactionId )
 };
 
 // Downloading an img
-RequestManager.prototype.imgRequest = function( stateId, transactionId ) {
+jasmin.RequestManager.prototype.imgRequest = function( stateId, transactionId ) {
     var url = this.states[ stateId ][ "request" ];
 
     // Report ajax
@@ -313,7 +318,7 @@ RequestManager.prototype.imgRequest = function( stateId, transactionId ) {
  * @param reply
  * @private
  */
-RequestManager.prototype.success = function( stateId, reply ) {
+jasmin.RequestManager.prototype.success = function( stateId, reply ) {
     // Check if state still exists and is not handled, if so, handle it
     if( this.states[ stateId ] !== undefined && !this.states[ stateId ][ "handled" ] ) {
         // Request is now handled
@@ -342,7 +347,7 @@ RequestManager.prototype.success = function( stateId, reply ) {
  * Check if we should send open requests 
  * @private
  */
-RequestManager.prototype.check = function()
+jasmin.RequestManager.prototype.check = function()
 {
     // Keep sending open requests if we are active or flushing and haven't failed yet
     // NB - this expression is also tested at start of sendOpenRequests
@@ -363,7 +368,7 @@ RequestManager.prototype.check = function()
  * (open requests are retried even regardless of active)
  * @param {Function} flushCallback After flushing this callback is called
  */
-RequestManager.prototype.flush = function( flushCallback ) {
+jasmin.RequestManager.prototype.flush = function( flushCallback ) {
     this.flushing      = true;
 	this.flushCallback = flushCallback;
 	

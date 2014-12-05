@@ -27,7 +27,6 @@ var eventDuration = 333;
 
 // Called on page load
 load = function() {
-    // Load EventManager JS file
     getScripts( [
             jasminPath + "jasmin_core/SyncTimer.js"
         ],
@@ -51,7 +50,7 @@ setupDemo = function() {
     );
 
     // Create a SyncTimer
-    syncTimer = new SyncTimer( report );    
+    syncTimer = new jasmin.SyncTimer( report );    
     
     // Sync it; calls startRed when done
     //report( demoName, "Syncing, then starting events that last " + eventDuration + " ms" );

@@ -12,10 +12,10 @@ Statistics.mean = function( scores )
         count++;
     }
 
-    // If count <= 0, mean is zero
+    // If count === 0, mean is undefined
     if( count <= 0 )
     {
-        return 0;
+        return undefined;
     }
         
     
@@ -152,7 +152,7 @@ Statistics.repetitions = function( array, repLength, index )
         }
         
         // Left and right are equal? Increase counter, else reset
-        if( left == right )
+        if( left === right )
         {
             repCounter++;
         } else {

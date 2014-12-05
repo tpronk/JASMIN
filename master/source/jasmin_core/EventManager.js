@@ -12,6 +12,12 @@
 //See the License for the specific language governing permissions and
 //limitations under the License. 
 
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
+
 /**
  * EventManager creates a SyncTimer to time events and ResponseManager to
  * register responses in order to present events that can end on both a 
@@ -25,10 +31,10 @@
  * @constructor
  * @param {Window} window Window to manage responses of
  */
-function EventManager( window )
+jasmin.EventManager = function( window )
 {
-    this.responseManager = new ResponseManager( window );
-    this.syncTimer       = new SyncTimer();
+    this.responseManager = new jasmin.ResponseManager( window );
+    this.syncTimer       = new jasmin.SyncTimer();
     
     this.callbackDone = undefined;
 };
@@ -37,7 +43,7 @@ function EventManager( window )
  * Start synchronizing with clock; wrapper for SyncTimer.sync
  * @param {Function} callbackSynced Called when synced
  */
-EventManager.prototype.sync = function( callbackSynced )
+jasmin.EventManager.prototype.sync = function( callbackSynced )
 {
     this.syncTimer.sync( function() {
         callbackSynced();
@@ -53,7 +59,7 @@ EventManager.prototype.sync = function( callbackSynced )
  * @param {Object}   activeResponses  An associative array defining responses that stop the event (if any). See <a href="../source/jasmin_demos/demo_choose.html">these demos </a> for examples.
  * @param {String}   name             Name of this timeout for logging. Default = noname
  */
-EventManager.prototype.startEvent = function( timeout, callbackDraw, callbackDone, activeResponses, name ) {
+jasmin.EventManager.prototype.startEvent = function( timeout, callbackDraw, callbackDone, activeResponses, name ) {
     // Clear logging vars
     this.clearLoggingVars();
 
@@ -90,7 +96,7 @@ EventManager.prototype.startEvent = function( timeout, callbackDraw, callbackDon
  * @param (string) endReason Why the event ended: timeout, response, or cancel
  * @private
  */
-EventManager.prototype.endEvent = function( endReason ) {
+jasmin.EventManager.prototype.endEvent = function( endReason ) {
     // Don't register responses anumore
     this.responseManager.deactivate();
     
@@ -101,7 +107,8 @@ EventManager.prototype.endEvent = function( endReason ) {
     
     // Calculate rt on response
     if( endReason === "response" ) {
-        this.rt = this.responseManager.time - this.syncTimer.timeShown;
+        this.rt            = this.responseManager.time - this.syncTimer.timeShown;
+        this.responseLabel = this.responseManager.label;
     }
     
     this.endReason = endReason;
@@ -120,7 +127,7 @@ EventManager.prototype.endEvent = function( endReason ) {
  * is canceled; callbackDone is not called
  * @public
  */
-EventManager.prototype.cancelEvent = function() {
+jasmin.EventManager.prototype.cancelEvent = function() {
     this.endEvent( "cancel" );
 };
 
@@ -130,37 +137,47 @@ EventManager.prototype.cancelEvent = function() {
  * Store all logging vars in responseLog
  * @private
  */
-EventManager.prototype.updateEventLog = function() {
+jasmin.EventManager.prototype.updateEventLog = function() {
     this.eventLog = {
-        "name"      : this.name,
-        "rt"        : this.rt,
-        "endReason" : this.endReason
+        "name"          : this.name,
+        "rt"            : this.rt,
+        "endReason"     : this.endReason,
+        "responseLabel" : this.responseLabel
     };
 };
 
 /**
- * Get previous responseLog
- * @private
+ * Get past eventLog; the eventLog is ready when callbackDone is being called.
+ * See logging vars for an overview of values stored in eventLog
+ * in eventLog
+ * @returns (Object) Associative array with eventLog variables
+ * @public
  */
-EventManager.prototype.getEventLog = function() {
+jasmin.EventManager.prototype.getEventLog = function() {
     return( this.eventLog );
 };
 
 // Clear logging vars
-EventManager.prototype.clearLoggingVars = function() {
+jasmin.EventManager.prototype.clearLoggingVars = function() {
     /**
-     * Name of this event
+     * Logging var: Name of this event
      * @instance
      */
     this.name = undefined;
     /**
-     * Time between SyncTimer.timeShown and responseManager.time (if any response was given this event)
+     * Logging var: Time between syncTimer.timeShown and responseManager.time (if any response was given this event)
      * @instance
      */
     this.rt = undefined;
     /**
-     * Reason that this event stopped. "response" = because of a (critical) response, "timeout" because of timeout, "cancel" event was canceled via cancelEvent
+     * Logging var: Reason that this event stopped. "response" = because of a (critical) response, "timeout" because of timeout, "cancel" event was canceled via cancelEvent
      * @instance
      */
     this.endReason = undefined;    
+    
+    /**
+     * Logging var: If this event was ended by a response, the label of this response
+     * @instance
+     */
+    this.responseLabel = undefined;    
 };
