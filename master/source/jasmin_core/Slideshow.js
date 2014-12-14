@@ -101,8 +101,11 @@ jasmin.Slideshow.prototype.showButtons = function()
 
     // Add buttonTexts (if any)
     if( this.buttonTexts !== undefined ) {
+        console.log( this.slides.length );
         var buttonText;
-        if( this.slideCounter === this.slides.length - 1 ) {
+        if( this.slides.length === 1 ) {
+            buttonText = this.buttonTexts[ "only" ];
+        } else if( this.slideCounter === this.slides.length - 1 ) {
             buttonText = this.buttonTexts[ "last" ];
         } else if( this.slideCounter === 0 ) {
             buttonText = this.buttonTexts[ "first" ];

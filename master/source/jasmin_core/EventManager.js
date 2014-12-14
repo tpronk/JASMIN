@@ -18,6 +18,11 @@
  */
 if( jasmin === undefined ) { var jasmin = function() {}; }
 
+// Task Response types 
+jasmin.EVENT_ENDREASON_TIMEOUT  = 0; // Event ended because it timed out
+jasmin.EVENT_ENDREASON_RESPONSE = 1; // Event ended because a response was given
+jasmin.EVENT_ENDREASON_CANCEL   = 2; // Event ended because it was canceled (task stopped?)
+
 /**
  * EventManager creates a SyncTimer to time events and ResponseManager to
  * register responses in order to present events that can end on both a 
@@ -74,7 +79,7 @@ jasmin.EventManager.prototype.startEvent = function( timeout, callbackDraw, call
     this.responseManager.activate( 
         activeResponses,  
         function() {
-            self.endEvent( "response" );
+            self.endEvent( jasmin.EVENT_ENDREASON_RESPONSE );
         },
         this.name
     );
@@ -85,7 +90,7 @@ jasmin.EventManager.prototype.startEvent = function( timeout, callbackDraw, call
             self.callbackDraw();
         },
         function() {
-            self.endEvent( "timeout" );
+            self.endEvent( jasmin.EVENT_ENDREASON_TIMEOUT );
         },
         this.name 
     );
@@ -101,12 +106,12 @@ jasmin.EventManager.prototype.endEvent = function( endReason ) {
     this.responseManager.deactivate();
     
     // Cancel timeout if event not ended by timeout
-    if( endReason !== "timeout" ) {
+    if( endReason !== jasmin.EVENT_ENDREASON_TIMEOUT ) {
         this.syncTimer.cancelTimeout();
     }
     
     // Calculate rt on response
-    if( endReason === "response" ) {
+    if( endReason === jasmin.EVENT_ENDREASON_RESPONSE ) {
         this.rt            = this.responseManager.time - this.syncTimer.timeShown;
         this.responseLabel = this.responseManager.label;
     }
@@ -117,7 +122,7 @@ jasmin.EventManager.prototype.endEvent = function( endReason ) {
     this.updateEventLog();
     
     // If endReason for endEvent is not "cancel", call callbackDone
-    if( endReason !== "cancel" ) {
+    if( endReason !== jasmin.EVENT_ENDREASON_CANCEL ) {
         this.callbackDone();
     }
 };
@@ -128,7 +133,7 @@ jasmin.EventManager.prototype.endEvent = function( endReason ) {
  * @public
  */
 jasmin.EventManager.prototype.cancelEvent = function() {
-    this.endEvent( "cancel" );
+    this.endEvent( jasmin.EVENT_ENDREASON_CANCEL );
 };
 
 

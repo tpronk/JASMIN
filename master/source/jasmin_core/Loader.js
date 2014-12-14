@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. 
 
+/** 
+ * Init JASMIN namespace
+ * @private
+ */
+if( jasmin === undefined ) { var jasmin = function() {}; }
 
 /**
  * The Loader provides a short API for requesting a set of includes (js/css) 
@@ -20,7 +25,7 @@
   * @require RequestManager
  * @class
  */
-function Loader( requestManager ) {
+jasmin.Loader = function( requestManager ) {
     this.requestManager = requestManager;
 };
 
@@ -32,22 +37,13 @@ function Loader( requestManager ) {
  * @param {Function} progressCallback   (option) Callback for updating progress; this function receives one argument, being progress (ranging from 0 to 100)
  * @public
  */
-Loader.prototype.load = function( includes, data, allLoaded, progressCallback ) {
+jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
     this.allLoaded        = allLoaded;
     this.progressCallback = progressCallback == undefined? function() {} : progressCallback;
     
     this.replies  = {};    // Results of data requests
     this.loadCounter = 0;  // Counting progress
     this.loadTotal   = 0;  // Counting total
-
-    // Make requests for includes
-    this.makeRequests( 
-        includes, 
-        function() {}
-    );
-
-    // Report 0 progress
-    this.progress();
 
     // Make requests for data; put reply via callback in replies
     var self = this;
@@ -58,14 +54,16 @@ Loader.prototype.load = function( includes, data, allLoaded, progressCallback ) 
         }
     );
 
+    // Report 0 progress
+    this.progress();
+
     // Flush and call callback
     this.requestManager.flush( function() { 
         self.allLoaded( self.replies );
-        //alert( JSON.stringify( this.replies ));
     } );
 };
     
- Loader.prototype.makeRequests = function( requests, callback ) {
+ jasmin.Loader.prototype.makeRequests = function( requests, callback ) {
     var self = this;
     for( var key in requests ) {
         this.loadTotal++;        
@@ -77,25 +75,25 @@ Loader.prototype.load = function( includes, data, allLoaded, progressCallback ) 
                 
                 // Determine what kind of request to make
                 case "js":
-                    requestType = RequestManager.TYPE_AJAX;
+                    requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
                     request = {
                         "url"      : url,
                         "dataType" : "script"
                     };
                     break;
                 case "css":
-                    requestType = RequestManager.TYPE_AJAX;
+                    requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
                     request = {
                         "url"      : url,
                         "dataType" : "text"
                     };
                     break;
                 case "img":
-                    requestType = RequestManager.TYPE_IMG;
+                    requestType = jasmin.REQUEST_MANAGER_TYPE_IMG;
                     request = url;
                     break;
                 default:
-                    requestType = RequestManager.TYPE_AJAX;
+                    requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
                     request = {
                         "url"      : url,
                         "dataType" : fileType
@@ -123,7 +121,6 @@ Loader.prototype.load = function( includes, data, allLoaded, progressCallback ) 
 };    
     
 // Calls progressCallback with progress (scored 0 to 100)
-Loader.prototype.progress = function() {
+jasmin.Loader.prototype.progress = function() {
     this.progressCallback( Math.round( 100 * this.loadCounter / this.loadTotal ) );
-    //alert( "XXX");
 };

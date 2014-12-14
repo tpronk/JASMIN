@@ -19,6 +19,18 @@
 if( jasmin === undefined ) { var jasmin = function() {}; }
 
 /**
+ * Constant for AJAX type requests
+ * @constant
+ */
+jasmin.REQUEST_MANAGER_TYPE_AJAX = 1;
+
+/**
+ * Constant for img type requests
+ * @constant
+ */
+jasmin.REQUEST_MANAGER_TYPE_IMG = 2;
+
+/**
  * Features for making AJAX requests, loading CSS and loading images
  * is set up to actively send any outstanding requests. It can
  * be configured to (a) actively send outstanding requests or not; (b) immediately 
@@ -73,19 +85,6 @@ jasmin.RequestManager = function(
         this.check();
     }
 };
-
-/**
- * Constant for AJAX type requests
- * @constant
- */
-jasmin.REQUEST_MANAGER_TYPE_AJAX = 1;
-
-/**
- * Constant for img type requests
- * @constant
- */
-jasmin.REQUEST_MANAGER_TYPE_IMG = 2;
-
 
 /**
  * Make a single AJAX request
@@ -179,8 +178,6 @@ jasmin.RequestManager.prototype.statesToSend = function()
     // Check which states to add to sendList
     var timeout, retries;
     for( var i in this.states ) {
-      //alert( i )
-
       // Check for now and open
       switch( this.states[i][ "state" ] ) {
         // Now? immediately add to sendList
@@ -338,8 +335,9 @@ jasmin.RequestManager.prototype.success = function( stateId, reply ) {
     // If flushing; check if all requests are sent, then call flushCallback
     if( this.flushing && $.isEmptyObject( this.states ) ) {
         this.flushing = false;
-        this.flushCallback();
-        this.flushCallback = undefined;
+        if( this.flushCallback !== undefined ) {
+            this.flushCallback();
+        }
     }    
 };
 
@@ -378,7 +376,6 @@ jasmin.RequestManager.prototype.flush = function( flushCallback ) {
         {
            this.flushCallback();
         }
-        this.flushCallback = undefined;
     }
     
     this.check();
