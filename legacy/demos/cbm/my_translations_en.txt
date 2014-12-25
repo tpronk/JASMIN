@@ -1,4 +1,4 @@
-﻿translation_term_name	translation_value
+﻿term	value
 task_too_slow	You've waited too long before responding. Try to respond more quickly.
 task_invalid_key	You've pressed an invalid key.
 task_release_keys	You can let go of the keyboard keys now.

@@ -69,7 +69,7 @@ jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
         this.loadTotal++;        
         
         // This closure sets up the right request and binds its arguments to the callback function
-        var closure = function( key, fileType, url, callback ) {
+        var closure = function( key, fileType, url, data, callback ) {
             var requestType, request;
             switch( fileType ) {
                 
@@ -78,14 +78,16 @@ jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
                     requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
                     request = {
                         "url"      : url,
-                        "dataType" : "script"
+                        "dataType" : "script",
+                        "data"     : data
                     };
                     break;
                 case "css":
                     requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
                     request = {
                         "url"      : url,
-                        "dataType" : "text"
+                        "dataType" : "text",
+                        "data"     : data
                     };
                     break;
                 case "img":
@@ -96,7 +98,8 @@ jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
                     requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
                     request = {
                         "url"      : url,
-                        "dataType" : fileType
+                        "dataType" : fileType,
+                        "data"     : data
                     };           
                     break;                 
             }            
@@ -116,7 +119,7 @@ jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
                 }
             );            
         };
-        closure( key, requests[key][0], requests[key][1], callback );
+        closure( key, requests[key][0], requests[key][1], requests[key][2], callback );
     }
 };    
     

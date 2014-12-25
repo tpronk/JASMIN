@@ -5,6 +5,7 @@
 function Dialog( output, logger )
 {
     this.hiddenContainer = output;
+    
     this.logger = logger;
     
     // Setup dialog and mask

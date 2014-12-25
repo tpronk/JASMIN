@@ -35,7 +35,7 @@ jasmin.EventManager.prototype.startEvent = function(a, b, c, d, e) {
 jasmin.EventManager.prototype.endEvent = function(a) {
   this.responseManager.deactivate();
   a !== jasmin.EVENT_ENDREASON_TIMEOUT && this.syncTimer.cancelTimeout();
-  a === jasmin.EVENT_ENDREASON_RESPONSE && (this.rt = this.responseManager.time - this.syncTimer.timeShown, this.responseLabel = this.responseManager.label);
+  a === jasmin.EVENT_ENDREASON_RESPONSE && (this.rt = this.responseManager.time - this.syncTimer.timeShown, this.responseLabel = this.responseManager.label, this.responseId = this.responseManager.id);
   this.endReason = a;
   this.updateEventLog();
   a !== jasmin.EVENT_ENDREASON_CANCEL && this.callbackDone();
@@ -44,7 +44,7 @@ jasmin.EventManager.prototype.cancelEvent = function() {
   this.endEvent(jasmin.EVENT_ENDREASON_CANCEL);
 };
 jasmin.EventManager.prototype.updateEventLog = function() {
-  this.eventLog = {name:this.name, rt:this.rt, endReason:this.endReason, responseLabel:this.responseLabel};
+  this.eventLog = {name:this.name, rt:this.rt, endReason:this.endReason, responseLabel:this.responseLabel, id:this.responseId};
 };
 jasmin.EventManager.prototype.getEventLog = function() {
   return this.eventLog;
@@ -445,7 +445,7 @@ jasmin.Slideshow.prototype.showSlide = function() {
 };
 jasmin.Slideshow.prototype.showButtons = function() {
   var a = this.slides[this.slideCounter];
-  void 0 !== this.buttonTexts && (console.log(this.slides.length), a += "<br /><br />" + (1 === this.slides.length ? this.buttonTexts.only : this.slideCounter === this.slides.length - 1 ? this.buttonTexts.last : 0 === this.slideCounter ? this.buttonTexts.first : this.buttonTexts.middle));
+  void 0 !== this.buttonTexts && (a += "<br /><br />" + (1 === this.slides.length ? this.buttonTexts.only : this.slideCounter === this.slides.length - 1 ? this.buttonTexts.last : 0 === this.slideCounter ? this.buttonTexts.first : this.buttonTexts.middle));
   var b = this;
   this.eventManager.startEvent(-1, function() {
     b.target.html(a);
@@ -676,7 +676,8 @@ jasmin.Translator.prototype.translate = function(a, b) {
   }
   return a;
 };
-void 0 === window.performance && (window.performance = {}, window.performance.now = function() {
+void 0 === window.performance && (window.performance = {});
+void 0 === window.performance.now && (window.performance.now = function() {
   return(new Date).getTime();
 });
 

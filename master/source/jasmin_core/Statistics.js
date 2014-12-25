@@ -165,3 +165,66 @@ jasmin.Statistics.repetitions = function( array, repLength, index ) {
     return false;
 };
 
+/**
+ * Calculates mean of an indexed array of scores
+ * @param {Array} scores Scores to calculate mean of
+ * @returns mean
+ */
+jasmin.Statistics.mean = function( scores )
+{
+    var sum = 0, count = 0;
+    for( i in scores )
+    {
+        sum += parseInt( scores[i] );
+        count++;
+    }
+
+    // If count === 0, mean is undefined
+    if( count <= 0 )
+    {
+        return undefined;
+    }
+        
+    
+    return sum / count;
+}
+
+/*
+ * Variance
+
+ * */
+
+/**
+ * Calculates variance of an indexed array of scores
+ * @param {Array} scores Scores to calculate variance of
+ * @returns variance
+ */
+
+jasmin.Statistics.variance = function( scores )
+{
+    var mean         = jasmin.Statistics.mean( scores );
+    var sumOfSquares = 0, count = 0;
+    for( i in scores )
+    {
+        sumOfSquares += Math.pow( parseInt( scores[i] ) - mean, 2 );
+        count++;
+    }
+    
+    // If count <= 1, variance is zero
+    if( count <= 1 )
+    {
+        return 0;
+    }
+    
+    return sumOfSquares / ( count - 1 );
+}
+
+/**
+ * Calculates standard deviation of an indexed array of scores
+ * @param {Array} scores Scores to calculate standard deviation of
+ * @returns standard deviation
+ */
+jasmin.Statistics.sd = function( scores )
+{
+    return Math.sqrt( jasmin.Statistics.variance( scores ) );
+}

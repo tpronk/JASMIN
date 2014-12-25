@@ -21,19 +21,29 @@ if( jasmin === undefined ) { var jasmin = function() {}; }
 /**
  * Slideshow presents Slideshows 
  * @constructor
- * @param {HTMLElement}  target               Where to put slide in
+ * @param {HTMLElement}  target           Where to put slide in
  * @param {EventManager} eventManager     EventManager to manage delayed button activation and slidehow responses 
  * @param {Object}       activeResponses  Responses for going to next/previous slide, see for details EventManager.startEvent. Buttons labeled "next" will let the slideshow go to next slide, while buttons labeled "previous" go to the previous slide. Recommended to use "up" type events (keyup/vmouseup).
  * @param {Object}       buttonTexts      Associative array with texts instructing how to go to the next/previous slide, displayed two lines below slide content. Keys of buttonTexts can be "first", "last", or "middle" for first slide, last slide, and any other
  * @param {int}          buttonDelay      number of ms to wait until showing buttonTexts and registering responses, default value = 0 (immediately show buttons)
- * 
+ * @param {Translator}   translator       If defined, used to translate slide content
  */
-jasmin.Slideshow = function( target, eventManager, activeResponses, buttonTexts, buttonDelay ) {
+jasmin.Slideshow = function( target, eventManager, activeResponses, buttonTexts, buttonDelay, translator ) {
     this.eventManager    = eventManager;
+    this.translator      = translator;
     this.target          = target;
     this.activeResponses = activeResponses;
     this.buttonTexts     = buttonTexts;
     this.buttonDelay     = buttonDelay === undefined? 0 : buttonDelay;
+    // Create dummy translator if none is defined
+    if( translator === undefined ) {
+        this.translator = {};
+        this.translator.translate = function( term ) {
+            return term;
+        };
+    } else {
+        this.translator = translator;
+    }
 };
 
 /**
@@ -76,7 +86,7 @@ jasmin.Slideshow.prototype.showSlide = function() {
         this.slideFurthest = this.slideCounter;
         
         // Only slide now, buttons later
-        var slideContent = this.slides[ this.slideCounter ];
+        var slideContent = this.translator.translate( this.slides[ this.slideCounter ] );
         
         // wait for buttonDelay until showing buttons
         var self = this;
@@ -101,7 +111,6 @@ jasmin.Slideshow.prototype.showButtons = function()
 
     // Add buttonTexts (if any)
     if( this.buttonTexts !== undefined ) {
-        console.log( this.slides.length );
         var buttonText;
         if( this.slides.length === 1 ) {
             buttonText = this.buttonTexts[ "only" ];
@@ -112,7 +121,7 @@ jasmin.Slideshow.prototype.showButtons = function()
         } else {
             buttonText = this.buttonTexts[ "middle" ];
         }
-        slideContent += "<br /><br />" + buttonText;
+        slideContent += "<br /><br />" + this.translator.translate( buttonText );
     }
 
     // Wait for response to continue

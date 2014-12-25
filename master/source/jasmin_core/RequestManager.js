@@ -96,8 +96,7 @@ jasmin.RequestManager = function(
  * @return stateId of the request to be sent
  * @public
  */
-jasmin.RequestManager.prototype.request = function( type, request, callback, timeout, retries )
-{
+jasmin.RequestManager.prototype.request = function( type, request, callback, timeout, retries ) {
     // Setup state
     var counter = this.stateCounter;
     this.states[ counter ] = {

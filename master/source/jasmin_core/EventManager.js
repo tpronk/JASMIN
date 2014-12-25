@@ -114,6 +114,7 @@ jasmin.EventManager.prototype.endEvent = function( endReason ) {
     if( endReason === jasmin.EVENT_ENDREASON_RESPONSE ) {
         this.rt            = this.responseManager.time - this.syncTimer.timeShown;
         this.responseLabel = this.responseManager.label;
+        this.responseId    = this.responseManager.id;
     }
     
     this.endReason = endReason;
@@ -147,7 +148,8 @@ jasmin.EventManager.prototype.updateEventLog = function() {
         "name"          : this.name,
         "rt"            : this.rt,
         "endReason"     : this.endReason,
-        "responseLabel" : this.responseLabel
+        "responseLabel" : this.responseLabel,
+        "id"            : this.responseId
     };
 };
 

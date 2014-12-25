@@ -84,14 +84,15 @@ dummyReplies = {
         
         // Stroop Parts
         "stroop_parts" : [ 
-            {   // assessment part
-                "type"    : "practice1",               // Type of these blocks (logged)      
-                "labels"  : "color",                   // Color of onscreen labels (color, white, or none)
+            // practice part with colored labels
+            {   
+                "type"    : "practice1",               // Type of part (logged with trials)
+                "labels"  : "color",                   // Type of onscreen labels (color, white, or hide)
                 "stimuli" : {                          // Stimuli used this part
-					// 1x blue, 1x green, 1x yellow, 2x red 
-                    "stroop_word_neutral1" : [ 1, 1, 1, 2 ]
+                    // Each stimulus is a term in my_translations
+                    "stroop_word_neutral1" : [ 2, 2, 2, 2 ] // 0x blue, 0x green, 0x yellow, 2x red 
 				},              
-                "blocks"  : [                          // One block, three intro slides
+                "blocks"  : [                          // One block, four intro slides
                     [
                         "#[stroop_task_intro_slide_intro]",
                         "#[stroop_task_intro_slide_keys]",
@@ -99,8 +100,47 @@ dummyReplies = {
                         "#[stroop_task_intro_slide_2]"
                     ]                
                 ]
-            }
-        ],        
+            },
+            // practice part with white labels
+            {   // assessment part
+                "type"    : "practice2",               // Type of these blocks (logged)      
+                "labels"  : "white",                   // Color of onscreen labels (color, white, or hide)
+                "stimuli" : {                          // Stimuli used this part
+                    "stroop_word_blue"  : [ 1, 0, 0, 0 ], // 1x blue, 0x green, 0x yellow, 0x red 
+                    "word_mammal_1"     : [ 0, 1, 0, 0 ]
+				},              
+                "blocks"  : [                          // One block, two intro slides
+                    [
+                        "#[stroop_task_intro_slide_1_2]",
+                        "#[stroop_task_intro_slide_2]"
+                    ]                
+                ]
+            },
+            // critical part without labels
+            {   // assessment part
+                "type"    : "critical",                // Type of these blocks (logged)      
+                "labels"  : "hide",                    // Color of onscreen labels (color, white, or hide)
+                "stimuli" : {                          // Stimuli used this part
+                    "stroop_word_blue"   : [ 3, 1, 1, 1 ], 
+                    "stroop_word_green"  : [ 1, 3, 1, 1 ],
+                    "stroop_word_yellow" : [ 1, 1, 3, 1 ], 
+                    "stroop_word_red"    : [ 1, 1, 1, 3 ]
+
+				},              
+                "blocks"  : [                          // The 24 trials of this part are distributed over  two blocks of 12 trials
+                    // First bock: two slides
+                    [
+                        "#[stroop_task_intro_slide_1_3]",
+                        "#[stroop_task_intro_slide_2]"
+                    ],
+                    // Second bock: one slide
+                    [
+                        "#[stroop_task_intro_slide_1_4]"
+                    ]                
+                ]
+            }            
+        ],
+        
         "biat_config" : {
             "target1"      : {   
                 "category" : "alcohol",
