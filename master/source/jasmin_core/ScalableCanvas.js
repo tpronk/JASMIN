@@ -108,19 +108,14 @@ jasmin.ScalableCanvas.prototype.getSprite = function( key )
 jasmin.ScalableCanvas.prototype.rescale = function( force )
 {
     // Current dimensions of (relatively scaled) div
-
-    var targetWidth  = window.innerWidth;
-    var targetHeight = window.innerHeight;
-
-    //var targetWidth  = $( window ).width();
-    //var targetHeight = $( window ).height();
-    
-    /*
-    var targetWidth  = this.target.width();
-    var targetHeight = this.target.height();
-    */
-    //alert( vardump( [ targetWidth, targetHeight ] ) );
-
+    if( this.target === document.body ) {
+        var targetWidth  = window.innerWidth;
+        var targetHeight = window.innerHeight;
+    } else {
+        var targetWidth  = this.target.width();
+        var targetHeight = this.target.height();
+    }
+        
     // No force and no change in scale? No need to rescale    
     if( force === undefined && this.lastWidth === targetWidth && this.lastHeight === targetHeight )
     {
