@@ -232,8 +232,15 @@ jasmin.ResponseManager.prototype.parseResponse = function( mode, event, id, labe
             }
         }
         
-        // On a mouse response, assume critical
+        // Clear x and y coordinates
+        this.x = undefined;
+        this.y = undefined;
+        
+        // On a mouse response, log coordinates and assume critical
         if( this.pointerDeviceEventsList.indexOf( mode ) !== -1 )  {
+            this.x = event.pageX;
+            this.y = event.pageY;
+            
             // No need to setup label and id, but let's check if they are the same
             critical = true;
         }
@@ -295,7 +302,9 @@ jasmin.ResponseManager.prototype.updateResponseLog = function() {
         "mo"     : this.mode,
         "id"     : this.id,
         "la"     : this.label,
-        "ti"     : this.time
+        "ti"     : this.time,
+        "x"      : this.x,
+        "y"      : this.y
     };
 };
 
