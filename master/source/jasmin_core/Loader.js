@@ -87,7 +87,8 @@ jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
                     request = {
                         "url"      : url,
                         "dataType" : "text",
-                        "data"     : data
+                        "data"     : data,
+                        "method"   : "post"
                     };
                     break;
                 case "img":
