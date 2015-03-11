@@ -87,7 +87,7 @@ jasmin.Slideshow.prototype.showSlide = function() {
         
         // Only slide now, buttons later
         var slideContent = this.translator.translate( this.slides[ this.slideCounter ] );
-        
+
         // wait for buttonDelay until showing buttons
         var self = this;
         this.eventManager.startEvent(
@@ -108,7 +108,7 @@ jasmin.Slideshow.prototype.showSlide = function() {
 jasmin.Slideshow.prototype.showButtons = function()
 {
     var slideContent = this.slides[ this.slideCounter ];
-
+               
     // Add buttonTexts (if any)
     if( this.buttonTexts !== undefined ) {
         var buttonText;
@@ -129,7 +129,7 @@ jasmin.Slideshow.prototype.showButtons = function()
     this.eventManager.startEvent(
         -1,
         // Draw
-        function() { self.target.html( slideContent ); },
+        function() { self.target.html( self.translator.translate( slideContent ) ); },
         // Done
         function() { self.response(); },
         // activeResponses
