@@ -170,12 +170,11 @@ jasmin.Statistics.repetitions = function( array, repLength, index ) {
  * @param {Array} scores Scores to calculate mean of
  * @returns mean
  */
-jasmin.Statistics.mean = function( scores )
-{
+jasmin.Statistics.mean = function( scores ) {
     var sum = 0, count = 0;
-    for( i in scores )
+    for( var i in scores )
     {
-        sum += parseInt( scores[i] );
+        sum += scores[i];
         count++;
     }
 
@@ -187,7 +186,7 @@ jasmin.Statistics.mean = function( scores )
         
     
     return sum / count;
-}
+};
 
 /*
  * Variance
@@ -195,18 +194,17 @@ jasmin.Statistics.mean = function( scores )
  * */
 
 /**
- * Calculates variance of an indexed array of scores
+ * Calculates unbiased estimator of sample variance (divide by n - 1)
  * @param {Array} scores Scores to calculate variance of
  * @returns variance
  */
 
-jasmin.Statistics.variance = function( scores )
-{
+jasmin.Statistics.variance = function( scores ) {
     var mean         = jasmin.Statistics.mean( scores );
     var sumOfSquares = 0, count = 0;
-    for( i in scores )
+    for( var i in scores )
     {
-        sumOfSquares += Math.pow( parseInt( scores[i] ) - mean, 2 );
+        sumOfSquares += Math.pow( scores[i] - mean, 2 );
         count++;
     }
     
@@ -217,14 +215,63 @@ jasmin.Statistics.variance = function( scores )
     }
     
     return sumOfSquares / ( count - 1 );
-}
+};
 
 /**
- * Calculates standard deviation of an indexed array of scores
+ * Calculates standard deviation of an indexed array of scores (based on 
+ * unbiased estimator of sample variance)
  * @param {Array} scores Scores to calculate standard deviation of
  * @returns standard deviation
  */
-jasmin.Statistics.sd = function( scores )
-{
+jasmin.Statistics.sd = function( scores ) {
     return Math.sqrt( jasmin.Statistics.variance( scores ) );
-}
+};
+
+
+/**
+ * Performs a Z transformation on supplied scores 
+ * @param {Array} scores Scores to transform
+ * @param {int}   mean   Z mean
+ * @param {int}   sd     Z sd
+ * @returns Z transformed scores
+ */
+jasmin.Statistics.transformZ = function( scores, mean, sd ) {
+    var result = jasmin.Statistics.similarArray( scores );
+    
+    for( var i in scores )
+    {
+        result[i] = ( parseInt( scores[i] ) - mean ) / sd;
+    }
+    return result;
+};
+
+/*
+ * Create an empty array. indexed if source is indexed, associative if source is associative
+ * @param {int} source array to be used as model
+ * @returns indexed or associative array
+ */
+jasmin.Statistics.similarArray = function( source ){
+    if( source instanceof Array )
+    {
+        return [];
+    }
+    
+    return {};
+};
+
+
+/*
+ * Creates an indexed array that contains the elements of associative or indexed array values, 
+ * ordering the elements according to the values of the indexed array indexes
+ * @param {array} values  values to order
+ * @param {int}   indexes indexes to order by
+ * @returns ordered indexed array
+ */
+jasmin.Statistics.orderBy = function( values, indexes ){
+    var result = [];
+    for( var i in indexes )
+    {
+        result.push( values[ indexes[ i ] ] );
+    }
+    return result;
+};
