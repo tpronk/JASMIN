@@ -100,7 +100,8 @@ jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
                     request = {
                         "url"      : url,
                         "dataType" : fileType,
-                        "data"     : data
+                        "data"     : data,
+                        "type"    : "POST"
                     };           
                     break;                 
             }            
