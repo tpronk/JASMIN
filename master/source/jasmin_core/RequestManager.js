@@ -87,7 +87,7 @@ jasmin.RequestManager = function(
 };
 
 /**
- * Make a single AJAX request
+ * Make a single request
  * @param {const}    type         jasmin.REQUEST_MANAGER_TYPE_AJAX (request is passed on to jQuery.ajax or jasmin.REQUEST_MANAGER_TYPE_IMG (request is url of img)
  * @param {Object}   request      The request (what do say to which url)
  * @param {function} callback     Callback called on reply (with data replied by target url as argument)
