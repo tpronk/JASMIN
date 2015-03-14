@@ -69,7 +69,7 @@ jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
         this.loadTotal++;        
         
         // This closure sets up the right request and binds its arguments to the callback function
-        var closure = function( key, fileType, url, data, callback ) {
+        var closure = function( key, fileType, url, data, type, callback ) {
             var requestType, request;
             switch( fileType ) {
                 
@@ -82,13 +82,20 @@ jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
                         "data"     : data
                     };
                     break;
+                case "json":
+                    requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
+                    request = {
+                        "url"      : url,
+                        "dataType" : "json",
+                        "data"     : data
+                    };
+                    break;                    
                 case "css":
                     requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
                     request = {
                         "url"      : url,
                         "dataType" : "text",
-                        "data"     : data,
-                        "method"   : "post"
+                        "data"     : data
                     };
                     break;
                 case "img":
@@ -100,11 +107,12 @@ jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
                     request = {
                         "url"      : url,
                         "dataType" : fileType,
-                        "data"     : data,
-                        "type"    : "POST"
+                        "data"     : data
                     };           
                     break;                 
-            }            
+            }       
+            //request[ "type" ] = type === undefined? "GET": type;
+            request[ "type" ] = type;
             
             // Do it
             self.requestManager.request(
@@ -121,7 +129,7 @@ jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
                 }
             );            
         };
-        closure( key, requests[key][0], requests[key][1], requests[key][2], callback );
+        closure( key, requests[key][0], requests[key][1], requests[key][2], requests[key][3], callback );
     }
 };    
     

@@ -184,32 +184,6 @@ jasmin.ScalableCanvas.prototype.rescaleSprite = function( i )
     this.nodes[i].css( css );
 };
 
-
-// Convert indexed array to associative
-convertFileToTranslations = function( data )
-{
-    // Lines to array
-    data = data.split( "\n" );
-    
-    // Get relevant columns
-    var header = rowToArray( data[0] );
-    var indexTerm  = searchStringInArray( "term", header );
-    var indexTrans = searchStringInArray( "value",     header );
-    if( indexTerm  == - 1 ) { alert( "Error: No terms found; no column in translations has the name 'term'" ) }
-    if( indexTrans == - 1 ) { alert( "Error: No translations found; no column in translations has the name 'value'" ) }    
-    
-    var translation, output = {};
-    for( var i = 1; i < data.length; i++ )
-    {
-        translation = rowToArray( data[i] );
-        if( translation.length != 1 )
-        {
-            output[ translation[ indexTerm ] ] = translation[ indexTrans ];
-        }
-    }
-    return output;
-}
-
 /**
  * Extend function based on Prototype: merge two (associative) arrays, named
  * destination and source. For any keys existing both in destination and source
@@ -271,4 +245,14 @@ jasmin.ScalableCanvas.prototype.spritesFromJSON = function( spritesJSON, parent 
     }
     
     return sprites;
+};
+
+/**
+ * Remove all HTMLElements constructed from sprites
+ * @public
+ */
+jasmin.ScalableCanvas.prototype.removeSprites = function() {
+    for( var n in this.nodes ) {
+        this.nodes[n].remove();
+    }
 };
