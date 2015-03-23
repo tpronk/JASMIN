@@ -64,7 +64,8 @@ jasmin.ScalableCanvas.prototype.stop = function()
 jasmin.ScalableCanvas.prototype.addSprite = function( key, node, scalable )
 {
     //alert( JSON.stringify( node ) );    
-    // Set positioning to absolute
+    // If no position specified, set to absolute
+    //alert( node.prop( "style" ).position );
     node.css( "position", "absolute" );
     
     // Add node to target
