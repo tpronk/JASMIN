@@ -109,7 +109,14 @@ preloadSuccess = function( data, imageResults )
         // stimuli
         //var stim    = prompt( "Specify stimuli: a=alcohol, c=cannabis, s=smoking, i=Italian alcohol, f=food", "a" );
         stim = $.urlParam( "stim" ) === null? "a" : $.urlParam( "stim" );
-        var stimMap = { "a" : "alcohol", "c" : "cannabis", "s" : "smoking", "i" : "alcohol_italy", "f" : "food" };
+        var stimMap = { 
+            "a" : "alcohol", 
+            "c" : "cannabis", 
+            "s" : "smoking", 
+            "i" : "alcohol_italy", 
+            "f" : "food",
+            "g" : "gambling"
+        };
         settings[ "stimuli_url" ] = "stimuli/" + stimMap[ stim ] + "/";
         
         // Special case for food stims
