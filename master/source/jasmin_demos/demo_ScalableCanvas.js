@@ -44,7 +44,8 @@ startCanvas = function()
                 $( "<div>" ).css( {
                     "z-index"          : 1,
                     "background-color" : "#000000",
-                    "opacity"          : 1
+                    "opacity"          : 1,
+                    "position"         : "absolute"
                 } ),
             // "scale" contains the object and CSS properties that do need scaling
             "scale" :
@@ -66,7 +67,8 @@ startCanvas = function()
                     "color"            : "red",
                     "display"          : "table",
                     "font-weight"      : "bold",
-                    "background-color" : "#666666"
+                    "background-color" : "#666666",
+                    "position"         : "absolute"
                 } ).append( 
                         // The actual text; change contents via id "my_text"
                         $( "<p>" ).attr( {
@@ -96,6 +98,7 @@ startCanvas = function()
                     "z-index"   : 3,
                     "padding"   : "0px",
                     "border"    : "0px",
+                    "position"  : "absolute"
                 } ),
             // scale; all properties you want to scale
             "scale" :            

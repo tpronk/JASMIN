@@ -32,8 +32,7 @@ jasmin.ScalableCanvas = function( target, aspectRatio, rescaleInterval )
     this.aspectRatio     = aspectRatio;
     this.rescaleInterval = rescaleInterval === undefined? 1000: rescaleInterval;
     
-    this.nodes           = {};        // DOM Nodes to manage
-    this.scalables       = {};        // CSS to scale 
+    this.sprites         = {};
     this.lastWidth       = false;     // Width of last scale measurement
 };
 
@@ -57,23 +56,22 @@ jasmin.ScalableCanvas.prototype.stop = function()
 
 /**
  * Add a sprite to the canvas
- * @param {String}     key                key of sprite
+ * @param {String}     key               key of sprite
  * @param {jQuery}     node              jQuery node
- * @param {Object}     scalable          Associative array structured: {key: value}, containing CSS properties to scale
+ * @param {Object}     scale             Associative array structured: {key: value}, containing CSS properties to scale
+ * @param {Object}     children          child sprites
  */
-jasmin.ScalableCanvas.prototype.addSprite = function( key, node, scalable )
+jasmin.ScalableCanvas.prototype.addSprite = function( key, node, scale, children )
 {
-    //alert( JSON.stringify( node ) );    
-    // If no position specified, set to absolute
-    //alert( node.prop( "style" ).position );
-    node.css( "position", "absolute" );
-    
     // Add node to target
     this.target.append( node );
     
-    // Setup vars
-    this.nodes[     key ] = node;
-    this.scalables[ key ] = scalable;
+    // Add to sprites
+    this.sprites[ key ] = {
+        "node"     : node,
+        "scale"    : scale,
+        "children" : children
+    };
 };
 
 /**
@@ -88,21 +86,10 @@ jasmin.ScalableCanvas.prototype.addSprites = function( sprites )
         this.addSprite( 
             i,
             sprites[ i ][ "node"  ],
-            sprites[ i ][ "scale" ]
+            sprites[ i ][ "scale" ],
+            sprites[ i ][ "children" ]
         );
     }    
-};
-
-
-/**
- * Get a sprite by key
- * @param {String} key key of sprite (same as was used when adding this sprite via addSprite earlier)
- * @return {Ijbect} associated sprite;
- * @public
- */
-jasmin.ScalableCanvas.prototype.getSprite = function( key )
-{
-    return( this.nodes[ key ] );
 };
 
 // Check rescale, and do if required (or force == true)
@@ -138,23 +125,21 @@ jasmin.ScalableCanvas.prototype.rescale = function( force )
     } else {
         // Screen is wider than aspect ratio; use width
         this.scale = targetWidth / this.aspectRatio;
-        //alert(( targetHeight - ( scale ) / 2 ) );
         this.offsetTop = ( targetHeight - ( this.scale ) ) / 2;
     }
     
     // For each node, update css
-    for( var i in this.nodes )
-    {
-        this.rescaleSprite( i );
+    for( var i in this.sprites ) {
+        this.rescaleSprite( this.sprites[ i ] );
     }
 };
 
 // Rescale a sprite
-jasmin.ScalableCanvas.prototype.rescaleSprite = function( i )
-{
+jasmin.ScalableCanvas.prototype.rescaleSprite = function( sprite ) {
     // Construct css
     var css = {}, offset, scaledValue;
-    for( var j in this.scalables[i] )
+
+    for( var j in sprite[ "scale" ] )
     {
         // If position property, adjust for offset
         switch( j )
@@ -164,13 +149,16 @@ jasmin.ScalableCanvas.prototype.rescaleSprite = function( i )
                 break;
             case "top":
                 offset = this.offsetTop;
-                //alert( this.target.y );
                 break;
             default:
                 offset = 0;
                 break;
         }
-        scaledValue = this.scalables[i][j] * this.scale + offset;
+        // But not if position is relative
+        if( sprite[ "node" ].css( "position" ) === "relative" ) {
+            offset = 0;
+        }
+        scaledValue = sprite[ "scale" ][j] * this.scale + offset;
         
         // Round values for left, top, width, and height
         if( j === "left" || j === "top" || j === "width" || j === "height" )
@@ -182,7 +170,14 @@ jasmin.ScalableCanvas.prototype.rescaleSprite = function( i )
     }    
 
     // Apply
-    this.nodes[i].css( css );
+    sprite[ "node" ].css( css );
+
+    // Scale children, if any
+    if( sprite[ "children" ] !== undefined ) {
+        for( var child_i in sprite[ "children" ] ) {
+            this.rescaleSprite( sprite[ "children" ][ child_i ] );
+        }
+    }
 };
 
 /**
@@ -216,7 +211,7 @@ jasmin.ScalableCanvas.prototype.extend = function(destination, source) {
  * @public
  */
 jasmin.ScalableCanvas.prototype.spritesFromJSON = function( spritesJSON, parent ) {
-    var sprites = {}, sprite, key, childSprites;
+    var sprites = {}, sprite, key;
     for( var key in spritesJSON ) {
         // Create sprite
         sprite = {};
@@ -231,17 +226,17 @@ jasmin.ScalableCanvas.prototype.spritesFromJSON = function( spritesJSON, parent 
        
         // Add any children
         if( spritesJSON[ key ][ "children" ] !== undefined ) {
-            childSprites = this.spritesFromJSON( 
+            sprite[ "children" ] = this.spritesFromJSON( 
                 spritesJSON[ key ][ "children" ],
                 sprite
             );
         }
         
+        sprites[ key ] = sprite;
         // If no parent; add to sprites. Else add to parent
-        if( parent === undefined ) {
-            sprites[ key ] = sprite;
-        } else {
+        if( parent !== undefined ) {
             parent[ "node" ].append( sprite[ "node" ] );
+            //parent[ "children" ][ key ] = sprite;
         }
     }
     
@@ -253,7 +248,7 @@ jasmin.ScalableCanvas.prototype.spritesFromJSON = function( spritesJSON, parent 
  * @public
  */
 jasmin.ScalableCanvas.prototype.removeSprites = function() {
-    for( var n in this.nodes ) {
-        this.nodes[n].remove();
+    for( var i in this.sprites ) {
+        this.sprites[ i ][ "node" ].remove();
     }
 };
