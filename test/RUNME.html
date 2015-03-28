@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<!--
+Copyright 2014, Thomas Pronk
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. 
+
+****************
+*** RUNME.html
+
+First shows a dropdown from which to pick a demo, then starts load this demo
+(by calling the load function that each demo should provide). Additionally, this
+page provides a simple container to run the module demos in:
+* It loads jQuery and jquery mobile CSS in the head
+* A pre element with id "textHere" for text output and a div with id "graphicsHere" for graphic output
+-->
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <!-- jQuery -->
+        <script type="text/javascript" src="../ext/jquery.js"></script>
+        
+        <script type="text/javascript">
+            // Path to jasmin base dir
+            var pathSrc = "../src/";
+            var pathExt = "../ext/";
+            var pathBin = "../bin/";
+            
+            // Demo keys and files for drop-down and loading right file
+            var demos = {
+                "demo_EventManager" : "demo_EventManager.js",
+                "demo_Loader" :	"demo_Loader.js",
+                "demo_RequestManager" : "demo_RequestManager.js",
+                "demo_RequestManager_flush" : "demo_RequestManager_flush.js",                
+                "demo_ResponseManager_keyboard" : "demo_ResponseManager_keyboard.js",
+                "demo_ResponseManager_pointer" : "demo_ResponseManager_pointer.js",
+                "demo_ScalableCanvas" : "demo_ScalableCanvas.js",
+                "demo_Slideshow" : "demo_Slideshow.js",
+                "demo_Slider" : "demo_Slider.js",
+                "demo_Statistics" : "demo_Statistics.js",                
+                "demo_SyncTimer" : "demo_SyncTimer.js",
+                "demo_TableLogger" : "demo_TableLogger.js",
+                "demo_Translator.js" : "demo_Translator.js",
+                "demo_JasperFirst.js" : "demo_JasperFirst.js",
+                "POWautoBart.js" : "POW_autoBart.js"
+            };
+            
+            // For reporting in text output
+            report = function( source, message )
+            {
+                $( "#text_here" ).append( source + ": " + message + "\n" );
+            }
+            
+            // Special case for demo script (we cannot pass load function as callback since load is not defined until demo script is loaded)
+            getDemoScript = function( url )
+            {
+                getScripts( [ url ], getDemoScriptDone );
+            }            
+            
+            getDemoScriptDone = function()
+            {
+                load();
+            }            
+
+            // Loading a script at url, on success call callback
+            getScripts = function( urls, callback )
+            {
+                scriptsToLoad   = urls;
+                currentCallback = callback;
+                getScript( 0 );
+            }
+            
+            getScript = function( scriptsToLoadCounter )
+            {
+                if( scriptsToLoadCounter < scriptsToLoad.length )
+                {
+                    url = scriptsToLoad[ scriptsToLoadCounter ];
+                    report( "run_demo", "getScript downloading " + ( scriptsToLoadCounter + 1 ) + "/" + scriptsToLoad.length + ": " + url );
+                    var request = jQuery.ajax({
+                        type: "GET",
+                        crossDomain: true,
+                        dataType: "script",
+                        url: url
+                    } );
+                    request.done( function(){
+                            report( "run_demo", "getScript downloading success" );
+                            getScript( scriptsToLoadCounter + 1 );
+                    } );
+                    request.fail( function( errorData ){
+                            report( "run_demo", "getScript downloading fail:" + JSON.stringify( errorData ) );
+                    } );                    
+                } else {
+                    currentCallback();
+                }
+            };
+            
+            // Get get argument from url
+            urlParam = function(name){
+                var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+                if (results==null){
+                   return null;
+                }
+                else{
+                   return results[1] || 0;
+                }
+            };
+            
+           // At onload, check if there is a demo in the get. If so, use that. If not, show drop-down
+           $( document ).ready( function() { 
+               var demoFile = urlParam( "demo" );
+               
+               if( demoFile !== null && demoFile !== "none" ) {
+                   // demo in get; load it
+                   getDemoScript( demos[ demoFile ] );
+               } else {
+                   // no demo in get; show drop-down
+                   var demoSelector = $( "<select>" ).attr( "name", "demo" );
+                   for( var key in demos ) {
+                       demoSelector.append( $( "<option>" ).attr( "value", key ).text( demos[ key ] ) );
+                   }
+                   $( "#form_here" ).append( demoSelector );
+                   $( "#form_here" ).append( $( "<input>" ).attr( { "type" : "submit", "value" : "Launch Demo"  } ) );
+               }
+               
+               //$( "#demo_selector" ).val( "none" )
+           } );            
+            
+            loadDemo = function() {
+                
+                
+                // Get selected demoFile
+                var demoFile = $( "#demo_selector" ).val();
+                 
+                // If not "none"; hide drop-down and start
+                if( demoFile !== "none" ) {
+                    $( "#demo_selector_here" ).hide();
+                    getDemoScript( demoFile );
+                }
+           };
+           
+
+        </script>
+    </head>
+<body>
+<form action="RUNME.html" id="form_here"></form>
+<div id="graphics_here" style="height:300px;"></div>
+<pre id="text_here"></pre>
+</body>
+</html>
