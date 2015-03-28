@@ -211,7 +211,7 @@ jasmin.ScalableCanvas.prototype.extend = function(destination, source) {
  * @public
  */
 jasmin.ScalableCanvas.prototype.spritesFromJSON = function( spritesJSON, parent ) {
-    var sprites = {}, sprite, key;
+    var sprites = {}, sprite, key, cssClass, cssClass_i;
     for( var key in spritesJSON ) {
         // Create sprite
         sprite = {};
@@ -222,6 +222,13 @@ jasmin.ScalableCanvas.prototype.spritesFromJSON = function( spritesJSON, parent 
         ).css( 
             spritesJSON[ key ][ "css" ]
         );
+        
+        if( spritesJSON[ key ][ "class" ] !== undefined ) {
+            for( cssClass_i in spritesJSON[ key ][ "class" ] ) {
+                sprite[ "node" ].addClass( spritesJSON[ key ][ "class" ][ cssClass_i ] );
+            }
+        }
+    
         sprite[ "scale" ] = spritesJSON[ key ][ "scale" ];
        
         // Add any children
