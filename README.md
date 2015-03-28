@@ -16,7 +16,3 @@ JASMIN (Javascript As Sociopsychological Measurement INstrument) is a library of
 * [Module demos](http://mindsurfer.eu/jasmin3/source/jasmin_demos/RUNME.html). The tests are also  feature demonstrations of each JASMIN master module.
 * [API Documentation](http://mindsurfer.eu/jasmin3/api_docs/). API of each of the JASMIN modules.
 
-# About the architecture
-The graph below shows the JASMIN architecture. An arrow from module A to module B means that A requires B. All modules except those marked with a star require jQuery. Green modules have been upgraded and red modules are still to go.
-
-![JASMIN Architecture](binaries/images/JASMIN_architecture.jpg)
