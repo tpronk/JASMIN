@@ -75,32 +75,32 @@ jasmin.Loader.prototype.load = function(a, b, c) {
 jasmin.Loader.prototype.makeRequests = function(a, b) {
   var c = this, d;
   for (d in a) {
-    this.loadTotal++, function(a, b, d, g, l, m) {
+    this.loadTotal++, function(a, b, d, h, l, m) {
       var k;
       switch(b) {
         case "js":
           k = jasmin.REQUEST_MANAGER_TYPE_AJAX;
-          g = {url:d, dataType:"script", data:g};
+          h = {url:d, dataType:"script", data:h};
           break;
         case "json":
           k = jasmin.REQUEST_MANAGER_TYPE_AJAX;
-          g = {url:d, dataType:"json", data:g};
+          h = {url:d, dataType:"json", data:h};
           break;
         case "css":
           k = jasmin.REQUEST_MANAGER_TYPE_AJAX;
-          g = {url:d, dataType:"text", data:g};
+          h = {url:d, dataType:"text", data:h};
           break;
         case "img":
           k = jasmin.REQUEST_MANAGER_TYPE_IMG;
-          g = d;
+          h = d;
           break;
         default:
-          k = jasmin.REQUEST_MANAGER_TYPE_AJAX, g = {url:d, dataType:b, data:g};
+          k = jasmin.REQUEST_MANAGER_TYPE_AJAX, h = {url:d, dataType:b, data:h};
       }
-      g.type = l;
-      c.requestManager.request(k, g, function(g) {
+      h.type = l;
+      c.requestManager.request(k, h, function(h) {
         "css" === b && $('<link rel="stylesheet" type="text/css" href="' + d + '" />').appendTo("head");
-        m(a, g);
+        m(a, h);
         c.loadCounter++;
         c.progress();
       });
@@ -110,11 +110,26 @@ jasmin.Loader.prototype.makeRequests = function(a, b) {
 jasmin.Loader.prototype.progress = function() {
   this.progressCallback(Math.round(100 * this.loadCounter / this.loadTotal));
 };
+(function() {
+  for (var a = 0, b = ["ms", "moz", "webkit", "o"], c = 0;c < b.length && !window.requestAnimationFrame;++c) {
+    window.requestAnimationFrame = window[b[c] + "RequestAnimationFrame"], window.cancelAnimationFrame = window[b[c] + "CancelAnimationFrame"] || window[b[c] + "CancelRequestAnimationFrame"];
+  }
+  window.requestAnimationFrame || (window.requestAnimationFrame = function(b) {
+    var c = (new Date).getTime(), f = Math.max(0, 16 - (c - a)), g = window.setTimeout(function() {
+      b(c + f);
+    }, f);
+    a = c + f;
+    return g;
+  });
+  window.cancelAnimationFrame || (window.cancelAnimationFrame = function(a) {
+    clearTimeout(a);
+  });
+})();
 void 0 === jasmin && (jasmin = function() {
 });
 jasmin.REQUEST_MANAGER_TYPE_AJAX = 1;
 jasmin.REQUEST_MANAGER_TYPE_IMG = 2;
-jasmin.RequestManager = function(a, b, c, d, e, f, h) {
+jasmin.RequestManager = function(a, b, c, d, e, f, g) {
   this.fail = void 0 === a ? function(a) {
     alert(a);
   } : a;
@@ -125,7 +140,7 @@ jasmin.RequestManager = function(a, b, c, d, e, f, h) {
   this.timeout = void 0 === d ? 4E3 : d;
   this.retries = void 0 === e ? 8 : e;
   this.active = void 0 === f ? !0 : f;
-  this.checkInterval = void 0 === h ? 300 : h;
+  this.checkInterval = void 0 === g ? 300 : g;
   this.flushing = !1;
   this.flushCallback = void 0;
   this.STATE_OPEN = 1;
@@ -268,12 +283,12 @@ jasmin.ResponseManager.prototype.activate = function(a, b, c) {
         });
       }
       if (void 0 !== this.activeResponses[a].buttons) {
-        for (var h in this.activeResponses[a].buttons) {
+        for (var g in this.activeResponses[a].buttons) {
           b = function(a, b, c) {
             $(c).bind(a, b, function(e) {
               d.response(a, e, c, b);
             });
-          }, b(a, this.activeResponses[a].buttons[h], h);
+          }, b(a, this.activeResponses[a].buttons[g], g);
         }
       }
     }
@@ -328,8 +343,7 @@ jasmin.ScalableCanvas = function(a, b, c) {
   this.target = a;
   this.aspectRatio = b;
   this.rescaleInterval = void 0 === c ? 1E3 : c;
-  this.nodes = {};
-  this.scalables = {};
+  this.sprites = {};
   this.lastWidth = !1;
 };
 jasmin.ScalableCanvas.prototype.start = function() {
@@ -342,19 +356,14 @@ jasmin.ScalableCanvas.prototype.start = function() {
 jasmin.ScalableCanvas.prototype.stop = function() {
   clearInterval(this.timer);
 };
-jasmin.ScalableCanvas.prototype.addSprite = function(a, b, c) {
-  b.css("position", "absolute");
+jasmin.ScalableCanvas.prototype.addSprite = function(a, b, c, d) {
   this.target.append(b);
-  this.nodes[a] = b;
-  this.scalables[a] = c;
+  this.sprites[a] = {node:b, scale:c, children:d};
 };
 jasmin.ScalableCanvas.prototype.addSprites = function(a) {
   for (var b in a) {
-    this.addSprite(b, a[b].node, a[b].scale);
+    this.addSprite(b, a[b].node, a[b].scale, a[b].children);
   }
-};
-jasmin.ScalableCanvas.prototype.getSprite = function(a) {
-  return this.nodes[a];
 };
 jasmin.ScalableCanvas.prototype.rescale = function(a) {
   if (this.target === document.body) {
@@ -367,14 +376,14 @@ jasmin.ScalableCanvas.prototype.rescale = function(a) {
     this.lastHeight = c;
     this.offsetTop = this.offsetLeft = 0;
     b / c > this.aspectRatio ? (this.scale = c, this.offsetLeft = (b - this.scale * this.aspectRatio) / 2) : (this.scale = b / this.aspectRatio, this.offsetTop = (c - this.scale) / 2);
-    for (var d in this.nodes) {
-      this.rescaleSprite(d);
+    for (var d in this.sprites) {
+      this.rescaleSprite(this.sprites[d]);
     }
   }
 };
 jasmin.ScalableCanvas.prototype.rescaleSprite = function(a) {
   var b = {}, c, d;
-  for (d in this.scalables[a]) {
+  for (d in a.scale) {
     switch(d) {
       case "left":
         c = this.offsetLeft;
@@ -385,13 +394,19 @@ jasmin.ScalableCanvas.prototype.rescaleSprite = function(a) {
       default:
         c = 0;
     }
-    c = this.scalables[a][d] * this.scale + c;
+    "relative" === a.node.css("position") && (c = 0);
+    c = a.scale[d] * this.scale + c;
     if ("left" === d || "top" === d || "width" === d || "height" === d) {
       c = Math.floor(c);
     }
     b[d] = c;
   }
-  this.nodes[a].css(b);
+  a.node.css(b);
+  if (void 0 !== a.children) {
+    for (var e in a.children) {
+      this.rescaleSprite(a.children[e]);
+    }
+  }
 };
 jasmin.ScalableCanvas.prototype.extend = function(a, b) {
   for (var c in b) {
@@ -400,15 +415,25 @@ jasmin.ScalableCanvas.prototype.extend = function(a, b) {
   return a;
 };
 jasmin.ScalableCanvas.prototype.spritesFromJSON = function(a, b) {
-  var c = {}, d, e;
+  var c = {}, d, e, f;
   for (e in a) {
-    d = {}, d.node = $(a[e].type).attr(a[e].attr).css(a[e].css), d.scale = a[e].scale, void 0 !== a[e].children && this.spritesFromJSON(a[e].children, d), void 0 === b ? c[e] = d : b.node.append(d.node);
+    d = {};
+    d.node = $(a[e].type).attr(a[e].attr).css(a[e].css);
+    if (void 0 !== a[e]["class"]) {
+      for (f in a[e]["class"]) {
+        d.node.addClass(a[e]["class"][f]);
+      }
+    }
+    d.scale = a[e].scale;
+    void 0 !== a[e].children && (d.children = this.spritesFromJSON(a[e].children, d));
+    c[e] = d;
+    void 0 !== b && b.node.append(d.node);
   }
   return c;
 };
 jasmin.ScalableCanvas.prototype.removeSprites = function() {
-  for (var a in this.nodes) {
-    this.nodes[a].remove();
+  for (var a in this.sprites) {
+    this.sprites[a].node.remove();
   }
 };
 void 0 === jasmin && (jasmin = function() {
@@ -505,10 +530,10 @@ jasmin.Statistics.repetitions = function(a, b, c) {
   if (a.length < b) {
     return!1;
   }
-  var d = 1, e = a[0], f, h;
+  var d = 1, e = a[0], f, g;
   for (f = 1;f < a.length;f++) {
-    void 0 === c ? h = a[f] : (e = e[c], h = a[f][c]);
-    JSON.stringify(e) === JSON.stringify(h) ? d++ : d = 1;
+    void 0 === c ? g = a[f] : (e = e[c], g = a[f][c]);
+    JSON.stringify(e) === JSON.stringify(g) ? d++ : d = 1;
     if (d >= b) {
       return!0;
     }
@@ -557,11 +582,11 @@ void 0 === jasmin && (jasmin = function() {
     window.requestAnimationFrame = window[b[c] + "RequestAnimationFrame"], window.cancelAnimationFrame = window[b[c] + "CancelAnimationFrame"] || window[b[c] + "CancelRequestAnimationFrame"];
   }
   window.requestAnimationFrame || (window.requestAnimationFrame = function(b) {
-    var c = (new Date).getTime(), f = Math.max(0, 16 - (c - a)), h = window.setTimeout(function() {
+    var c = (new Date).getTime(), f = Math.max(0, 16 - (c - a)), g = window.setTimeout(function() {
       b(c + f);
     }, f);
     a = c + f;
-    return h;
+    return g;
   });
   window.cancelAnimationFrame || (window.cancelAnimationFrame = function(a) {
     clearTimeout(a);
