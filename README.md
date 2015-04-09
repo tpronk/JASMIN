@@ -13,6 +13,6 @@ JASMIN (Javascript As Sociopsychological Measurement INstrument) is a library of
 * [MindSurfer](https://mindsurfer.eu/en/experiment/Test_yourself): Using JASMIN to realize a task and a questionnaire, after which giving feedback on participant's behavior via texts and plots. 
 
 # Learning materials
-* [Module demos](http://mindsurfer.eu/jasmin3/source/jasmin_demos/RUNME.html). The tests are also  feature demonstrations of each JASMIN master module.
+* [Module demos](http://mindsurfer.eu/jasmin3/jasmin/test/RUNME.html). The tests are also  feature demonstrations of each JASMIN master module.
 * [API Documentation](http://mindsurfer.eu/jasmin3/api_docs/). API of each of the JASMIN modules.
 
