@@ -249,7 +249,7 @@ jasmin.RequestManager.prototype.flush = function(a) {
 };
 void 0 === jasmin && (jasmin = function() {
 });
-jasmin.POINTER_EVENTS = {vmouse:{down:"vmousedown", up:"vmouseup"}, mouse:{down:"mousedown", up:"mouseup"}, touch:{down:"touchstart", up:"touchend"}};
+jasmin.POINTER_EVENTS = {vmouse:{down:"vmousedown", up:"vmouseup", cancel:"vmousecancel"}, mouse:{down:"mousedown", up:"mouseup"}, touch:{down:"touchstart", up:"touchend", cancel:"touchcancel"}};
 jasmin.ResponseManager = function(a) {
   this.active = !1;
   this.window = a;
@@ -286,9 +286,10 @@ jasmin.ResponseManager.prototype.activate = function(a, b, c) {
         for (var g in this.activeResponses[a].buttons) {
           b = function(a, b, c) {
             $(c).bind(a, b, function(e) {
+              report("ResponseManager.triggered", a);
               d.response(a, e, c, b);
             });
-          }, b(a, this.activeResponses[a].buttons[g], g);
+          }, report("ResponseManager.bind", a + " to " + g), b(a, this.activeResponses[a].buttons[g], g);
         }
       }
     }
@@ -322,7 +323,7 @@ jasmin.ResponseManager.prototype.deactivate = function() {
       if (a = this.pointerDeviceEventsList[b], void 0 !== this.activeResponses[a]) {
         "all" === this.activeResponses[a].type && this.window.$(this.window.document).unbind(a);
         for (var c in this.activeResponses[a].buttons) {
-          $(c).unbind(a);
+          report("ResponseManager.unbind", a);
         }
       }
     }
@@ -366,7 +367,7 @@ jasmin.ScalableCanvas.prototype.addSprites = function(a) {
   }
 };
 jasmin.ScalableCanvas.prototype.rescale = function(a) {
-  if (this.target === document.body) {
+  if (this.target === $(document.body)) {
     var b = window.innerWidth, c = window.innerHeight
   } else {
     b = this.target.width(), c = this.target.height();

@@ -96,7 +96,7 @@ jasmin.ScalableCanvas.prototype.addSprites = function( sprites )
 jasmin.ScalableCanvas.prototype.rescale = function( force )
 {
     // Current dimensions of (relatively scaled) div
-    if( this.target === document.body ) {
+    if( this.target === $( document.body ) ) {
         var targetWidth  = window.innerWidth;
         var targetHeight = window.innerHeight;
     } else {

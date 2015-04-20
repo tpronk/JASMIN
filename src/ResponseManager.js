@@ -25,8 +25,9 @@ if( jasmin === undefined ) { var jasmin = function() {}; }
 jasmin.POINTER_EVENTS = {
     /** vmouse; triggered both by touch and mouse, requires jquery mobile */
     "vmouse" : {
-        "down" : "vmousedown",
-        "up"   : "vmouseup"
+        "down"   : "vmousedown",
+        "up"     : "vmouseup",
+        "cancel" : "vmousecancel"
     },
     /** mouse; triggered only by mouse */
     "mouse" : {
@@ -35,8 +36,9 @@ jasmin.POINTER_EVENTS = {
     },
     /** mouse; triggered only by touch, requires jquery mobile */
     "touch" : {
-        "down" : "touchstart",
-        "up"   : "touchend"
+        "down"   : "touchstart",
+        "up"     : "touchend",
+        "cancel" : "touchcancel"        
     }
 };
 
@@ -145,11 +147,12 @@ jasmin.ResponseManager.prototype.activate = function(
                             myMouseType,
                             myLabel,
                             function( event ) {
+                                report( "ResponseManager.triggered", myMouseType );
                                 self.response( myMouseType, event, myId, myLabel );
                             } 
                         );                
                     };
-                    
+                    report( "ResponseManager.bind", mouseType + " to " + id );
                     attach( 
                         mouseType,
                         this.activeResponses[ mouseType ][ "buttons" ][ id ],
@@ -178,7 +181,7 @@ jasmin.ResponseManager.prototype.response = function( mode, event, pointerId, po
         // Parse response, does it end the timedEvent?
         var critical = this.parseResponse( mode, event, pointerId, pointerLabel  );
         if( critical ) {
-            // Stop event bubbling
+            // Stop event bubbling - TP disable for Android Browser 4.3 
             event.stopPropagation(); 
             event.preventDefault();   
     
@@ -283,7 +286,8 @@ jasmin.ResponseManager.prototype.deactivate = function() {
 				}	
                 
                 for( var i in this.activeResponses[ mouseType ][ "buttons" ] ) {
-                    $( i ).unbind( mouseType );
+                    report( "ResponseManager.unbind", mouseType );
+                    //$( i ).unbind( mouseType );
 				}
 			}
 		}    
