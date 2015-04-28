@@ -142,7 +142,7 @@ jasmin.Slideshow.prototype.showButtons = function()
 // Response given; go to next/previous slide slide
 jasmin.Slideshow.prototype.response = function()
 {
-    var buttonPressed = eventManager.responseLabel;
+    var buttonPressed = this.eventManager.responseLabel;
     
     if( buttonPressed === "next" ) {
         this.slideCounter++;

@@ -489,7 +489,7 @@ jasmin.Slideshow.prototype.showButtons = function() {
   }, this.activeResponses, "slide_nobutton_" + +b.slideCounter);
 };
 jasmin.Slideshow.prototype.response = function() {
-  var a = eventManager.responseLabel;
+  var a = this.eventManager.responseLabel;
   "next" === a && this.slideCounter++;
   "previous" === a && 0 < this.slideCounter && this.slideCounter--;
   this.showSlide();
