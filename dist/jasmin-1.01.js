@@ -296,7 +296,7 @@ jasmin.ResponseManager.prototype.activate = function(a, b, c) {
   }
 };
 jasmin.ResponseManager.prototype.response = function(a, b, c, d) {
-  this.active && this.parseResponse(a, b, c, d) && (b.stopPropagation(), b.preventDefault(), this.updateResponseLog(), this.callbackResponse());
+  this.active && (b.stopPropagation(), b.preventDefault(), this.parseResponse(a, b, c, d) && (this.updateResponseLog(), this.callbackResponse()));
 };
 jasmin.ResponseManager.prototype.parseResponse = function(a, b, c, d) {
   var e = window.performance.now(), f = !1;
