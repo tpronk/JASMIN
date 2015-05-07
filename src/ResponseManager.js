@@ -178,13 +178,13 @@ jasmin.ResponseManager.prototype.response = function( mode, event, pointerId, po
     
     // Only register responses if active
     if( this.active ) {
+        // Stop event bubbling - TP disable for Android Browser 4.3 
+        event.stopPropagation(); 
+        event.preventDefault();           
+        
         // Parse response, does it end the timedEvent?
         var critical = this.parseResponse( mode, event, pointerId, pointerLabel  );
         if( critical ) {
-            // Stop event bubbling - TP disable for Android Browser 4.3 
-            event.stopPropagation(); 
-            event.preventDefault();   
-    
             // Store logging vars
             this.updateResponseLog();
     
@@ -287,7 +287,7 @@ jasmin.ResponseManager.prototype.deactivate = function() {
                 
                 for( var i in this.activeResponses[ mouseType ][ "buttons" ] ) {
                     report( "ResponseManager.unbind", mouseType );
-                    //$( i ).unbind( mouseType );
+                    $( i ).unbind( mouseType );
 				}
 			}
 		}    
