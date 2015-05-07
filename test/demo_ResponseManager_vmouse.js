@@ -121,15 +121,7 @@ specificUpStart = function() {
                 "#field_left"  : "left",
                 "#field_right" : "right"
             }
-        },
-        "vmousecancel" : {
-            "type" : "specific",
-            // No type key (as with keyboard)
-            "buttons" : {
-                "#field_left"  : "left",
-                "#field_right" : "right"
-            }
-        }        
+        }
     };
     
     // Activate; start registering responses

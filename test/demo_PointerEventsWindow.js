@@ -26,20 +26,22 @@ setupDemo = function() {
 
     var events = [
         "vclick",
-        "vmousecancel",
         "vmousedown",
         "vmouseup",
+        "vmousecancel",
         "touchstart",
         "touchend",
-        "touchcancel"
+        "touchcancel",
+        "taphold"
     ];
-    var closure = function (event) {
-        return function() {
-            report(demoName, event);
+    var closure = function (eventType) {
+        return function(event) {
+            event.preventDefault();
+            report(demoName, eventType);
         };
     };
     for( var i in events ) {
-        $( "#field_left" ).bind( 
+        $( document ).bind( 
             events[i],
             events[i],
             closure( events[i] )
