@@ -916,12 +916,15 @@ jasmin.TableLogger = function(a, c, b) {
   this.columns = a;
   this.fail = c;
   this.na = b;
+  this.sn = 0;
   this.clearLogs();
 };
 jasmin.TableLogger.prototype.clearLogs = function() {
   this.logs = [];
 };
 jasmin.TableLogger.prototype.log = function(a) {
+  a.logger_sn = this.sn;
+  a.logger_time = window.performance.now();
   if (void 0 !== this.fail) {
     for (var c in a) {
       -1 === this.columns.indexOf(c) && this.fail("TableLogger.log: Column " + c + " in logMe not found in this.columns");
@@ -961,7 +964,7 @@ jasmin.TaskManager = function(a, c, b, d, e, f, g) {
   this.translator = void 0 !== d ? d : new jasmin.Translator;
   this.logger = new jasmin.TableLogger(this.config.logging);
   this.state = f;
-  this.state instanceof Object || (this.state = {block:0, trial:0, done:!1, results:[], sn:0});
+  this.state instanceof Object || (this.state = {block:0, trial:0, done:!1, results:[]});
   this.setState = void 0 === g ? function() {
   } : g;
 };
@@ -1041,7 +1044,7 @@ jasmin.TaskManager.prototype.trialEventStart = function(a) {
   var c = this.eventManager.getEventLog();
   a = this.task.trialEvent(this.eventNow, c, a);
   this.eventNext = a.next;
-  void 0 !== a.log && (c = this.collectLogs(a.log), this.logger.log(c), this.state.results.push(c), this.state.sn++);
+  void 0 !== a.log && (c = this.collectLogs(a.log), this.logger.log(c), this.state.results.push(c));
   a.retry && this.state.attempt++;
   var c = void 0 === this.configBlock.button_instruction ? "" : " " + this.configBlock.button_instruction, b = this;
   switch(a.type) {

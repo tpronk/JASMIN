@@ -69,7 +69,7 @@ jasmin.TaskManager = function( task, config, onCompleted, translator, eventManag
             /**
              * @property {Object} Task results
              */                  
-            "results"   : [],
+            "results"   : []
         };
     }
     this.setState     = setState === undefined? function() {} : setState;
