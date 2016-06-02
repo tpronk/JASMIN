@@ -97,7 +97,6 @@ jasmin.Statistics.fisherYates = function( array ) {
  */
 
 jasmin.Statistics.randomInt = function (min, max){
-    
     var x = Math.random();
     var diff = max- min + 1;
     var r = min + x * diff;
@@ -188,10 +187,19 @@ jasmin.Statistics.mean = function( scores ) {
     return sum / count;
 };
 
-/*
- * Variance
-
- * */
+/**
+ * Calculates sum of an array of scores
+ * @param {Object} scores Scores to calculate sum of
+ * @returns sum
+ */
+jasmin.Statistics.sum = function( scores ) {
+    var sum = 0;
+    for( var i in scores )
+    {
+        sum += scores[i];
+    }
+    return sum;
+};
 
 /**
  * Calculates unbiased estimator of sample variance (divide by n - 1)
@@ -274,4 +282,89 @@ jasmin.Statistics.orderBy = function( values, indexes ){
         result.push( values[ indexes[ i ] ] );
     }
     return result;
+};
+
+
+/*
+ * Loops trough each element of an indexed/associatvie array source, applies function fun to this array
+ * and collects only the values returned by fun into an array of the same type, but only for those
+ * cases where this value is not undefined;
+ * @param {Object}   source  source array
+ * @param {Function} fun     funcation to apply to source
+ * @returns results of fun applied to source
+ */
+jasmin.Statistics.applyRow = function (source, fun){
+    var results, result;
+    if (source instanceof Array) {
+        // indexed case
+        results = [];
+        for (var i in source) {
+            result = fun(source[i]);
+            if (result !== undefined) {
+                results.push(result);
+            }
+        }        
+    } else {
+        // associative case
+        results = {};
+        for (var i in source) {
+            result = fun(source[i]);
+            if (result !== undefined) {
+                results[i] = result;
+            }
+        }
+    }
+    return (results);
+};
+
+
+
+/*
+ * Generates a sequence of items, in which each item is repeated reps times. A proportion of
+ * elements in the sequence gets labelA, while the remainder get labelB. These labels are
+ * applied such that they are balanced as much as possible across the items. Note that if 
+ * proportionA * #items * reps does not result in a whole number, this number is rounded down.
+ * @param {array}  items         items to repeat in sequence
+ * @param {int}    reps          number of times to repeat each item
+ * @param {float}  proportionA   proportion of labelA
+ * @param {string} labelA        label A
+ * @param {string} labelB        label B
+ * @param {string} itemKey       (optional) Key to use for item; "item" by default
+ * @param {string} labelKey      (optional) Key to use for label; "label" by default
+ * @returns {array} Sequence, in which each element is an associative array with a key "item" for the item and "label" for the label
+ */
+jasmin.Statistics.balancedSequence = function (items, reps, proportionA, labelA, labelB, itemKey, labelKey) {
+    itemKey = itemKey === undefined? "item": itemKey;
+    labelKey = labelKey === undefined? "label": labelKey;
+    
+    var result = [];
+    var countA = Math.floor(items.length * reps * proportionA);
+    
+    var i, j, labels, newElement;
+    for (j = 0; j < reps; j++) {   
+        // So long as there are more labels A to apply than items, give every item labelA
+        if (countA >= items.length) {
+            labels = jasmin.Statistics.rep(labelA, items.length);
+        // No labels A left? Give every item labelB
+        } else if (countA <= 0) {
+            labels = jasmin.Statistics.rep(labelB, items.length);
+        // Less labels A to apply than items? Shuffle remaining labels A and B
+        } else {
+            labels = jasmin.Statistics.fisherYates(
+                jasmin.Statistics.rep(labelA, countA).concat(
+                    jasmin.Statistics.rep(labelB, items.length - countA)
+                )
+            );
+            console.log(labels);
+        }
+        countA -= items.length;
+        for (i in items) {
+            newElement = {};
+            newElement[itemKey] = items[i];
+            newElement[labelKey] = labels[i];
+            result.push(newElement);
+        }
+    }
+    
+    return (result);
 };

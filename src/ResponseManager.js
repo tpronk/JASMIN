@@ -16,249 +16,253 @@
  * Init JASMIN namespace
  * @private
  */
-if( jasmin === undefined ) { var jasmin = function() {}; }
-
-/**
- * A list of possible pointer responses, both for touch and mouse 
- * @private
- */
-jasmin.POINTER_EVENTS = {
-    /** vmouse; triggered both by touch and mouse, requires jquery mobile */
-    "vmouse" : {
-        "down"   : "vmousedown",
-        "up"     : "vmouseup",
-        "cancel" : "vmousecancel"
-    },
-    /** mouse; triggered only by mouse */
-    "mouse" : {
-        "down" : "mousedown",
-        "up"   : "mouseup"
-    },
-    /** mouse; triggered only by touch, requires jquery mobile */
-    "touch" : {
-        "down"   : "touchstart",
-        "up"     : "touchend",
-        "cancel" : "touchcancel"        
-    }
-};
+if (jasmin === undefined) { var jasmin = function() {}; }
 
 /**
  * ResponseManager manages keyboard, touch, and mouse responses.
- * See <a href="../source/jasmin_demos/demo_choose.html">these demos </a> for
- * usage examples. Requires jQuery for keyboard and mouse handling (keydown,
- * keyup, mousedown, mouseup). Requires jQuery mobile for touch handing 
- * (vmousedown, vmouseup, touchstart, touchend)
  * @requires jasmin_ext/jquery.js
  * @requires jasmin_ext/jquery.mobile.js
+ * @requires window.performance.now
  * @constructor
- * @param {Window} window Window to manage responses of
  */
-jasmin.ResponseManager = function( window )
-{
-    // Start inactive
-    this.active = false;
-    
-    // Save window ref
-    this.window = window;
-    
-    // Attach keyboard event handlers
-    var self = this;
-    this.window.$( this.window.document ).keydown( function( event ) {
-        self.response( "keydown", event );
-    } );
-    this.window.$( this.window.document ).keyup( function( event ) {
-        self.response( "keyup", event );
-    } );
-    
-    // Make a list of the jasmin.POINTER_EVENTS
-    this.pointerDeviceEventsList = [];
-    for( var i in jasmin.POINTER_EVENTS )
-    {
-        for( var j in jasmin.POINTER_EVENTS[i] )
-        {
-            this.pointerDeviceEventsList.push( jasmin.POINTER_EVENTS[i][j] );
-        }
-    }
-}
+jasmin.ResponseManager = function() {
+    // Initial state
+    this.active = false;  
+    this.buttonsActive = undefined;
+    this.callbackResponse = undefined;
+    this.responseData = undefined;
+};
 
 /**
- * Activate; ResponseManager calls callbackResponse if a response was given
- * that is allowed by activeResponses
+ * Attach event handlers 
  * @public
- * @param {Object}    activeResponses   An associative array defining responses that stop the event (if any). See <a href="../source/jasmin_demos/demo_choose.html">these demos </a> for examples.
+ * @param {Object} buttonDefinitions Responses handled by ResponseManager
+ */
+jasmin.ResponseManager.prototype.attach = function(buttonDefinitions) {
+    this.buttonDefinitions = buttonDefinitions;
+    this.bindEvents(true);
+};
+
+/**
+ * Detach event handlers 
+ * @public
+ */
+jasmin.ResponseManager.prototype.detach = function() {
+    this.bindEvents(false);
+};
+    
+/**
+ * Bind or unbind event handlers
+ * @public
+ * @param {boolean} on If true, attach, if false detach
+ */    
+jasmin.ResponseManager.prototype.bindEvents = function(on) {    
+    var self = this;    
+    
+    // attach event handler to a button, binds type, label, and id 
+    var pointerCallback = function(type, id, label) {
+        // if id is "all", attach to document
+        var target = id !== "all"? $(id): $(window.document);
+        var callback = function(event) {
+            var time = window.performance.now();
+            self.stopBubble(event);
+            /*
+            DEBUG && console.log({
+                "where" : "pointerCallback callback",
+                "type"  : type,
+                "id"    : id,
+                "label" : label
+            });
+            */
+            self.response(event, type, id, label, time, event.pageX, event.pageY);
+        };
+        if (on) {
+            target.off(type);
+            target.on(type, callback);
+        } else {
+            target.off(type);
+        }
+    };
+    
+    // keyboardMapping maps keyboard event type and keycode to button label
+    this.keyboardMapping = {
+        "keyup"   : {},
+        "keydown" : {}
+    };
+    
+    // elements to which we already attached cancel event handlers
+    var attachedCancel = [];
+    // attach stopbubble to cancel events, if not done already
+    var stopCancelBubble = function(id) {
+        if (attachedCancel.indexOf(id) === -1) {
+            attachedCancel.push(id);
+            var target = id !== "all"? $(id): $(window.document);
+            // cancel events; stop these in event handler
+            var cancelTypes = ["vmousecancel","mousecancel","touchcancel"], cancelType_i, cancelType;
+            for (cancelType_i in cancelTypes) {
+                cancelType = cancelTypes[cancelType_i];
+                // pointer event; attach event handler
+                /*
+                DEBUG && console.log({
+                    "where" : "stopCancelBubble attach/detach",
+                    "on"    : on,
+                    "type"  : cancelType,
+                    "id"    : modality["id"]
+                });                
+                */
+                var callback = function(event) {
+                    /*
+                    DEBUG && console.log({
+                        "where" : "stopCancelBubble callback",
+                        "type"  : cancelType,
+                        "id"    : modality["id"]
+                    });
+                    */
+                    self.stopBubble(event);
+                }; 
+                if (on) {
+                    target.on(cancelType, callback);
+                } else {
+                    target.off(cancelType);
+                }                
+            }
+        }
+    };
+    
+    for (button_i in this.buttonDefinitions) {
+        button = this.buttonDefinitions[button_i];
+        for (modality_i in button["modalities"]) {
+            modality = button["modalities"][modality_i];  
+            if (modality["type"] === "keyup" || modality["type"] === "keydown") {
+                // keyboard event; add to mapping
+                this.keyboardMapping[modality["type"]][modality["id"]] = button["label"];
+            } else {
+                // pointer event; attach event handler
+                /*
+                DEBUG && console.log({
+                    "where" : "pointerCallback attach/detach",
+                    "on"    : on,
+                    "type"  : modality["type"],
+                    "id"    : modality["id"],
+                    "label" : button["label"]
+                });
+                */
+                pointerCallback(
+                    modality["type"],
+                    modality["id"],
+                    button["label"]
+                );                
+                // Stop cancel bubble
+                stopCancelBubble(modality["id"]);
+            }
+        }
+    }
+    /*
+    DEBUG && console.log({
+        "where" : "keyboardMapping",
+        "what"  : this.keyboardMapping
+    });     
+    */
+    // Attach keyboard event handlers
+    var keyboardCallback = function(type) {
+        var callback = function(event) {
+            var time = window.performance.now();
+            self.stopBubble(event);
+            var id = event.which;
+            /*
+            DEBUG && console.log({
+                "where" : "keyboardCallback callback",
+                "type"  : type,
+                "id"    : id,
+                "label" : self.keyboardMapping[type][id]
+            });
+            */
+            // Map keylabel via keyboardMapping
+            var keyLabel = self.keyboardMapping[type][id];
+            // No keylabel found? try "all" key
+            keyLabel = keyLabel !== undefined? keyLabel: self.keyboardMapping[type]["all"];
+            self.response(event, type, event.which, keyLabel, time);
+        };
+        if (on) {
+            $(window.document).on(type, callback);
+        } else {
+            $(window.document).off(type);
+        }            
+    };
+    var keyboardTypes = ["keydown", "keyup"], keyboardType_i, keyboardType;
+    for (keyboardType_i in keyboardTypes) {
+        keyboardType = keyboardTypes[keyboardType_i];
+        keyboardCallback(keyboardType);
+    }
+};
+    
+/**
+ * ResponseManager calls callbackResponse if a response was given that
+ * matches the specifications of buttonsActive
+ * @public
+ * @param {Array}     buttonsActive     An associative array defining responses that stop the event (if any). See <a href="../source/jasmin_demos/demo_choose.html">these demos </a> for examples.
  * @param {Function}  callbackResponse  Callback called upon a response
- * @param {String}    name               Name of this activation for logging. Default = noname
  */
 jasmin.ResponseManager.prototype.activate = function(
-    activeResponses,    
-    callbackResponse,
-    name
+    buttonsActive,    
+    callbackResponse
 ) {
-    // Store settings
-    this.activeResponses  = activeResponses;
+    this.buttonsActive    = buttonsActive;
     this.callbackResponse = callbackResponse;
-    this.name             = name === undefined? "noname" : name;
     this.active           = true;
+};
+
+/**
+ * Every keyboard and registered touch event triggers a callback to response
+ * In response we determine whether we should call callbackResponse
+ * @private
+ * @param {Object}    event        Event ass received by JS event handler
+ * @param {String}    modality     Type of response (keydown, vmouseup etc.) 
+ * @param {String}    id           ID of HTMLElement or keycode
+ * @param {String}    label        Button label, if any
+ * @param {String}    time         Time of response in ms (via window.performance.now())
+ * @param {String}    x            If pointer: pageX 
+ * @param {String}    y            If pointer: pageY 
+ */
+jasmin.ResponseManager.prototype.response = function(event, modality, id, label, time, x, y) {
+    var callCallback = false;
+
+    // register response if the response was an active button
+    if (this.active && this.buttonsActive !== undefined && this.buttonsActive.indexOf(label) !== -1) {
+        callCallback = true;
+    }
     
-    // Clear logging vars
-    this.clearLoggingVars();
-    
-    // Activate mouse handlers
-    var self = this;
-    var mouseType;
-    
-    // Check each possible pointer event
-    for( var j in this.pointerDeviceEventsList )
-    {
-        mouseType = this.pointerDeviceEventsList[ j ];
-        
-        // Is this response type in activeResponses?
-        if( this.activeResponses[ mouseType ] !== undefined )
-        {
-            // It is, check if type is "all" then attach to window
-            if( this.activeResponses[ mouseType ][ "type" ] === "all" )
-            {
-                // Mode is "all", trigger on any response on window
-                var myMouseType = mouseType;
-                this.window.$( this.window.document ).bind( 
-                    mouseType,
-                    "all",
-                    function( event ) {
-                        //alert( "all");
-                        self.response( myMouseType, event, "all", undefined );
-                    } 
-                );
-            };
-            
-            // Also attach to element in buttons 
-            if( this.activeResponses[ mouseType ][ "buttons" ] !== undefined )
-            {
-                var attach;
-                for( var id in this.activeResponses[ mouseType ][ "buttons" ] )
-                {
-                    // callback for this.response, binding mouseType, label, and id
-                    attach = function( mouseType, label, id )
-                    {
-                        var myLabel     = label;
-                        var myMouseType = mouseType;
-                        var myId        = id;
-                        
-                        $( id ).bind( 
-                            myMouseType,
-                            myLabel,
-                            function( event ) {
-                                report( "ResponseManager.triggered", myMouseType );
-                                self.response( myMouseType, event, myId, myLabel );
-                            } 
-                        );                
-                    };
-                    report( "ResponseManager.bind", mouseType + " to " + id );
-                    attach( 
-                        mouseType,
-                        this.activeResponses[ mouseType ][ "buttons" ][ id ],
-                        id
-                    );
-                }
-            }
-        }
+    if(callCallback) {
+        // Setup responseData
+        this.responseData = {
+            "modality" : modality,
+            "id"       : id,
+            "label"    : label,
+            "time"     : time,
+            "x"        : x,
+            "y"        : y,
+            "event"    : event            
+        };    
+
+        // Do callback
+        this.callbackResponse();
     }
 };
 
 /**
- * Every keyboard and registered touch event triggers a callback to response,
- * in which is determined if we should call callbackResponse
- * @private
- * @param {String}    mode  Type of response (keydown, vmouseup etc.) 
- * @param {Object}    event  Data about the event that triggered the response
- * @param {String}    pointerId    ID of pointer event (if any) 
- * @param {String}    pointerLabel    Label of pointer event (if any) 
+ * Provides response data of previous response
+ * @returns {Object} response data
+ * @public
  */
-jasmin.ResponseManager.prototype.response = function( mode, event, pointerId, pointerLabel ) {
-    //report( "ResponseManager.response", JSON.stringify( [ mode, id ] ) );
-    
-    // Only register responses if active
-    if( this.active ) {
-        // Stop event bubbling - TP disable for Android Browser 4.3 
-        event.stopPropagation(); 
-        event.preventDefault();           
-        
-        // Parse response, does it end the timedEvent?
-        var critical = this.parseResponse( mode, event, pointerId, pointerLabel  );
-        if( critical ) {
-            // Store logging vars
-            this.updateResponseLog();
-    
-            // Do callback
-            this.callbackResponse();
-        }
-    }
+jasmin.ResponseManager.prototype.getResponseLog = function() {
+    return this.responseData;
 };
 
-
-// Check if this response is critical, and parse it on the way
-jasmin.ResponseManager.prototype.parseResponse = function( mode, event, id, label ) {
-    // Log time of response
-    var time = window.performance.now();
-    
-    // Assume not critical
-    var critical = false;
-            
-    // Is this mode defined?
-    if( this.activeResponses[ mode ] !== undefined ) {    
-        // On a keyboard response, check key
-        if( 
-               mode === "keydown" 
-            || mode === "keyup"
-        ) {       
-            // The id is keycode based on event.which
-            id = event.which;
-                
-            // Is the response a valid buton? 
-            if(
-                   this.activeResponses[ mode ][ "buttons" ]                !== undefined 
-                && this.activeResponses[ mode ][ "buttons" ][ event.which ] !== undefined 
-            ) {
-                // Yes; assign label
-                label = this.activeResponses[ mode ][ "buttons" ][ id ];
-            }
-
-            // Yes, are all buttons critical?
-            if( this.activeResponses[ mode ][ "type" ] === "all" )
-            {
-                // All buttons critical, so this one too
-                critical = true;
-
-            // Not all buttons critical, is this response defined in buttons?
-            } else if( label !== undefined ) {
-                // Response is defined, so response is critical
-                critical = true;               
-            }
-        }
-        
-        // Clear x and y coordinates
-        this.x = undefined;
-        this.y = undefined;
-        
-        // On a mouse response, log coordinates and assume critical
-        if( this.pointerDeviceEventsList.indexOf( mode ) !== -1 )  {
-            this.x = event.pageX;
-            this.y = event.pageY;
-            
-            // No need to setup label and id, but let's check if they are the same
-            critical = true;
-        }
-    }
-    
-    // Save logging vars to this
-    this.critical = critical;
-    this.mode     = mode;
-    this.id       = id;
-    this.label    = label;
-    this.time     = time;
- 
-    return critical;
+// Stop event bubbling 
+jasmin.ResponseManager.prototype.stopBubble = function(event) {
+    event.stopPropagation(); 
+    event.preventDefault();
 };
-
 
 /**
  * Deactivate; don't call responseCallback on any response anymore
@@ -267,86 +271,4 @@ jasmin.ResponseManager.prototype.parseResponse = function( mode, event, id, labe
 jasmin.ResponseManager.prototype.deactivate = function() {
     // Stop event
     this.active = false;    
-    
-    // Update responseLog
-    this.updateResponseLog();
-    
-    // Remove mouse handlers
-	if( this.activeResponses !== undefined )
-	{
-		var mouseType;
-		for( var j in this.pointerDeviceEventsList ) {
-			mouseType = this.pointerDeviceEventsList[ j ];
-			if( this.activeResponses[ mouseType ] !== undefined ) {
-				// If all responses unbind document
-				if( this.activeResponses[ mouseType ][ "type" ] === "all" ) {
-					this.window.$( this.window.document ).unbind( 
-						mouseType
-					);
-				}	
-                
-                for( var i in this.activeResponses[ mouseType ][ "buttons" ] ) {
-                    report( "ResponseManager.unbind", mouseType );
-                    $( i ).unbind( mouseType );
-				}
-			}
-		}    
-	}
-};
-
-
-/**
- * Store all logging vars in responseLog
- * @private
- */
-jasmin.ResponseManager.prototype.updateResponseLog = function() {
-    this.responseLog = {
-        "na"     : this.name,
-        "cr"     : this.critical,
-        "mo"     : this.mode,
-        "id"     : this.id,
-        "la"     : this.label,
-        "ti"     : this.time,
-        "x"      : this.x,
-        "y"      : this.y
-    };
-};
-
-/**
- * Get past responseLog; a responseLog is ready when callbackResponse being called
- * See logging vars for an overview of values stored in responseLog
- * @returns (Object) Associative array with responseLog variables
- * @public
- */
-jasmin.ResponseManager.prototype.getResponseLog = function() {
-    return( this.responseLog );
-};
-
-// Clear logging vars
-jasmin.ResponseManager.prototype.clearLoggingVars = function() {
-    /**
-     * Logging var: was response critical (true/false)
-     * @instance
-     */
-    this.critical = undefined;
-    /**
-     * Logging var: what type of response (keydown, touchend, etc.)
-     * @instance
-     */
-    this.mode = undefined;
-    /**
-     * Logging var: what was the id (keycode for keyboard, css selector for pointer)
-     * @instance
-     */
-    this.id = undefined;
-    /**
-     * Logging var: what was the corresponding label in buttons (if any)
-     * @instance
-     */
-    this.label = undefined;
-    /**
-     * Logging var: at what time was the response made?
-     * @instance
-     */
-    this.time = undefined;
 };

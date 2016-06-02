@@ -112,12 +112,40 @@ startCanvas = function()
         }
         
     };
-    
-    
+    // Setup the text in the text-box
     sprites.text_box.node.text("something else");
+    
+    // Scale to document.body or to #graphics_here?
+    var scaleTo = prompt( "Scale canvas to 1: document.body or 2: #graphics_here" );
+    var target;
+    if( scaleTo === "1" ) {
+        // Scale to body; 
+        target = $( document.body );
+        // Ensure that all relevant containers are 100% without margin
+        $( "html" ).css({
+            "width"  : "100%",
+            "height" : "100%",
+            "margin" : "0px"        
+        });
+        $( document.body ).css({
+            "width"  : "100%",
+            "height" : "100%",
+            "margin" : "0px"
+        });
+        // Hide stuff that might interfere with scaling
+        $( "#form_here" ).hide();
+        $( "#graphics_here" ).hide();
+        $( "#text_here" ).hide();
+        
+    } else {
+        target = $( "#graphics_here" );
+        target.height( "300px" );
+    }    
+    
     // Construct canvas
-    var canvas      = new jasmin.ScalableCanvas( 
-        $( "#graphics_here" ),  // container div; note though that canvas scales to the window
+    var canvas      = new jasmin.ScalableCanvas(
+        target,
+        //$( "#graphics_here" ),  // container div; note though that canvas scales to the window
         1.6                     // aspectRatio (x/y). A value of 1.6 gives this range of coordinates: x[0:1.6] and y[0:1]
         // rescaleInterval (number of ms between checking rescaling), 1000 by default
     );

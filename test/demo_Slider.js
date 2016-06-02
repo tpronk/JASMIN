@@ -25,7 +25,7 @@ load = function() {
     report( demoName, "Demonstrating a slider implemented on a ScalableCanvas" );
     getScripts( [
             pathSrc + "ScalableCanvas.js",
-            pathExt + "jquery.mobile.js",
+            pathExt + "jquery.mobile-1.4.5.js",
             pathSrc + "responseManager.js"
         ],
         startCanvas
@@ -44,10 +44,13 @@ startCanvas = function()
         {
             // "node" contains the object and CSS properties that not need scaling
             "node" :
-                $( "<div>" ).css( {
+                $( "<div>" ).attr( {
+                    "id" : "background"
+                } ).css( {
                     "z-index"          : 1,
                     "background-color" : "#000000",
-                    "opacity"          : 1
+                    "opacity"          : 1,
+                    "position"         : "absolute"
                 } ),
             // "scale" contains the object and CSS properties that do need scaling
             "scale" :
@@ -69,7 +72,8 @@ startCanvas = function()
                     "color"            : "red",
                     "display"          : "table",
                     "font-weight"      : "bold",
-                    "background-color" : "#666666"
+                    "background-color" : "#666666",
+                    "position"         : "absolute"
                 } ),
             // scale; all properties you want to scale
             "scale" :            
@@ -91,7 +95,8 @@ startCanvas = function()
                     "color"            : "red",
                     "display"          : "table",
                     "font-weight"      : "bold",
-                    "background-color" : "#FFFFFF"
+                    "background-color" : "#FFFFFF",
+                    "position"         : "absolute"
                 } ),
             // scale; all properties you want to scale
             "scale" :            
@@ -103,6 +108,7 @@ startCanvas = function()
                 }    
         }        
     };
+    $( "#graphics_here" ).height( "300px" );
     
     // Construct canvas
     canvas      = new jasmin.ScalableCanvas( 
@@ -118,37 +124,48 @@ startCanvas = function()
     canvas.start();    
     
     // Create responseManager
-    responseManager = new jasmin.ResponseManager( window );    
+    var buttonsAll = [
+        {
+            "label" : "down",
+            "modalities" : [
+                { "type" : "mousedown",  "id" : "all" },
+                { "type" : "touchstart", "id" : "all" }
+           ]
+        },
+        {
+            "label" : "up",
+            "modalities" : [
+                { "type" : "mouseup",  "id" : "all" },
+                { "type" : "touchend", "id" : "all" }
+           ]
+        }
+    ];
+    responseManager = new jasmin.ResponseManager();
+    responseManager.attach(buttonsAll);
 
     // Wait for vmousedown
     waitForVmousedown();
 };
 
 waitForVmousedown = function() {
-    var activeResponses = { 
-        "vmousedown" : {
-            "type" : "all",
-            "buttons" : {}
-        }
-    };
-    
     // Activate; start registering responses
     responseManager.activate(
-        activeResponses,          // activeResponses  - These responses are registered
-        onVmousedown             // callbackResponse - Function to call on response
+        ["down"],   
+        onVmousedown
     );  
 };
 
 onVmousedown = function() {
     // Get vmouse and canvas coordinates on page, convert vmouse to canvas coordinates
-    var canvasLeft   = $( "#graphics_here" ).offset()[ "left" ] + canvas.offsetLeft;
-    var canvasTop    = $( "#graphics_here" ).offset()[ "top"  ] + canvas.offsetTop;
-    var canvasRight  = $( "#graphics_here" ).offset()[ "left" ] + $( "#graphics_here" ).width()  - canvas.offsetLeft;
-    var canvasBottom = $( "#graphics_here" ).offset()[ "top" ]  + $( "#graphics_here" ).height() - canvas.offsetTop;
-    var mouseX     = responseManager.getResponseLog()[ "x" ];
-    var mouseY     = responseManager.getResponseLog()[ "y" ];
-    var relX = ( ( mouseX - canvasLeft ) / ( canvasRight  - canvasLeft ) ) * canvas.aspectRatio;
-    var relY = ( ( mouseY - canvasTop  ) / ( canvasBottom - canvasTop  ) );
+    console.log(canvas.offsetLeft)
+    var canvasLeft   = canvas.offsetLeft;
+    var canvasTop    = canvas.offsetTop;
+    var canvasWidth  = $( "#background" ).width();
+    var canvasHeight = $( "#background" ).height();
+    var mouseX     = responseManager.responseData[ "x" ];
+    var mouseY     = responseManager.responseData[ "y" ];
+    var relX = ( ( mouseX - canvasLeft ) / canvasWidth ) * canvas.aspectRatio;
+    var relY = ( mouseY - canvasTop  ) / canvasHeight;
     
     report(
         demoName,
@@ -167,7 +184,8 @@ onVmousedown = function() {
         );        
     
         // Move slider_handle
-        canvas.scalables.slider_handle.left = relX - .025;
-        canvas.rescaleSprite( "slider_handle" );
+        console.log(canvas);
+        sprites.slider_handle.scale.left = relX - .025;
+        canvas.rescaleSprite( sprites.slider_handle );
     }
 };

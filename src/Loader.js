@@ -19,117 +19,129 @@
 if( jasmin === undefined ) { var jasmin = function() {}; }
 
 /**
- * The Loader provides a short API for requesting a set of includes (js/css) 
- * and data (json/text/img/etc.).
-  * @param   {RequestManager} requestManager  Handles the requests
-  * @require RequestManager
+ * The Loader provides a short API for making a set of requests (to get js/css/json/text/img/etc.). 
+ * @param   {RequestManager} requestManager  Uses this to Handle the requests
+ * @param   {Object}         baseUrls        Base URLs to prepend to urls passed to load. baseUrls can contain a key per request type (css, img, json, text, script, font, etc.)
+ * @require RequestManager
  * @class
  */
-jasmin.Loader = function( requestManager ) {
+jasmin.Loader = function( requestManager, baseUrls ) {
     this.requestManager = requestManager;
+    this.baseUrls = baseUrls;
 };
 
 /**
- * Load a set of includes and data
- * @param {Array}    includes           Indexed array of includes to load, each element of includes should be an indexed array with the first element specifying type of include "js" and "css", and the second element specifying the url/src
- * @param {Object}   data               Associative array of data to load, each element having the same structure as for includes. All type values are passed as dataType to jQuery.ajax (via RequestManager), except "css" (which is added to the head) and "img", for which the image-requested of the RequestManager is used
- * @param {Function} allLoaded          Callback called when all is loaded with the argument being the data downloaded (as an associative array)
- * @param {Function} progressCallback   (option) Callback for updating progress; this function receives one argument, being progress (ranging from 0 to 100)
+ * Perform a set of requests and call a callback with all replies once all replies have completed
+ * @param {Array}    requests  Associative array, in which the keys identify each request (for retrieving the replies later), while each value is an indexed array in which element 0 identifies the type of request element 1 contains the actual request. For type "img" the image downloader is used, "css" is downloaded via AJAX and put in the page head, any other type is passed on as dataType to a RequestManager AJAX request
+ * @param {Function} allLoaded          called when all is loaded with the argument being the data downloaded (as an associative array)
+ * @param {Function} progressCallback   (optional) callback for updating progress; this function receives one argument, being the progress made so far (ranging from 0 to 100)
  * @public
  */
-jasmin.Loader.prototype.load = function( data, allLoaded, progressCallback ) {
+jasmin.Loader.prototype.load = function( requests, allLoaded, progressCallback ) {
     this.allLoaded        = allLoaded;
-    this.progressCallback = progressCallback == undefined? function() {} : progressCallback;
+    this.progressCallback = progressCallback === undefined? function() {} : progressCallback;
     
     this.replies  = {};    // Results of data requests
     this.loadCounter = 0;  // Counting progress
     this.loadTotal   = 0;  // Counting total
 
-    // Make requests for data; put reply via callback in replies
-    var self = this;
-    this.makeRequests( 
-        data, 
-        function( key, reply ) {
-            self.replies[ key ] = reply;
-        }
-    );
-
     // Report 0 progress
-    this.progress();
+    this.progressCallback(0);
+
+    // Make requests for includes
+    this.doRequests( requests );
 
     // Flush and call callback
+    var self = this;
     this.requestManager.flush( function() { 
         self.allLoaded( self.replies );
     } );
 };
     
- jasmin.Loader.prototype.makeRequests = function( requests, callback ) {
+ jasmin.Loader.prototype.doRequests = function( requests ) {
     var self = this;
     for( var key in requests ) {
         this.loadTotal++;        
         
         // This closure sets up the right request and binds its arguments to the callback function
-        var closure = function( key, fileType, url, data, type, callback ) {
+        var closure = function( key, dataType, url, request ) {
             var requestType, request;
-            switch( fileType ) {
-                
-                // Determine what kind of request to make
-                case "js":
-                    requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
-                    request = {
-                        "url"      : url,
-                        "dataType" : "script",
-                        "data"     : data
-                    };
-                    break;
-                case "json":
-                    requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
-                    request = {
-                        "url"      : url,
-                        "dataType" : "json",
-                        "data"     : data
-                    };
-                    break;                    
+            if (self.baseUrls !== undefined && self.baseUrls[dataType] !== undefined) {
+                url = self.baseUrls[dataType] + url;
+            }
+            
+            // Determine what kind of request to make
+            switch( dataType ) {
                 case "css":
-                    requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
+                    requestType = jasmin.RequestManager.TYPE_AJAX;
                     request = {
                         "url"      : url,
-                        "dataType" : "text",
-                        "data"     : data
+                        "dataType" : "text"
                     };
                     break;
                 case "img":
-                    requestType = jasmin.REQUEST_MANAGER_TYPE_IMG;
+                    requestType = jasmin.RequestManager.TYPE_IMG;
                     request = url;
                     break;
                 default:
-                    requestType = jasmin.REQUEST_MANAGER_TYPE_AJAX;
-                    request = {
-                        "url"      : url,
-                        "dataType" : fileType,
-                        "data"     : data
-                    };           
+                    requestType = jasmin.RequestManager.TYPE_AJAX;
+                    if( request === undefined ) {
+                        request = {};
+                    }
+                    request["dataType"] = dataType;
+                    request["url"] = url;
                     break;                 
-            }       
-            //request[ "type" ] = type === undefined? "GET": type;
-            request[ "type" ] = type;
+            }            
+            
+            // font; setup AJAX request to be binary
+            if( dataType === "font" ) {
+                request["dataType"]  = "binary";
+                request["processData"] = false;
+            }
+            
+            DEBUG && console.log({
+                "what"     : "request",
+                "key"      : key,
+                "dataType" : dataType,
+                "url"      : url,
+                "request"  : request
+            });
             
             // Do it
             self.requestManager.request(
                 requestType,
                 request, 
                 function( reply ) {
+                    DEBUG && console.log({
+                        "what"     : "reply",
+                        "key"      : key,
+                        "dataType" : dataType,
+                        "url"      : url,
+                        "request"  : request,
+                        "reply"    : reply
+                    });
+                    
                     // Special case for CSS; put in head
-                    if( fileType === "css" ) {
+                    if( dataType === "css" ) {
                         $( '<link rel="stylesheet" type="text/css" href="' + url + '" />' ).appendTo( "head" );
                     }
-                    callback( key, reply );
+                    // Special case for font; setup a font
+                    if( dataType === "font" ) {
+                        $( "head" ).prepend("<style type=\"text/css\">@font-face {"
+                            + "src : url(\""    + request["url"] + "\");"
+                            + "font-family : " + request["font-family"] + ";"
+                            + "font-weight : " + request["font-weight"] + ";"
+                            + "font-style  : " + request["font-style"] + ";"
+                            + "}"
+                        );
+                    }
+                    self.replies[ key ] = reply;
                     self.loadCounter++;
                     self.progress();
                 }
             );            
         };
-        closure( key, requests[key][0], requests[key][1], requests[key][2], requests[key][3], callback );
+        closure( key, requests[key][0], requests[key][1], requests[key][2], requests[key][3] );
     }
 };    
     

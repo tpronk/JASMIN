@@ -33,89 +33,112 @@ load = function() {
 
 runStatistics = function() {
     // Repeat the value "badgers", 3 times
-    report( demoName, JSON.stringify( 
+    console.log(
         jasmin.Statistics.rep( "badgers", 3 ) 
-    ) );
+    );
     
     // Generate 1,2,3,4,5
-    report( demoName, JSON.stringify( 
+    console.log(
         jasmin.Statistics.seq( 1, 5 ) 
-    ) );
+    );
     
     // Generate 2,4,6,8
-    report( demoName, JSON.stringify( 
+    console.log(
         jasmin.Statistics.seq( 2, 8, 2 ) 
-    ) );
+    );
     
     // Generate 1,1,1,1,2,2,2,2; this sequence we'll use for other stuff below
     sequence = jasmin.Statistics.seq( 1, 2, 1, 4 );
-    report( demoName, JSON.stringify( sequence ) );
+    console.log(sequence );
     
 
     // Check on repetitions length 4 in the sequnce (is present)
-    report( demoName, JSON.stringify( 
+    console.log(
         jasmin.Statistics.repetitions( sequence, 4 )
-    ) );
+    );
 
     // Check on repetitions length 5 in the sequence (is not present)
-    report( demoName, JSON.stringify( 
+    console.log(
         jasmin.Statistics.repetitions( sequence, 5 )
-    ) );
+    );
 
     // Shuffle the sequence
-    report( demoName, JSON.stringify( 
+    console.log(
         jasmin.Statistics.fisherYates( sequence ) 
-    ) );
+    );
 
 
     // Create an indexed array of associative arrays
     nestedSequence = [
-        { "color" : "blue", "arrow" : "left"  },
-        { "color" : "blue", "arrow" : "left"  },
-        { "color" : "blue", "arrow" : "right" },
-        { "color" : "red",  "arrow" : "right" }        
+        { "color" : "blue", "arrow" : "left", "response"  : 1, "rt" : 1200, },
+        { "color" : "blue", "arrow" : "left", "response"  : 2, "rt" : 789,  },
+        { "color" : "blue", "arrow" : "right", "response" : 1, "rt" : 1400, },
+        { "color" : "red",  "arrow" : "right", "response" : 1, "rt" : 1900, }        
     ];
-    report( demoName, JSON.stringify( 
+    console.log(
         nestedSequence 
-    ) );
+    );
     
     // Check on repetitions of { "color" : "blue", "arrow" : "left"  } length 2 -> true
-    report( demoName, JSON.stringify( 
+    console.log(
         jasmin.Statistics.repetitions( nestedSequence, 2 )
-    ) );
+    );
 
     // Check on repetitions of { "color" : "blue", "arrow" : "left"  } length 3 -> false
-    report( demoName, JSON.stringify( 
+    console.log(
         jasmin.Statistics.repetitions( nestedSequence, 3 )
-    ) );
+    );
 
     // Check on repetitions of "color" : "blue" length 3 -> true
-    report( demoName, JSON.stringify( 
+    console.log(
         jasmin.Statistics.repetitions( nestedSequence, 3, "color" )
-    ) );
+    );
 
     // Check on repetitions of "color" : "blue" length 4 -> false
-    report( demoName, JSON.stringify( 
+    console.log(
         jasmin.Statistics.repetitions( nestedSequence, 4, "color" )
-    ) );
+    );
 
     // Shuffle nestedSequence
-    report( demoName, JSON.stringify( 
+    console.log(
         jasmin.Statistics.fisherYates( nestedSequence ) 
-    ) );
+    );
     
+    // Apply a function to the sequence; get all correct rows (those with response === 1)
+    var correctRows = jasmin.Statistics.applyRow(
+        nestedSequence,
+        function (row) {
+            return (row["response"] === 1? row: undefined);
+        }
+    );
+    console.log(correctRows);
     
+    // Apply another function; get RTs of correct rows
+    var rts = jasmin.Statistics.applyRow(
+        correctRows,
+        function (row) {
+            return (row["rt"]);
+        }
+    );
+    console.log(rts);
+
+    // Mean of of RTs for correct row
+    console.log(
+        jasmin.Statistics.mean(rts)
+    );
     
-    //get a 100 random integers between 1 and 10 (a JGW addition)
+
+    
+    // Generate 100 random integers between 1 and 10
     randomIntegers = [];
     
     while (randomIntegers.length <101)
     {
         randomIntegers.push(jasmin.Statistics.randomInt(1,10));        
     }
-    report( demoName, JSON.stringify(
-            randomIntegers 
-    ) );
+    console.log(
+        randomIntegers 
+    );
     
     var x=1;
     var counts = [0,0,0,0,0,0,0,0,0,0];
@@ -129,4 +152,26 @@ runStatistics = function() {
         y++;
     }
 
+    // Generate a sequence with balanced labels, each item should get labelA twice
+    console.log(jasmin.Statistics.balancedSequence(
+        ["x", "y", "z"],
+        4,
+        .5,
+        "a",
+        "b"
+    ));
+    
+    // Generate a sequence with balanced labels, each item should get labelA once,
+    // with an additional labelA randomly applied to one of the remaining items.
+    // items get key "my_item" and labels get key "my_label"
+    console.log(jasmin.Statistics.balancedSequence(
+        ["x", "y", "z"],
+        3,
+        .5,
+        "a",
+        "b",
+        "my_item",
+        "my_label"
+    ));
+    
 };

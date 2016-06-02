@@ -28,6 +28,7 @@ var eventDuration = 333;
 // Called on page load
 load = function() {
     getScripts( [
+            pathSrc + "polyfills.js",
             pathSrc + "SyncTimer.js"
         ],
         setupDemo
@@ -50,7 +51,7 @@ setupDemo = function() {
     );
 
     // Create a SyncTimer
-    syncTimer = new jasmin.SyncTimer( report );    
+    syncTimer = new jasmin.SyncTimer();    
     
     // Sync it; calls startRed when done
     //report( demoName, "Syncing, then starting events that last " + eventDuration + " ms" );
@@ -59,7 +60,7 @@ setupDemo = function() {
 
 // Called on sync or startBlue
 startRed = function() {
-    report( demoName, JSON.stringify( syncTimer.getPrevTimeoutLog() ) );
+    console.log( syncTimer.getPrevTimeoutLog() );
     syncTimer.setTimeout(
         eventDuration,
         drawRed,
@@ -74,7 +75,7 @@ drawRed = function() {
 
 // Called on draw (synced with requestAnimationFrame)
 startBlue = function() {
-    //reportSyncTimer();
+    console.log( syncTimer.getPrevTimeoutLog() );
     syncTimer.setTimeout(
         eventDuration,
         drawBlue,

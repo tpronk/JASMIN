@@ -16,12 +16,7 @@
  * Init JASMIN namespace
  * @private
  */
-if( jasmin === undefined ) { var jasmin = function() {}; }
-
-// Task Response types 
-jasmin.EVENT_ENDREASON_TIMEOUT  = 0; // Event ended because it timed out
-jasmin.EVENT_ENDREASON_RESPONSE = 1; // Event ended because a response was given
-jasmin.EVENT_ENDREASON_CANCEL   = 2; // Event ended because it was canceled (task stopped?)
+if (jasmin === undefined) { var jasmin = function() {}; }
 
 /**
  * EventManager creates a SyncTimer to time events and ResponseManager to
@@ -33,38 +28,51 @@ jasmin.EVENT_ENDREASON_CANCEL   = 2; // Event ended because it was canceled (tas
  * @requires jQuery mobile
  * @requires ResponseManager
  * @requires SyncTimer
+ * @param {Object} buttonsAll buttons used 
  * @constructor
- * @param {Window} window Window to manage responses of
  */
-jasmin.EventManager = function( window )
-{
-    this.responseManager = new jasmin.ResponseManager( window );
+jasmin.EventManager = function() {
+    this.responseManager = new jasmin.ResponseManager();
     this.syncTimer       = new jasmin.SyncTimer();
-    
-    this.callbackDone = undefined;
+    this.callbackDone    = undefined;
+};
+
+// Reasons an event ended; values for EventManager.endReason
+jasmin.EventManager.ENDREASON_TIMEOUT  = "timeout";  // Event ended because it timed out
+jasmin.EventManager.ENDREASON_RESPONSE = "response"; // Event ended because a response was given
+jasmin.EventManager.ENDREASON_CANCEL   = "cancel";   // Event ended because it was canceled (task stopped?)
+
+/**
+ * Start synchronizing with clock and attach buttons
+ * @param {Function} buttonDefinitions Buttons to attach. See ResponseManager.attach()
+ * @param {Function} callbackSynced    Called when synced. See SyncTimer.sync()
+ */
+jasmin.EventManager.prototype.start = function(buttonDefinitions,callbackSynced) {
+    this.responseManager.attach(buttonDefinitions);
+    this.syncTimer.sync(function() {
+        callbackSynced();
+    });
 };
 
 /**
- * Start synchronizing with clock; wrapper for SyncTimer.sync
+ * Stop synchronizing with clock and detach buttons
  * @param {Function} callbackSynced Called when synced
  */
-jasmin.EventManager.prototype.sync = function( callbackSynced )
-{
-    this.syncTimer.sync( function() {
-        callbackSynced();
-    } );
+jasmin.EventManager.prototype.stop = function() {
+    this.responseManager.detach();
+    this.syncTimer.unsync();
 };
-
 
 /**
  * Start an event that can end on a timeout or a response
- * @param {int}      timeout          Number of ms until callbackDone is called, use multiples of 16 for best results (since most screens have a 60hz refresh rate). If -1 then never tmieout
+ * @param {int}      timeout          Number of ms until callbackDone is called, use multiples of 16 for best results (since most screens have a 60hz refresh rate). If -1 then never timeout, so the event lasts forever.
  * @param {Function} callbackDraw     Callback called when timeout starts (immediately if we handling a synchronous callback, at next refresh if not)
  * @param {Function} callbackDone     Callback called on timeout
- * @param {Object}   activeResponses  An associative array defining responses that stop the event (if any). See <a href="../source/jasmin_demos/demo_choose.html">these demos </a> for examples.
+ * @param {Array}    buttonsActive    Array with buttons active this event
+ * @param {bool}     resetRt          If true, sets start time of RT measurement on timeShown of this event, else use earlier start time. Default = true.
  * @param {String}   name             Name of this timeout for logging. Default = noname
  */
-jasmin.EventManager.prototype.startEvent = function( timeout, callbackDraw, callbackDone, activeResponses, name ) {
+jasmin.EventManager.prototype.startEvent = function(timeout, callbackDraw, callbackDone, buttonsActive, resetRt, name) {
     // Clear logging vars
     this.clearLoggingVars();
 
@@ -72,49 +80,63 @@ jasmin.EventManager.prototype.startEvent = function( timeout, callbackDraw, call
     this.timeout         = timeout;
     this.callbackDraw    = callbackDraw;
     this.callbackDone    = callbackDone;
-    this.activeResponses = activeResponses;
-    this.name            = name === undefined? "noname" : name;
-    
+    this.buttonsActive   = buttonsActive;
+    this.resetRt         = resetRt !== undefined? resetRt: true;
+    this.name            = name !== undefined? name: "noname";
+
     var self = this;
-    this.responseManager.activate( 
-        activeResponses,  
+    this.responseManager.activate(
+        buttonsActive,  
         function() {
-            self.endEvent( jasmin.EVENT_ENDREASON_RESPONSE );
+            self.endEvent(jasmin.EventManager.ENDREASON_RESPONSE);
         },
         this.name
-    );
+   );
 
-    this.syncTimer.setTimeout( 
+    this.syncTimer.setTimeout(
         timeout, 
         function() {
             self.callbackDraw();
         },
         function() {
-            self.endEvent( jasmin.EVENT_ENDREASON_TIMEOUT );
+            self.endEvent(jasmin.EventManager.ENDREASON_TIMEOUT);
         },
         this.name 
-    );
+   );
 };
 
 /**
  * endEvent called on timeout or response
- * @param (string) endReason Why the event ended: timeout, response, or cancel
+ * @param {string} endReason Why the event ended: timeout, response, or cancel
  * @private
  */
-jasmin.EventManager.prototype.endEvent = function( endReason ) {
+jasmin.EventManager.prototype.endEvent = function(endReason) {
     // Don't register responses anumore
     this.responseManager.deactivate();
     
     // Cancel timeout if event not ended by timeout
-    if( endReason !== jasmin.EVENT_ENDREASON_TIMEOUT ) {
+    if (endReason !== jasmin.EventManager.ENDREASON_TIMEOUT) {
         this.syncTimer.cancelTimeout();
     }
     
-    // Calculate rt on response
-    if( endReason === jasmin.EVENT_ENDREASON_RESPONSE ) {
-        this.rt            = this.responseManager.time - this.syncTimer.timeShown;
-        this.responseLabel = this.responseManager.label;
-        this.responseId    = this.responseManager.id;
+    // Set rt start time
+    if (this.resetRt) {
+        if (this.syncTimer.shown === false) {
+            // Special case; nothing shown yet -> rtStartTime is now (rt=0)
+            this.timeRtStart = window.performance.now();
+        } else {
+            // Otherwise, calculate relative to timeShown
+            this.timeRtStart = this.syncTimer.timeShown;
+        }
+    }
+    
+    // Get response data on response
+    if (endReason === jasmin.EventManager.ENDREASON_RESPONSE) {
+        var responseLog = this.responseManager.getResponseLog();
+        this.rt = responseLog[ "time" ] - this.syncTimer.timeShown;
+        this.responseLabel = responseLog[ "label" ];
+        this.responseId = responseLog[ "id" ];
+        this.responseModality = responseLog[ "modality" ];
     }
     
     this.endReason = endReason;
@@ -123,7 +145,7 @@ jasmin.EventManager.prototype.endEvent = function( endReason ) {
     this.updateEventLog();
     
     // If endReason for endEvent is not "cancel", call callbackDone
-    if( endReason !== jasmin.EVENT_ENDREASON_CANCEL ) {
+    if (endReason !== jasmin.EventManager.ENDREASON_CANCEL) {
         this.callbackDone();
     }
 };
@@ -134,10 +156,8 @@ jasmin.EventManager.prototype.endEvent = function( endReason ) {
  * @public
  */
 jasmin.EventManager.prototype.cancelEvent = function() {
-    this.endEvent( jasmin.EVENT_ENDREASON_CANCEL );
+    this.endEvent(jasmin.EventManager.ENDREASON_CANCEL);
 };
-
-
 
 /**
  * Store all logging vars in responseLog
@@ -145,10 +165,11 @@ jasmin.EventManager.prototype.cancelEvent = function() {
  */
 jasmin.EventManager.prototype.updateEventLog = function() {
     this.eventLog = {
-        "name"          : this.name,
-        "rt"            : this.rt,
-        "endReason"     : this.endReason,
+        "name" : this.name,
+        "rt" : this.rt,
+        "endReason" : this.endReason,
         "responseLabel" : this.responseLabel,
+        "modality" : this.responseModality,
         "id"            : this.responseId
     };
 };
@@ -161,7 +182,7 @@ jasmin.EventManager.prototype.updateEventLog = function() {
  * @public
  */
 jasmin.EventManager.prototype.getEventLog = function() {
-    return( this.eventLog );
+    return(this.eventLog);
 };
 
 // Clear logging vars
@@ -187,4 +208,16 @@ jasmin.EventManager.prototype.clearLoggingVars = function() {
      * @instance
      */
     this.responseLabel = undefined;    
+    
+    /**
+     * Logging var: If this event was ended by a response, the ID of this response
+     * @instance
+     */
+    this.responseId = undefined;        
+    
+    /**
+     * Logging var: If this event was ended by a response, the modality of this response (keydown, touchstart, etc.)
+     * @instance
+     */
+    this.responseModality = undefined;            
 };

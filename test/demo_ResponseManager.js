@@ -13,22 +13,23 @@
 // limitations under the License. 
 
 // ****************
-// *** demo_EventManager
+// *** demo_ResponseManager_pointer
 //
-// Demonstrates how the EventManager times events and registers responses
+// Demonstrates how the ResponseManager can register pointer responses via
+// vmousedown
+// Assignments:
+//   - Let the ResponseManager register vmouseup   responses
+//   - Let the ResponseManager register touchstart responses (need touchscreen for this)
 
 // Name of this demo
-var demoName   = "demo_EventManager.js";
+var demoName   = "demo_ResponseManager.js";
 
 // Called on page load
 load = function() {
-    getScripts( 
-        [
+    getScripts( [
             pathExt + "jquery.mobile-1.4.5.js",
             pathSrc + "polyfills.js",
-            pathSrc + "ResponseManager.js",
-            pathSrc + "SyncTimer.js",
-            pathSrc + "EventManager.js"
+            pathSrc + "ResponseManager.js"
         ],
         setupDemo
     );
@@ -40,12 +41,12 @@ setupDemo = function() {
         $( "<div>" ).attr( {
                 "id" : "button_left"
             } ).css( {
-            "position" : "absolute",                
-            "width" : "100px",
-            "height" : "100px",
-            "left" : "0px",
-            "top" : "0px",
-            "background-color" : "red"
+                "width"  : "100px",
+                "height" : "100px",
+                "position" : "absolute",
+                "left" : "0px",
+                "top"  : "0px",
+                "background-color" : "green"
         } )
     );
     $( "#graphics_here" ).append( 
@@ -58,12 +59,12 @@ setupDemo = function() {
             "left"   : "120px",
             "top"    : "0px",
             "z-index" : 2,
-            "background-color" : "blue"
+            "background-color" : "green"
         } )
     );
     $( "#graphics_here" ).height( "100px" );
-
-    // Create a EventManager and attach buttons
+   
+    // all buttons managed by this ResponseManager instance
     var buttonDefinitions = [
         {
             "label" : "left_down",
@@ -104,60 +105,70 @@ setupDemo = function() {
                 { "type" : "touchend", "id" : "all" }
             ]
         }
-    ];    
-    eventManager = new jasmin.EventManager();    
+    ];
+
+    // Create a ResponseManager
+    responseManager = new jasmin.ResponseManager();
+    // Attach event handlers
+    console.log("Attaching ResponseManager");
+    responseManager.attach(buttonDefinitions);
     
-    // Start touchRespnose after syncing
-    currentType  = "all";           //JGW? Where are these initialized?
-    currentEvent = 1;
-    currentColor = "yellow";
-    eventManager.start( 
-        buttonDefinitions,
-        function() {
-            multiResponseStart( 4000 );
-        } 
-    );
+    downStart();
 };
 
-multiResponseStart = function( timeout ) {
-    DEBUG && console.log(demoName + ".multiResponseStart, starting an event that registers down responses (via keyboard arrows and pointer on divs above). Event times out in " + timeout + " ms.");
-
-    eventManager.startEvent(
-        timeout,              // timeout      - No. of ms to time out
-        colorBoxes,           // callbackDraw - draw these graphics on refresh
-        // callbackDone - called when event ends (due to response or timeout)
-        function() {
-            multiResponseDone( timeout );    
-        },
-        ["left_down", "right_down"], // buttonsActive
-        true, // resetRt
-        "event" + currentEvent // eventName
-    );
-};   
-
-// Draws boxes green
-colorBoxes = function() {
-    $( "#button_left"  ).css( "background-color", currentColor );
-    $( "#button_right" ).css( "background-color", currentColor );
+// Register a 'down' response
+downStart = function() {
+    console.log( "Starting an event that registers down response (via left/right key or the colored rectangles)" );
+    responseManager.activate(
+        [ "left_down", "right_down" ], // buttonsActive
+        downDone                       // callbackResponse
+    );    
 };
 
-// Called when multiResponse done
-multiResponseDone = function( timeout ) {
-    DEBUG && console.log(demoName + ".multiResponseDone, eventManager logs:");
-    DEBUG && console.log(eventManager.getEventLog());
-    DEBUG && console.log(demoName + ".multiResponseDone, syncTimer logs:");
-    DEBUG && console.log(eventManager.syncTimer.getPrevTimeoutLog());
-    DEBUG && console.log(demoName + ".multiResponseDone, responseManager logs:");
-    DEBUG && console.log(eventManager.responseManager.getResponseLog());
-    
-    // type var has been passed along from start to done, switch it from "all" to "specific" or vice versa, and start over
-    currentType  = currentType  === "all"? "specific" : "all";
-    currentColor = currentColor === "yellow"? "green" : "yellow";
-    currentEvent++;
-    
-    // Set timeout to -1 or 4000
-    timeout = timeout === -1? 4000: -1;
-    multiResponseStart( timeout );
+// 'down' response made
+downDone = function( eventData ) {
+    // Deactivate; stop registering responses
+    responseManager.deactivate();
+    // Report response data
+    console.log("Down response registered, responseLog:");
+    var responseLog = responseManager.getResponseLog();
+    console.log(responseLog);
+
+    // Make pressed button black
+    if (responseLog["label"] === "left_down") {
+        $("#button_left").css({"background-color":"black"});
+    }
+    if (responseLog["label"] === "right_down") {
+        $("#button_right").css({"background-color":"black"});
+    }
+
+    upStart();    
 };
 
+// Register an 'up' response
+upStart = function() {
+    console.log( "Starting an event that registers up response" );
+    responseManager.activate(
+        [ "left_up", "right_up", "all_up" ], // buttonsActive
+        upDone                     // callbackResponse
+    );        
+};
 
+// 'down' response made
+upDone = function( eventData ) {
+    // Deactivate; stop registering responses
+    responseManager.deactivate();
+    // Report response data
+    console.log("Up response registered, responseLog:");
+    var responseLog = responseManager.getResponseLog();
+    console.log(responseLog);
+    
+    // Make buttons green again
+    $("#button_left").css({"background-color":"green"});
+    $("#button_right").css({"background-color":"green"});
+    
+    downStart();
+    // Detach event handlers
+    // console.log("Detaching ResponseManager");    
+    // responseManager.detach();
+};

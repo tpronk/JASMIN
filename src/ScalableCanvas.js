@@ -180,23 +180,6 @@ jasmin.ScalableCanvas.prototype.rescaleSprite = function( sprite ) {
     }
 };
 
-/**
- * Extend function based on Prototype: merge two (associative) arrays, named
- * destination and source. For any keys existing both in destination and source
- * the values of source is used.
- * @param {Object} destination 
- * @param {Object} source
- * @private
- */
-jasmin.ScalableCanvas.prototype.extend = function(destination, source) {
-    for (var property in source) {
-        if (source.hasOwnProperty(property)) {
-            destination[property] = source[property];
-        }
-    }
-    return destination;
-};
-
 
 /**
  * Convert spritesJSON to sprites; one sprite in spritesJSON format is an 

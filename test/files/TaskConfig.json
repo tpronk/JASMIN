@@ -1,0 +1,102 @@
+{
+    "task_vars" : {
+        "task_var_name" : "task_var_value"
+    },
+    "blocks" : [
+        {
+            "intro_slides" : [],
+            "block_vars" : {
+                "button_color" : "lightgreen" 
+            },
+            "trials" : [
+                { "question" : "Press &larr;", "answer" : "left_down" },
+                { "question" : "Press &rarr;", "answer" : "right_down" }
+            ]
+        },
+        {
+            "intro_slides" : [
+                "block_1_slide_0"
+            ],
+            "block_vars" : {
+                "button_color" : "lightblue" 
+            },
+            "trials" : [
+                { "question" : "Press &larr;", "answer" : "left_down" },
+                { "question" : "Press &rarr;", "answer" : "right_down" }
+            ]
+        }
+    ],
+    "task_buttons" : {
+        "down" : [ "left_down", "right_down", "invalid_key" ],
+        "up"   : [ "left_up", "right_up", "misc_up" ],
+        "release_timeout" : 1000
+    },
+    "logging" : [
+        "trial", "block"
+    ],
+    "slideshow" : {
+        "slide_id"     : "#text_container",
+        "buttons"      : {
+            "previous" : [ "left_down" ],
+            "next"     : [ "right_down" ],
+            "up"       : [ "left_up", "right_up", "misc_up" ]
+        },
+        "button_delay" : 1000
+    },
+    "feedback" : {
+        "tooslow"   : "Please respond faster.",
+        "invalid"   : "You pressed an invalid key.",
+        "incorrect" : "That response was incorrect.",
+        "correct"   : "That response was correct.",
+        "release"   : "You can let go of the button."
+    },
+    "button_definitions" : [
+        {
+            "label" : "left_down",
+            "modalities" : [
+                { "type" : "mousedown",  "id" : "#button_left" },
+                { "type" : "touchstart", "id" : "#button_left" },
+                { "type" : "keydown",    "id" : "37" }
+           ]
+        },
+        {
+            "label" : "right_down",
+            "modalities" : [
+                { "type" : "mousedown",  "id" : "#button_right" },
+                { "type" : "touchstart", "id" : "#button_right" },
+                { "type" : "keydown",    "id" : "39" }
+           ]
+        },
+        {
+            "label" : "left_up",
+            "modalities" : [
+                { "type" : "mouseup",  "id" : "#button_left" },
+                { "type" : "touchend", "id" : "#button_left" },
+                { "type" : "keyup",    "id" : "37" }
+           ]
+        },
+        {
+            "label" : "right_up",
+            "modalities" : [
+                { "type" : "mouseup",  "id" : "#button_right" },
+                { "type" : "touchend", "id" : "#button_right" },
+                { "type" : "keyup",    "id" : "39" }
+           ]
+        },
+        {
+            "label" : "invalid_key",
+            "modalities" : [            
+                { "type" : "keydown",    "id" : "all" }
+            ]
+        },
+        {
+            "label" : "misc_up",
+            "modalities" : [
+                { "type" : "mouseup",  "id" : "all" },
+                { "type" : "touchend", "id" : "all" },
+                { "type" : "keyup",    "id" : "all" }
+            ]
+        }
+    ]
+            
+}

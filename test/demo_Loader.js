@@ -23,6 +23,7 @@ var demoName   = "demo_Loader.js";
 // Called on page load
 load = function() {
     getScripts( [
+            pathExt + "jquery.binarytransport-1.0.js",
             pathSrc + "RequestManager.js",
             pathSrc + "Loader.js"
         ],
@@ -47,10 +48,16 @@ start = function()
     // Specify all data you want to load here; special case for img, all else is passed to jQuery.ajax as dataType
     // Note that includes is an associative array
     var requests = {
-        "css1"       : [ "css",    "files/demo_RequestManager_css.css"   ],
-        "j1"         : [ "script", "files/demo_RequestManager_script.js" ],
+        "my_css"     : [ "css",    "files/demo_RequestManager_css.css"   ],
+        "my_js"      : [ "script", "files/demo_RequestManager_script.js" ],
         "my_json"    : [ "json",   "files/demo_RequestManager_json.json" ],
-        "my_picture" : [ "img",    "files/demo_RequestManager_img.jpg"   ]
+        "my_picture" : [ "img",    "files/demo_RequestManager_img.jpg"   ],
+        "my_font"    : [ "font",   "files/SourceSansPro-Regular.woff", {
+            "font-family" : "SourceSansPro", 
+            "font-weight" : "normal", 
+            "font-style" : "normal",
+            "font-stretch" : "normal"        
+        }]
     };
 
     loader.load( requests, allLoaded, progressCallback );
@@ -62,9 +69,10 @@ progressCallback = function( progress ) {
 
 // All loaded, show my_json and my_picture
 allLoaded = function( replies ) {
-    report( demoName, "All loaded, my_json = " + JSON.stringify( replies[ "my_json" ] ) );
+    report( demoName, "All loaded!" );
     $( "#graphics_here" ).append( replies[ "my_picture" ].css( {
         "width"  : "200px",
         "height" : "200px"
     } ) );
+    $("#text_here").append("<span class='red' style='font-family:SourceSansPro'>This text should be red and in SourceSansPro</span><br />");    
 };

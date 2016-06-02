@@ -27,10 +27,11 @@ var demoName   = "demo_ResponseManager_pointer.js";
 // Called on page load
 load = function() {
     getScripts( [
-            pathExt + "jquery.mobile.js",
+            pathExt + "jquery.mobile-1.4.5.js",
             pathSrc + "SyncTimer.js",
             pathSrc + "ResponseManager.js",
             pathSrc + "EventManager.js",
+            pathSrc + "TableLogger.js",
             pathSrc + "Slideshow.js"
         ],
         setupDemo
@@ -40,80 +41,132 @@ load = function() {
 // Initialise pointer fields and create eventManager
 setupDemo = function() {
     $( "#graphics_here" ).append( 
-        $( "<div>" ).attr( {
-                "id" : "field_left"
-            } ).css( {
-                "width"  : "100px",
-                "height" : "100px",
-                "position" : "relative",
-                "left" : "0px",
-                "background-color" : "red"
-        } )
+        $( "<p>" ).attr( {
+            "id" : "text_container"
+        } ).css( {
+            "position" : "absolute",
+            "width" : "220px",            
+            "left" : "0px",
+            "top" : "0px",
+            "z-index" : 2,
+            "text-align" : "center"
+        } ).html( "Text here..." )
     );
     $( "#graphics_here" ).append( 
         $( "<div>" ).attr( {
-            "id" : "field_right"
+                "id" : "button_left"
+            } ).css( {
+            "position" : "absolute",                
+            "width" : "100px",
+            "height" : "100px",
+            "left" : "0px",
+            "top" : "50px",
+            "text-align" : "center",
+            "background-color" : "yellow"
+        } ).html(
+            "L"
+        )
+    );
+    $( "#graphics_here" ).append( 
+        $( "<div>" ).attr( {
+            "id" : "button_right"
         } ).css( {
             "width"  : "100px",
             "height" : "100px",
             "position" : "absolute",
             "left"   : "120px",
-            "top"    : "0px",
+            "top"    : "50px",
+            "text-align" : "center",
             "z-index" : 2,
-            "background-color" : "blue"
-        } )
+            "background-color" : "yellow"
+        } ).html(
+            "R"
+        )
     );
-    $( "#graphics_here" ).append( 
-        $( "<p>" ).attr( {
-            "id" : "slide_container"
-        } ).html( "Slides here..." )
-    );    
-
-    // Create an EventManager and sync
-    eventManager = new jasmin.EventManager( window );
+    $( "#graphics_here" ).height( "140px" );    
+    
+    // Create an EventManager and attach buttons
+    var buttonDefinitions = [
+        {
+            "label" : "left_down",
+            "modalities" : [
+                { "type" : "mousedown",  "id" : "#button_left" },
+                { "type" : "touchstart", "id" : "#button_left" },
+                { "type" : "keydown",    "id" : "37" }
+           ]
+        },
+        {
+            "label" : "right_down",
+            "modalities" : [
+                { "type" : "mousedown",  "id" : "#button_right" },
+                { "type" : "touchstart", "id" : "#button_right" },
+                { "type" : "keydown",    "id" : "39" }
+           ]
+        },
+        {
+            "label" : "left_up",
+            "modalities" : [
+                { "type" : "mouseup",  "id" : "#button_left" },
+                { "type" : "touchend", "id" : "#button_left" },
+                { "type" : "keyup",    "id" : "37" }
+           ]
+        },
+        {
+            "label" : "right_up",
+            "modalities" : [
+                { "type" : "mouseup",  "id" : "#button_right" },
+                { "type" : "touchend", "id" : "#button_right" },
+                { "type" : "keyup",    "id" : "39" }
+           ]
+        },
+        {
+            "label" : "misc_up",
+            "modalities" : [
+                { "type" : "mouseup",  "id" : "all" },
+                { "type" : "touchend", "id" : "all" },
+                { "type" : "keyup",    "id" : "all" }                
+            ]
+        }
+    ];    
+    eventManager = new jasmin.EventManager();
     
     // Create Slideshow
     slideshow = new jasmin.Slideshow(
         // target; html of this HTMLElement will be set to slide
-        $( "#slide_container"),  
+        $( "#text_container"),  
         eventManager,
-        // activeResponses; touch and keyboard progress the slides
         {
-            "vmouseup" : {
-                "type"    : "specific",
-                "buttons" : {
-                    "#field_left"  : "previous",
-                    "#field_right" : "next"
-                },
-            },
-            // keyboard
-            "keyup" : {
-                "type"    : "specific",
-                "buttons" : {
-                    69 : "previous",  
-                    73 : "next"  
-                }
-            }
-        },
-        // buttonTexts
-        {
-            "first"  : "Press I or the blue box to continue",
-            "middle" : "Press I or the blue box to continue; press E or the red box to go back",
-            "last"   : "Press I or the blue box to end this slideshow; press E or the red box to go back"
+            "previous" : [ "left_down" ],
+            "next"     : [ "right_down" ],
+            "up"       : [ "left_up", "right_up", "misc_up" ],
         },
         // buttonDelay; one second
-        1000
+        1000,
+        // buttonHide
+        function() {
+            $("#button_left").hide();
+            $("#button_right").hide();
+        },
+        // buttonShow
+        function() {
+            $("#button_left").show();
+            $("#button_right").show();
+        }
     );
 
-    eventManager.sync( slideshowStart );
+    eventManager.start( 
+        buttonDefinitions,
+        slideshowStart
+    );
 };
 
 slideshowStart = function() {
     // Show slides
     report( demoName, "Starting slideshow..." );
     slideshow.show(
-        [ "Slide 1", "Slide 2", "Slide 3", "Slide 4" ],
-        slideshowDone
+        [ "Slide 0", "Slide 1", "Slide 2", "Slide 3" ],
+        slideshowDone,
+        "demo"
     );
 };
 

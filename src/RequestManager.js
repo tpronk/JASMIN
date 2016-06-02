@@ -19,18 +19,6 @@
 if( jasmin === undefined ) { var jasmin = function() {}; }
 
 /**
- * Constant for AJAX type requests
- * @constant
- */
-jasmin.REQUEST_MANAGER_TYPE_AJAX = 1;
-
-/**
- * Constant for img type requests
- * @constant
- */
-jasmin.REQUEST_MANAGER_TYPE_IMG = 2;
-
-/**
  * Features for making AJAX requests, loading CSS and loading images
  * is set up to actively send any outstanding requests. It can
  * be configured to (a) actively send outstanding requests or not; (b) immediately 
@@ -87,8 +75,20 @@ jasmin.RequestManager = function(
 };
 
 /**
+ * Constant for AJAX type requests
+ * @constant
+ */
+jasmin.RequestManager.TYPE_AJAX = "ajax";
+
+/**
+ * Constant for img type requests
+ * @constant
+ */
+jasmin.RequestManager.TYPE_IMG = "img";
+
+/**
  * Make a single request
- * @param {const}    type         jasmin.REQUEST_MANAGER_TYPE_AJAX (request is passed on to jQuery.ajax or jasmin.REQUEST_MANAGER_TYPE_IMG (request is url of img)
+ * @param {const}    type         jasmin.RequestManager.TYPE_AJAX (request is passed on to jQuery.ajax or jasmin.RequestManager.TYPE_IMG (request is url of img)
  * @param {Object}   request      The request (what do say to which url)
  * @param {function} callback     Callback called on reply (with data replied by target url as argument)
  * @param {int}      timeout      Overrides default value set in constructor
@@ -105,14 +105,20 @@ jasmin.RequestManager.prototype.request = function( type, request, callback, tim
         "request"         : request,
         "callback"        : callback,
         "timeout"         : timeout,
-        "retries"      : retries,
+        "retries"         : retries,
 
         // Stuff to initialize
         "state"           : this.STATE_FIRST,
-        "retryCounter"  : 0,
+        "retryCounter"    : 0,
         "handled"         : false
     };
     this.stateCounter++;
+    
+    // Report
+    this.report(
+        "RequestManager.request: ",
+        "stateId " + counter + JSON.stringify( request )
+    );
     
     // If active; send immediately
     if( this.active ) {
@@ -145,10 +151,10 @@ jasmin.RequestManager.prototype.sendOpenRequests = function() {
             transactionId = this.transactionCounter;
             switch( this.states[ stateId ][ "type" ] )
             {
-                case jasmin.REQUEST_MANAGER_TYPE_AJAX:
+                case jasmin.RequestManager.TYPE_AJAX:
                     this.ajaxRequest( stateId, transactionId );
                     break;
-                case jasmin.REQUEST_MANAGER_TYPE_IMG:
+                case jasmin.RequestManager.TYPE_IMG:
                     this.imgRequest( stateId, transactionId );
                     break;
             }
