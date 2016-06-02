@@ -70,10 +70,6 @@ jasmin.TaskManager = function( task, config, onCompleted, translator, eventManag
              * @property {Object} Task results
              */                  
             "results"   : [],
-            /**
-             * @property {int} Log sequence number
-             */                              
-            "sn" : 0
         };
     }
     this.setState     = setState === undefined? function() {} : setState;
@@ -254,7 +250,6 @@ jasmin.TaskManager.prototype.trialEventStart = function( feedbackLog )
         var logRow = this.collectLogs( eventConfig[ "log" ] );
         this.logger.log( logRow );
         this.state[ "results" ].push( logRow );
-        this.state[ "sn" ]++;
     }
     
     // If retry, increase attempt

@@ -21,7 +21,8 @@ if( jasmin === undefined ) { var jasmin = function() {}; }
 
 /** 
  * TableLogger logs data in a a table format with named variables as columns
- * and unnamed rows
+ * and unnamed rows. Two variable names automatically added by the logger: logger_sn, which is a serial number that increases
+ * by one with each successive row that is logged, and logger_time, which is the client time a row was logged (expressed in milliseconds)
  * @param {array}    columns   Array of Strings; these are the varable names used for each column
  * @param {Function} fail      If defined, this function is called whenever trying to add logs with columns that were predefined via the previous argument
  * @param {Object}   na        A value to represent the absence of a value when logs are retrieved in indexed format. Default = null
@@ -32,6 +33,7 @@ jasmin.TableLogger = function( columns, fail, na )
     this.columns = columns;
     this.fail    = fail;
     this.na      = na;
+    this.sn      = 0;
     
     this.clearLogs();
 };
@@ -52,6 +54,10 @@ jasmin.TableLogger.prototype.clearLogs = function()
  */
 jasmin.TableLogger.prototype.log = function( logMe )
 {
+    // Add time and sn
+    logMe["logger_sn"] = this.sn;
+    logMe["logger_time"] = window.performance.now();
+    
     // If fail defined, check columns
     if( this.fail !== undefined ) {
         for( var column in logMe ) {
@@ -60,7 +66,7 @@ jasmin.TableLogger.prototype.log = function( logMe )
             }
         }
     }
-
+    
     // Add logMe to logs
     this.logs.push( logMe );
 };
