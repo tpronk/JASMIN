@@ -38,7 +38,7 @@ runStatistics = function() {
     );
     
     // Generate 1,2,3,4,5
-    console.log(
+    console.log( 
         jasmin.Statistics.seq( 1, 5 ) 
     );
     
@@ -49,8 +49,10 @@ runStatistics = function() {
     
     // Generate 1,1,1,1,2,2,2,2; this sequence we'll use for other stuff below
     sequence = jasmin.Statistics.seq( 1, 2, 1, 4 );
+    console.log( 
+        sequence 
+    );
     console.log(sequence );
-    
 
     // Check on repetitions length 4 in the sequnce (is present)
     console.log(
@@ -104,6 +106,17 @@ runStatistics = function() {
         jasmin.Statistics.fisherYates( nestedSequence ) 
     );
     
+    // Apply a function to the sequence
+    console.log( 
+        jasmin.Statistics.apply(
+            nestedSequence,
+            function (row) {
+                alert("x");
+                console.log(row);
+            }
+        )
+    );
+
     // Apply a function to the sequence; get all correct rows (those with response === 1)
     var correctRows = jasmin.Statistics.applyRow(
         nestedSequence,
@@ -127,9 +140,8 @@ runStatistics = function() {
         jasmin.Statistics.mean(rts)
     );
     
-
     
-    // Generate 100 random integers between 1 and 10
+    //get a 100 random integers between 1 and 10 (a JGW addition)
     randomIntegers = [];
     
     while (randomIntegers.length <101)
@@ -137,7 +149,7 @@ runStatistics = function() {
         randomIntegers.push(jasmin.Statistics.randomInt(1,10));        
     }
     console.log(
-        randomIntegers 
+            randomIntegers 
     );
     
     var x=1;
