@@ -245,12 +245,12 @@ jasmin.Slideshow.prototype.logSlideInfo = function( phase ) {
         "delay" : this.buttonDelay,
         "phase" : phase,
         "response" : this.buttonMapping[this.eventManager.responseLabel],
-        "rt" : this.eventManager.rt,
+        "rt" : Math.round(1000 * this.eventManager.rt) / 1000,
         "modality" : this.eventManager.responseManager.responseData[ "modality" ],
         "id" : this.eventManager.responseManager.responseData[ "id" ],
-        "time_start" : this.timeStart,
-        "time_buttons" : this.timeButtons,
-        "time_response" : this.timeResponse
+        "time_start" : Math.round(1000 * this.timeStart) / 1000,
+        "time_buttons" : Math.round(1000 * this.timeButtons) / 1000,
+        "time_response" : Math.round(1000 * this.timeResponse) / 1000
     };
     this.logger.log( slideLogs );
     DEBUG && console.log( slideLogs );

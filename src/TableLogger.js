@@ -31,6 +31,8 @@ if( jasmin === undefined ) { var jasmin = function() {}; }
 jasmin.TableLogger = function( columns, fail, na )
 {
     this.columns = columns;
+    this.columns.push("logger_sn");
+    this.columns.push("logger_time");
     this.fail    = fail;
     this.na      = na;
     this.sn      = 0;
@@ -54,9 +56,10 @@ jasmin.TableLogger.prototype.clearLogs = function()
  */
 jasmin.TableLogger.prototype.log = function( logMe )
 {
-    // Add time and sn
-    logMe["logger_sn"] = this.sn;
-    logMe["logger_time"] = window.performance.now();
+    // Add time and sn, increment sn
+    logMe["logger_sn"]   = this.sn;
+    logMe["logger_time"] = Math.round( window.performance.now() * 1000 ) / 1000;
+    this.sn++;
     
     // If fail defined, check columns
     if( this.fail !== undefined ) {

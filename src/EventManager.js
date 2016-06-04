@@ -40,8 +40,7 @@ jasmin.EventManager = function() {
 // Reasons an event ended; values for EventManager.endReason
 jasmin.EventManager.ENDREASON_TIMEOUT  = "timeout";  // Event ended because it timed out
 jasmin.EventManager.ENDREASON_RESPONSE = "response"; // Event ended because a response was given
-jasmin.EventManager.ENDREASON_CANCEL   = "cancel";   // Event ended because it was canceled (task stopped?)
-
+jasmin.EventManager.ENDREASON_CANCELED = "canceled"; // Event canceled; task was interrupted?
 /**
  * Start synchronizing with clock and attach buttons
  * @param {Function} buttonDefinitions Buttons to attach. See ResponseManager.attach()
@@ -145,7 +144,7 @@ jasmin.EventManager.prototype.endEvent = function(endReason) {
     this.updateEventLog();
     
     // If endReason for endEvent is not "cancel", call callbackDone
-    if (endReason !== jasmin.EventManager.ENDREASON_CANCEL) {
+    if (endReason !== jasmin.EventManager.ENDREASON_CANCELED) {
         this.callbackDone();
     }
 };
@@ -156,7 +155,7 @@ jasmin.EventManager.prototype.endEvent = function(endReason) {
  * @public
  */
 jasmin.EventManager.prototype.cancelEvent = function() {
-    this.endEvent(jasmin.EventManager.ENDREASON_CANCEL);
+    this.endEvent(jasmin.EventManager.ENDREASON_CANCELED);
 };
 
 /**
@@ -166,7 +165,7 @@ jasmin.EventManager.prototype.cancelEvent = function() {
 jasmin.EventManager.prototype.updateEventLog = function() {
     this.eventLog = {
         "name" : this.name,
-        "rt" : this.rt,
+        "rt" : Math.round( this.rt * 1000 ) / 1000,
         "endReason" : this.endReason,
         "responseLabel" : this.responseLabel,
         "modality" : this.responseModality,

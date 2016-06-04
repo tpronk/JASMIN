@@ -40,7 +40,7 @@ jasmin.EventManager = function() {
 };
 jasmin.EventManager.ENDREASON_TIMEOUT = "timeout";
 jasmin.EventManager.ENDREASON_RESPONSE = "response";
-jasmin.EventManager.ENDREASON_CANCEL = "cancel";
+jasmin.EventManager.ENDREASON_CANCELED = "canceled";
 jasmin.EventManager.prototype.start = function(a, c) {
   this.responseManager.attach(a);
   this.syncTimer.sync(function() {
@@ -82,13 +82,13 @@ jasmin.EventManager.prototype.endEvent = function(a) {
   }
   this.endReason = a;
   this.updateEventLog();
-  a !== jasmin.EventManager.ENDREASON_CANCEL && this.callbackDone();
+  a !== jasmin.EventManager.ENDREASON_CANCELED && this.callbackDone();
 };
 jasmin.EventManager.prototype.cancelEvent = function() {
-  this.endEvent(jasmin.EventManager.ENDREASON_CANCEL);
+  this.endEvent(jasmin.EventManager.ENDREASON_CANCELED);
 };
 jasmin.EventManager.prototype.updateEventLog = function() {
-  this.eventLog = {name:this.name, rt:this.rt, endReason:this.endReason, responseLabel:this.responseLabel, modality:this.responseModality, id:this.responseId};
+  this.eventLog = {name:this.name, rt:Math.round(1E3 * this.rt) / 1E3, endReason:this.endReason, responseLabel:this.responseLabel, modality:this.responseModality, id:this.responseId};
 };
 jasmin.EventManager.prototype.getEventLog = function() {
   return this.eventLog;
@@ -554,7 +554,7 @@ jasmin.ScreenManager = function(a) {
     }, $(b.source).on(b.event, d(e, b.on));
   }
   this.watching = {};
-  this.logger.log({name:"init", phase:"start", time:window.performance.now(), value:{"screen.width":screen.width, "screen.height":screen.height, "avail.width":screen.availWidth, "avail.height":screen.availHeight, "window.width":$(window).width(), "window.height":$(window).height()}});
+  this.logger.log({name:"init", phase:"start", time:1E3 * window.performance.now() / 1E3, value:{"screen.width":screen.width, "screen.height":screen.height, "avail.width":screen.availWidth, "avail.height":screen.availHeight, "window.width":$(window).width(), "window.height":$(window).height()}});
   c = this;
   setTimeout(c.updateWatch(), this.watchTimeout);
 };
@@ -565,12 +565,12 @@ jasmin.ScreenManager.prototype.changed = function(a, c, b) {
   return d;
 };
 jasmin.ScreenManager.prototype.watch = function(a, c) {
-  var b = window.performance.now();
+  var b = 1E3 * window.performance.now() / 1E3;
   void 0 === this.watch[a] && this.logger.log({name:a, phase:"start", time:b, value:c});
   this.watch[a] = b;
 };
 jasmin.ScreenManager.prototype.updateWatch = function() {
-  var a = window.performance.now(), c;
+  var a = 1E3 * window.performance.now() / 1E3, c;
   for (c in this.watch) {
     this.watch[c] + this.watchTimeout < a && (this.logger.log({name:c, phase:"end", time:this.watch[c], value:{}}), delete this.watch[c]), this.checkRequirements();
   }
@@ -696,7 +696,7 @@ jasmin.Slideshow.prototype.response = function() {
   "next" === a ? (this.slideCounter++, this.nextSlide()) : "previous" === a && 0 < this.slideCounter ? (this.slideCounter--, this.nextSlide()) : this.showSlide();
 };
 jasmin.Slideshow.prototype.logSlideInfo = function(a) {
-  a = {set:this.slideSet, slide:this.slideCounter, delay:this.buttonDelay, phase:a, response:this.buttonMapping[this.eventManager.responseLabel], rt:this.eventManager.rt, modality:this.eventManager.responseManager.responseData.modality, id:this.eventManager.responseManager.responseData.id, time_start:this.timeStart, time_buttons:this.timeButtons, time_response:this.timeResponse};
+  a = {set:this.slideSet, slide:this.slideCounter, delay:this.buttonDelay, phase:a, response:this.buttonMapping[this.eventManager.responseLabel], rt:Math.round(1E3 * this.eventManager.rt) / 1E3, modality:this.eventManager.responseManager.responseData.modality, id:this.eventManager.responseManager.responseData.id, time_start:Math.round(1E3 * this.timeStart) / 1E3, time_buttons:Math.round(1E3 * this.timeButtons) / 1E3, time_response:Math.round(1E3 * this.timeResponse) / 1E3};
   this.logger.log(a);
   DEBUG && console.log(a);
 };
@@ -914,6 +914,8 @@ void 0 === jasmin && (jasmin = function() {
 });
 jasmin.TableLogger = function(a, c, b) {
   this.columns = a;
+  this.columns.push("logger_sn");
+  this.columns.push("logger_time");
   this.fail = c;
   this.na = b;
   this.sn = 0;
@@ -924,7 +926,8 @@ jasmin.TableLogger.prototype.clearLogs = function() {
 };
 jasmin.TableLogger.prototype.log = function(a) {
   a.logger_sn = this.sn;
-  a.logger_time = window.performance.now();
+  a.logger_time = Math.round(1E3 * window.performance.now()) / 1E3;
+  this.sn++;
   if (void 0 !== this.fail) {
     for (var c in a) {
       -1 === this.columns.indexOf(c) && this.fail("TableLogger.log: Column " + c + " in logMe not found in this.columns");

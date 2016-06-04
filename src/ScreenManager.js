@@ -170,7 +170,7 @@ jasmin.ScreenManager = function( watchTimeout ) {
     this.logger.log( {
         "name"   : "init",
         "phase"  : "start",
-        "time"   : window.performance.now(),
+        "time"   : (1000 * window.performance.now()) / 1000,
         "value"  : {
             "screen.width"   : screen.width,
             "screen.height"  : screen.height,
@@ -206,7 +206,7 @@ jasmin.ScreenManager.prototype.changed = function( name, logThis, event ) {
 };
 
 jasmin.ScreenManager.prototype.watch = function( name, value ) {
-    var now = window.performance.now();
+    var now = (1000 * window.performance.now()) / 1000;
     // Not watching yet? log start
     if( this.watch[ name ] === undefined ) {
         // Log screen data
@@ -222,7 +222,7 @@ jasmin.ScreenManager.prototype.watch = function( name, value ) {
 
 // Check if any watched events passed watchTimeout. If so, log end and remove from watch
 jasmin.ScreenManager.prototype.updateWatch = function() {
-    var now = window.performance.now();
+    var now = (1000 * window.performance.now()) / 1000;
     for( var w in this.watch ) {
         // watchTimeout?
         if( this.watch[w] + this.watchTimeout < now ) {
