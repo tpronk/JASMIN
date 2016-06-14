@@ -41,6 +41,32 @@ jasmin.Statistics.rep = function( x, reps ) {
 };
 
 /**
+ * Creates a sequence of length length, filled with items, such that the number
+ * of occurances of each item in the sequence is as similar as possible (differs
+ * at most by 1 across items)
+ * @param {Array}  items    Value to repeat
+ * @param {int}    length   Length of desired sequence
+ * @public
+ */
+jasmin.Statistics.fill = function (items, length) {
+   var result = [];
+   var remaining = length;
+   while (remaining > 0) {
+      if (remaining >= items.length) {
+         result = result.concat(items);
+         remaining -= items.length;
+      } else {
+         items = jasmin.Statistics.fisherYates(items);
+         for (var i = 0; i < remaining; i++) {
+            result.push(items[i]);
+         }
+         remaining = 0;
+      }
+   }
+   return result;
+};
+
+/**
  * Create a sequence of numbers running from from, to to with increments of of step
  * @param {int}  from      Starting value
  * @param {int}  to        Ending value
@@ -316,8 +342,6 @@ jasmin.Statistics.applyRow = function (source, fun){
     }
     return (results);
 };
-
-
 
 /*
  * Generates a sequence of items, in which each item is repeated reps times. A proportion of

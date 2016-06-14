@@ -349,9 +349,9 @@ jasmin.ResponseManager.prototype.bindEvents = function(a) {
     if (-1 === d.indexOf(b)) {
       d.push(b);
       b = "all" !== b ? $(b) : $(window.document);
-      var f = ["vmousecancel", "mousecancel", "touchcancel"], e, g;
-      for (e in f) {
-        g = f[e];
+      var e = ["vmousecancel", "mousecancel", "touchcancel"], f, g;
+      for (f in e) {
+        g = e[f];
         var l = function(a) {
           c.stopBubble(a);
         };
@@ -372,8 +372,8 @@ jasmin.ResponseManager.prototype.bindEvents = function(a) {
     var d = function(a) {
       var d = window.performance.now();
       c.stopBubble(a);
-      var f = c.keyboardMapping[b][a.which], f = void 0 !== f ? f : c.keyboardMapping[b].all;
-      c.response(a, b, a.which, f, d);
+      var e = c.keyboardMapping[b][a.which], e = void 0 !== e ? e : c.keyboardMapping[b].all;
+      c.response(a, b, a.which, e, d);
     };
     if (a) {
       $(window.document).on(b, d);
@@ -707,6 +707,20 @@ jasmin.Statistics = function() {
 jasmin.Statistics.rep = function(a, c) {
   for (var b = [], d = 0;d < c;d += 1) {
     b.push(a);
+  }
+  return b;
+};
+jasmin.Statistics.fill = function(a, c) {
+  for (var b = [], d = c;0 < d;) {
+    if (d >= a.length) {
+      b = b.concat(a), d -= a.length;
+    } else {
+      a = jasmin.Statistics.fisherYates(a);
+      for (var e = 0;e < d;e++) {
+        b.push(a[e]);
+      }
+      d = 0;
+    }
   }
   return b;
 };

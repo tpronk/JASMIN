@@ -186,4 +186,24 @@ runStatistics = function() {
         "my_label"
     ));
     
+    // Generate a sequence of length 9 in which each of the three items occurs 3 times
+    console.log(jasmin.Statistics.fill(
+       ["a","b","c"],
+       9
+    ));
+    
+    // Generate a sequence of length 8 in which two items occur three times and one occurs once
+    console.log(jasmin.Statistics.fill(
+       ["a","b","c"],
+       8
+    ));
+
+    // Generate a sequence of length 2 in which two items occur once
+    console.log(jasmin.Statistics.fill(
+       ["a","b","c"],
+       2
+    ));
+
+ 
+    
 };
