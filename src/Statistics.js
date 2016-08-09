@@ -94,7 +94,7 @@ jasmin.Statistics.seq = function( from, to, step, reps ) {
  * @param {Array} array Array to shuffle
  * @public
  */
-jasmin.Statistics.fisherYates = function( array ) {
+jasmin.Statistics.fisherYates = function (array) {
   var m = array.length, t, i;
 
   // While there remain elements to shuffleâ€¦
@@ -111,6 +111,46 @@ jasmin.Statistics.fisherYates = function( array ) {
 
   return array;
 };
+
+/**
+ * Returns array shuffled following the Fisher-Yates shuffle, but limiting the 
+ * number of repetitions.
+ * @param {Array} array Array to shuffle
+ * @param {integer} repetitionCount maximum number of times a value may be repeated in in array
+ * @public
+ */
+jasmin.Statistics.fisherYatesRestrictReps = function (array, repetitionCount) {
+   var accepted = false, candidate;
+   while (!accepted) {
+      candidate = jasmin.Statistics.fisherYates(array);
+      accepted = !jasmin.Statistics.repetitions(candidate, repetitionCount + 1);
+   }
+   return (candidate);
+}
+
+/**
+ * Similar to jasmin.Statistics.fisherYatesRestrictReps but for applying multiple
+ * repetition restrictions on an array of objects.
+ * @param {Array} array Array of objects to shuffle
+ * @param {object} repetitionCounts Keys represent properties of the objects contained in array, with corresponding values representing the number of times these properties may be repeated (across successive alements of array)
+ * @public
+ */
+jasmin.Statistics.fisherYatesRestrictRepsNested = function (array, repetitionCounts) {
+   var accepted = false, candidate, key, repetitionCount, values;
+   while (!accepted) {
+      candidate = jasmin.Statistics.fisherYates(array);
+      accepted = true;
+      for (key in repetitionCounts) {
+         repetitionCount = repetitionCounts[key];
+         accepted = !jasmin.Statistics.repetitions(candidate, repetitionCount + 1, key);
+         if (!accepted) {
+            break;
+         }
+      }
+   }
+   return (candidate);
+}
+
 
 /**
  * Returns random int between min and max (inclusive)
