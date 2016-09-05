@@ -1052,13 +1052,13 @@ jasmin.TaskManager.prototype.blockSetup = function() {
   }
 };
 jasmin.TaskManager.prototype.blockIntroduce = function() {
+  var a = this;
   this.translator.setCallback("block_counter", function() {
-    return a.block + 1;
+    return a.state.block + 1;
   });
   this.translator.setCallback("block_total", function() {
     return a.config.blocks.length;
   });
-  var a = this;
   this.task.slideshowShow();
   this.slideshow.show(this.specsBlock.intro_slides, function() {
     a.task.slideshowHide();

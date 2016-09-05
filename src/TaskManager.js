@@ -177,12 +177,13 @@ jasmin.TaskManager.prototype.blockSetup = function() {
  * @public
  */
 jasmin.TaskManager.prototype.blockIntroduce = function() {
+    var self = this;
+    
     // Add translation callbacks for block counters
-    this.translator.setCallback( "block_counter", function() { return self.block + 1; } );
+    this.translator.setCallback( "block_counter", function() { return self.state[ "block" ] + 1; } );
     this.translator.setCallback( "block_total",   function() { return self[ "config" ][ "blocks" ].length; } );
  
-    // Show intro slides
-    var self = this;      
+   // Show intro slides
     this.task.slideshowShow();
     this.slideshow.show( 
         this.specsBlock[ "intro_slides" ],
