@@ -53,6 +53,7 @@ runStatistics = function() {
        sequence 
    );
    console.log(sequence );
+   
 
    // Check on repetitions length 4 in the sequnce (is present)
    console.log(
@@ -68,7 +69,6 @@ runStatistics = function() {
    console.log(
        jasmin.Statistics.fisherYates( sequence ) 
    );
-
 
    // Create an indexed array of associative arrays
    nestedSequence = [
@@ -219,4 +219,14 @@ runStatistics = function() {
       ["a","b","c"],
       2
    ));
+   
+   // List all combinations of two factors
+   console.log(
+      jasmin.Statistics.combine(
+         ["a", "b", "c"],
+         [1, 2, 3],
+         "letter",
+         "number"
+      )
+   );
 };

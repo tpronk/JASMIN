@@ -27,17 +27,21 @@ jasmin.Statistics = function() {};
 
 /**
  * Repeats value x rep times
- * @param {Object} x    Value to repeat
- * @param {int}    reps number of times to repeat value
+ * @param {Object} x    Value (or set of values) to repeat
+ * @param {int}    reps Number of times to repeat value
  * @public
  */
 jasmin.Statistics.rep = function( x, reps ) {
-    var result = [];
-    for( var i = 0; i < reps; i += 1 )
-    {
-        result.push( x );
-    }
-    return result;
+   var result = [];
+   if (typeof x !== "object") {
+      x = [x];
+   }
+   for (var i in x) {
+      for (var j = 0; j < reps; j += 1) {
+         result.push(x[i]);
+      }
+   }
+   return result;
 };
 
 /**
@@ -87,6 +91,32 @@ jasmin.Statistics.seq = function( from, to, step, reps ) {
         }
     }
     return result;
+};
+
+/**
+ * Creates an array that contains all combinations of elements of two other arrays
+ * @param {int}  left      One array to combine
+ * @param {int}  right     Another array to combine
+ * @param {int}  keyLeft   Optional. If present, elements in result from left will get this key.
+ * @param {int}  keyRight  Optional. If present, elements in result from right will get this key.
+ * @public
+ */
+jasmin.Statistics.combine = function (left, right, keyLeft, keyRight) {
+   var result = [], current;
+   var i, j;
+   for (i = 0; i < left.length; i++) {
+      for (j = 0; j < right.length; j++) {
+         if (keyLeft !== undefined && keyRight !== undefined) {
+            current = {};
+            current[keyLeft] = left[i];
+            current[keyRight] = right[j];
+         } else {
+            current = [left[i], right[j]];
+         }
+         result.push(current);
+      }
+   }
+   return result;
 };
 
 /**

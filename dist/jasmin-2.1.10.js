@@ -734,6 +734,15 @@ jasmin.Statistics.seq = function(a, c, b, d) {
   }
   return e;
 };
+jasmin.Statistics.combine = function(a, c, b, d) {
+  var e = [], f, g, h;
+  for (g = 0;g < a.length;g++) {
+    for (h = 0;h < c.length;h++) {
+      void 0 !== b && void 0 !== d ? (f = {}, f[b] = a[g], f[d] = c[h]) : f = [a[g], c[h]], e.push(f);
+    }
+  }
+  return e;
+};
 jasmin.Statistics.fisherYates = function(a) {
   for (var c = a.length, b, d;c;) {
     d = Math.floor(Math.random() * c--), b = a[c], a[c] = a[d], a[d] = b;
