@@ -281,7 +281,7 @@ jasmin.RequestManager.prototype.ajaxRequest = function( stateId, transactionId )
         // Error; only report it, let the request time out and retry
         self.error( 
             "RequestManager AJAX fail", 
-            "stateId " + stateId + ", transactionId " + transactionId + ", status " + status + ", received:" + JSON.stringify( response )
+            "stateId " + stateId + ", transactionId " + transactionId + ", status " + status + ", ajaxArgs: " + JSON.stringify(ajaxArgs) + ", received:" + JSON.stringify( response )
         );
     } );
 };
@@ -300,6 +300,12 @@ jasmin.RequestManager.prototype.imgRequest = function( stateId, transactionId ) 
     this.states[ stateId ][ "reply" ] = $( "<img>" ).attr( 
         "src", url
     ).load( function() {
+        if (self.states[ stateId ][ "reply" ] === undefined) {
+            self.error( 
+                "RequestManager reply undefined", 
+                "stateId " + stateId + ", transactionId " + transactionId
+            );       
+        }
         // Report replies
         self.report(
             "RequestManager img load",

@@ -274,13 +274,13 @@ jasmin.RequestManager.prototype.statesToSend = function() {
 jasmin.RequestManager.prototype.ajaxRequest = function(a, c) {
   var b = this.states[a].request;
   this.report("RequestManager.ajaxRequest", "stateId = " + a + ", transactionId = " + c + ", ajaxArgs = " + JSON.stringify(b));
-  var d = this, b = $.ajax(b);
-  b.done(function(b, f) {
-    d.report("RequestManager AJAX done", "stateId " + a + ", transactionId " + c + ", status " + f + ", received:" + JSON.stringify(b));
+  var d = this, e = $.ajax(b);
+  e.done(function(b, e) {
+    d.report("RequestManager AJAX done", "stateId " + a + ", transactionId " + c + ", status " + e + ", received:" + JSON.stringify(b));
     d.success(a, b);
   });
-  b.fail(function(b, f) {
-    d.error("RequestManager AJAX fail", "stateId " + a + ", transactionId " + c + ", status " + f + ", received:" + JSON.stringify(b));
+  e.fail(function(e, g) {
+    d.error("RequestManager AJAX fail", "stateId " + a + ", transactionId " + c + ", status " + g + ", ajaxArgs: " + JSON.stringify(b) + ", received:" + JSON.stringify(e));
   });
 };
 jasmin.RequestManager.prototype.imgRequest = function(a, c) {
@@ -288,6 +288,7 @@ jasmin.RequestManager.prototype.imgRequest = function(a, c) {
   this.report("RequestManager.imgRequest", "stateId = " + a + ", transactionId = " + c + ", url = " + JSON.stringify(b));
   var d = this;
   this.states[a].reply = $("<img>").attr("src", b).load(function() {
+    void 0 === d.states[a].reply && d.error("RequestManager reply undefined", "stateId " + a + ", transactionId " + c);
     d.report("RequestManager img load", "stateId " + a + ", transactionId " + c);
     d.success(a, d.states[a].reply);
   }).error(function() {
@@ -705,8 +706,12 @@ void 0 === jasmin && (jasmin = function() {
 jasmin.Statistics = function() {
 };
 jasmin.Statistics.rep = function(a, c) {
-  for (var b = [], d = 0;d < c;d += 1) {
-    b.push(a);
+  var b = [];
+  "object" !== typeof a && (a = [a]);
+  for (var d in a) {
+    for (var e = 0;e < c;e += 1) {
+      b.push(a[d]);
+    }
   }
   return b;
 };
