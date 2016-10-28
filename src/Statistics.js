@@ -50,6 +50,7 @@ jasmin.Statistics.rep = function( x, reps ) {
  * at most by 1 across items)
  * @param {Array}  items    Value to repeat
  * @param {int}    length   Length of desired sequence
+ * @param {bool}   copy     If true, fill result with deep copies of items. If false, fill with refs
  * @public
  */
 jasmin.Statistics.fill = function (items, length) {
@@ -57,12 +58,12 @@ jasmin.Statistics.fill = function (items, length) {
    var remaining = length;
    while (remaining > 0) {
       if (remaining >= items.length) {
-         result = result.concat(items);
+         result = result.concat(JSON.parse(JSON.stringify(items)));
          remaining -= items.length;
       } else {
          items = jasmin.Statistics.fisherYates(items);
          for (var i = 0; i < remaining; i++) {
-            result.push(items[i]);
+            result.push(JSON.parse(JSON.stringify(items[i])));
          }
          remaining = 0;
       }

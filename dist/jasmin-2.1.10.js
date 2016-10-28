@@ -718,11 +718,11 @@ jasmin.Statistics.rep = function(a, c) {
 jasmin.Statistics.fill = function(a, c) {
   for (var b = [], d = c;0 < d;) {
     if (d >= a.length) {
-      b = b.concat(a), d -= a.length;
+      b = b.concat(JSON.parse(JSON.stringify(a))), d -= a.length;
     } else {
       a = jasmin.Statistics.fisherYates(a);
       for (var e = 0;e < d;e++) {
-        b.push(a[e]);
+        b.push(JSON.parse(JSON.stringify(a[e])));
       }
       d = 0;
     }
