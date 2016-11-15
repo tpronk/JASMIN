@@ -287,7 +287,7 @@ jasmin.RequestManager.prototype.imgRequest = function(a, c) {
   var b = this.states[a].request;
   this.report("RequestManager.imgRequest", "stateId = " + a + ", transactionId = " + c + ", url = " + JSON.stringify(b));
   var d = this;
-  this.states[a].reply = $("<img>").attr("src", b).load(function() {
+  this.states[a].reply = $("<img>").attr("src", b + "?_=" + (new Date).getTime()).load(function() {
     void 0 === d.states[a].reply && d.error("RequestManager reply undefined", "stateId " + a + ", transactionId " + c);
     d.report("RequestManager img load", "stateId " + a + ", transactionId " + c);
     d.success(a, d.states[a].reply);

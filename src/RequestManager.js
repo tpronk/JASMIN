@@ -298,7 +298,7 @@ jasmin.RequestManager.prototype.imgRequest = function( stateId, transactionId ) 
 
     var self = this;
     this.states[ stateId ][ "reply" ] = $( "<img>" ).attr( 
-        "src", url
+        "src", url + "?_=" + new Date().getTime()
     ).load( function() {
         if (self.states[ stateId ][ "reply" ] === undefined) {
             self.error( 
