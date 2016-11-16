@@ -69,7 +69,21 @@ jasmin.TaskManager = function( task, config, onCompleted, translator, eventManag
             /**
              * @property {Object} Task results
              */                  
-            "results"   : []
+            "results"   : [],
+            /**
+             * @property {int} Number of times a block has been attempted
+             */                  
+            "block_attempt" : 0,
+            /**
+             * @property {int} Number of correct responses this block
+             */                  
+            "block_correct" : 0,
+            /**
+             * @property {int} Number of trials in a block
+             */                  
+            "block_trial_count" : 0
+            
+            
         };
     }
     this.setState     = setState === undefined? function() {} : setState;
@@ -202,9 +216,20 @@ jasmin.TaskManager.prototype.blockIntroduce = function() {
  * @public
  */
 jasmin.TaskManager.prototype.blockNext = function() {
-    this.state[ "trial"] = 0;
-    this.state[ "block" ]++;
-    this.blockSetup();
+   if (this.configBlock["min_correct"] !== undefined &&
+       this.state["block_correct"] / this.state["trial"] >= this.configBlock["min_correct"] &&
+       (this.configBlock["max_attempts"] === undefined || this.state["block_attempt"] < this.configBlock["max_attempts"])
+   ) {
+      console.log("retry block");
+      this.state[ "block_attempt" ] = 0;
+      this.state[ "block" ]++;
+   } else {
+      console.log("next block");
+      this.state[ "block_attempt" ]++;
+   }
+   this.state[ "block_correct" ] = 0;   
+   this.state[ "trial"] = 0;
+   this.blockSetup();
 };
 
 /**
@@ -251,6 +276,11 @@ jasmin.TaskManager.prototype.trialEventStart = function( feedbackLog )
         var logRow = this.collectLogs( eventConfig[ "log" ] );
         this.logger.log( logRow );
         this.state[ "results" ].push( logRow );
+    }
+    
+    // Log a correct response?
+    if (eventConfig["response"] === jasmin.TaskManager.RESPONSE_CORRECT && this.state["attempt"] === 0) {
+       this.state["block_correct"]++;
     }
     
     // If retry, increase attempt
