@@ -33,21 +33,44 @@ jasmin.ModalDialog = function (target) {
     this.dialogMessage = $("<span>").css({
     });
     this.dialogInner = $("<div>").css({
-        "margin" : "20px"
+        "margin" : "20px",
+        "text-align" : "center"
     });
-    this.dialogOuter = $("<div>").css({
-        "position": "absolute",
-        "top": "50%",
-        "left": "50%",
-        "transform": "translate(-50%, -50%)",
-        "background-color" : "#DDDDDD",
-        "border-radius" : "10px",
+    this.dialogOuter = $("<div>").css(jasmin.ModalDialog.DIALOG_OUTER_CSS);
+    this.dialogContainer = $("<div>").css({
+        "position" : "relative",
+        "width" : "100%",
+        "height" : "100%"
+    });
+    this.dialogBackground = $("<div>").css({
+        "background-color" : "#000000",
+        "opacity" : 0.85,
+        "position" : "absolute",
+        "left" : "0px",
+        "top" : "0px",
+        "width" : "100%",
+        "height" : "100%",
+        "z-index" : 9998,
         "display" : "none"
     });
     this.dialogInner.append(this.spinner);
     this.dialogInner.append(this.dialogMessage);
     this.dialogOuter.append(this.dialogInner);
-    target.append(this.dialogOuter);            
+    this.dialogContainer.append(this.dialogOuter);
+    target.append(this.dialogBackground);            
+    target.append(this.dialogContainer);            
+};
+
+jasmin.ModalDialog.DIALOG_OUTER_CSS = {
+    "position": "absolute",
+    "top": "50%",
+    "left": "50%",
+    "transform": "translate(-50%, -50%)",
+    "background-color" : "#DDDDDD",
+    "opacity" : 1,
+    "border-radius" : "10px",
+    "z-index" : 9999,
+    "display" : "none"
 };
 
 /**
@@ -56,8 +79,9 @@ jasmin.ModalDialog = function (target) {
   * @param {String}   message   Message displayed in dialog
   * @param {Function} callback  Function called when user clicks on the dialog
   * @param {Bool}     spinner   Show a simple spinner
+  * @param {Object}   outerCss  Additional CSS to style Dialog Box
   */         
-jasmin.ModalDialog.prototype.show = function (message, spinner, callback) {
+jasmin.ModalDialog.prototype.show = function (message, spinner, callback, outerCss) {
     this.dialogMessage.html(message);
 
     if (spinner) {
@@ -69,21 +93,29 @@ jasmin.ModalDialog.prototype.show = function (message, spinner, callback) {
     this.callback = callback;
     if (callback !== undefined) {
         var self = this;                
-        this.dialogOuter.on("click", function (e) {
+        this.dialogBackground.on("click", function (e) {
             self.hide();
             self.callback();
         });
     } else {
-        this.dialogOuter.off("click");
+        this.dialogBackground.off("click");
     }
+    
+    this.dialogOuter.css(jasmin.ModalDialog.DIALOG_OUTER_CSS);
+    if (outerCss !== undefined) {
+        this.dialogOuter.css(outerCss);
+    }
+    
+    this.dialogBackground.show();
     this.dialogOuter.show();
-}
+};
 
 /**
   * Hide the dialog
   * @constructor
   */  
 jasmin.ModalDialog.prototype.hide = function () {
-   this.dialogOuter.off("click");
+   this.dialogBackground.off("click");
+   this.dialogBackground.hide();
    this.dialogOuter.hide();
 };
