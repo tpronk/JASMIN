@@ -445,15 +445,15 @@ jasmin.ScalableCanvas.prototype.addSprites = function(a) {
 };
 jasmin.ScalableCanvas.prototype.rescale = function(a) {
   if (this.target === $(document.body)) {
-    var c = window.innerWidth, b = window.innerHeight
+    var c = window.innerWidth, b = window.innerHeight;
+    this.offsetTop = this.offsetLeft = 0;
   } else {
-    c = this.target.width(), b = this.target.height();
+    c = this.target.width(), b = this.target.height(), this.offsetLeft = this.target.offset().left, this.offsetTop = this.target.offset().top;
   }
   if (void 0 !== a || this.lastWidth !== c || this.lastHeight !== b) {
     this.lastWidth = c;
     this.lastHeight = b;
-    this.offsetTop = this.offsetLeft = 0;
-    c / b > this.aspectRatio ? (this.scale = b, this.offsetLeft = (c - this.scale * this.aspectRatio) / 2) : (this.scale = c / this.aspectRatio, this.offsetTop = (b - this.scale) / 2);
+    c / b > this.aspectRatio ? (this.scale = b, this.offsetLeft += (c - this.scale * this.aspectRatio) / 2) : (this.scale = c / this.aspectRatio, this.offsetTop += (b - this.scale) / 2);
     for (var d in this.sprites) {
       this.rescaleSprite(this.sprites[d]);
     }
@@ -485,6 +485,12 @@ jasmin.ScalableCanvas.prototype.rescaleSprite = function(a) {
       this.rescaleSprite(a.children[e]);
     }
   }
+};
+jasmin.ScalableCanvas.prototype.extend = function(a, c) {
+  for (var b in c) {
+    c.hasOwnProperty(b) && (a[b] = c[b]);
+  }
+  return a;
 };
 jasmin.ScalableCanvas.prototype.spritesFromJSON = function(a, c) {
   var b = {}, d, e, f;

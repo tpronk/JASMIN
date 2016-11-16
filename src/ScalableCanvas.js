@@ -99,9 +99,13 @@ jasmin.ScalableCanvas.prototype.rescale = function( force )
     if( this.target === $( document.body ) ) {
         var targetWidth  = window.innerWidth;
         var targetHeight = window.innerHeight;
+        this.offsetLeft  = 0;
+        this.offsetTop   = 0;        
     } else {
         var targetWidth  = this.target.width();
         var targetHeight = this.target.height();
+        this.offsetLeft  = this.target.offset()["left"];
+        this.offsetTop   = this.target.offset()["top"];
     }
         
     // No force and no change in scale? No need to rescale    
@@ -114,18 +118,15 @@ jasmin.ScalableCanvas.prototype.rescale = function( force )
     }
     
     // To maintain aspect ratio, scale to width or height
-    this.offsetLeft = 0;
-    this.offsetTop  = 0;
-
     if( targetWidth / targetHeight > this.aspectRatio )
     {
         // Screen is wider than aspect ratio; use height (divided by aspect)
-        this.scale          = targetHeight;
-        this.offsetLeft = ( targetWidth - ( this.scale * this.aspectRatio ) ) / 2;
+        this.scale      = targetHeight;
+        this.offsetLeft += ( targetWidth - ( this.scale * this.aspectRatio ) ) / 2;
     } else {
         // Screen is wider than aspect ratio; use width
-        this.scale = targetWidth / this.aspectRatio;
-        this.offsetTop = ( targetHeight - ( this.scale ) ) / 2;
+        this.scale     = targetWidth / this.aspectRatio;
+        this.offsetTop += ( targetHeight - ( this.scale ) ) / 2;
     }
     
     // For each node, update css
@@ -178,6 +179,23 @@ jasmin.ScalableCanvas.prototype.rescaleSprite = function( sprite ) {
             this.rescaleSprite( sprite[ "children" ][ child_i ] );
         }
     }
+};
+
+/**
+ * Extend function based on Prototype: merge two (associative) arrays, named
+ * destination and source. For any keys existing both in destination and source
+ * the values of source is used.
+ * @param {Object} destination 
+ * @param {Object} source
+ * @private
+ */
+jasmin.ScalableCanvas.prototype.extend = function(destination, source) {
+    for (var property in source) {
+        if (source.hasOwnProperty(property)) {
+            destination[property] = source[property];
+        }
+    }
+    return destination;
 };
 
 
