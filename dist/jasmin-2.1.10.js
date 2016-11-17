@@ -1,186 +1,238 @@
-if (void 0 === jasmin) {
+if (jasmin === undefined) {
   var jasmin = function() {
   }
 }
-jasmin.ErrorManager = function(a, c) {
-  this.callback = a;
-  this.maxErrorCount = void 0 === c ? 10 : c;
+jasmin.ErrorManager = function(callback, maxErrorCount) {
+  this.callback = callback;
+  this.maxErrorCount = maxErrorCount === undefined ? 10 : maxErrorCount;
   this.errorCount = 0;
 };
 jasmin.ErrorManager.prototype.callbackWindowError = function() {
-  var a = this;
-  return function(c, b, d, e, f) {
-    f instanceof Object || (f = {});
-    a.onError({from:"window.onerror", msg:c, url:b, line:d, col:e, stack:f.stack});
+  var self = this;
+  return function(msg, url, line, col, error) {
+    if (!(error instanceof Object)) {
+      error = {};
+    }
+    var errorPackage = {"from":"window.onerror", "msg":msg, "url":url, "line":line, "col":col, "stack":error.stack};
+    self.onError(errorPackage);
   };
 };
-jasmin.ErrorManager.prototype.onError = function(a) {
-  this.errorCount < this.maxErrorCount && (this.errorCount++, this.callback(a));
+jasmin.ErrorManager.prototype.onError = function(errorPackage) {
+  if (this.errorCount < this.maxErrorCount) {
+    this.errorCount++;
+    this.callback(errorPackage);
+  }
 };
 jasmin.ErrorManager.prototype.callbackFail = function() {
-  var a = this;
-  return function(c) {
-    a.onError({from:"fail", msg:c});
+  var self = this;
+  return function(msg) {
+    var errorPackage = {"from":"fail", "msg":msg};
+    self.onError(errorPackage);
   };
 };
-jasmin.ErrorManager.errorToJasminHandler = function(a, c) {
-  return function(b) {
-    b = [{runId:c, requestId:"error", request:{namespace:"error", info:b}}];
-    console.log(JSON.stringify(b));
-    b = {url:a, dataType:"json", type:"POST", data:"data=" + encodeURI(JSON.stringify(b))};
-    $.ajax(b);
+jasmin.ErrorManager.errorToJasminHandler = function(url, runId) {
+  return function(errorPackage) {
+    var lotusRequests = [{"runId":runId, "requestId":"error", "request":{"namespace":"error", "info":errorPackage}}];
+    console.log(JSON.stringify(lotusRequests));
+    var ajaxArgs = {"url":url, "dataType":"json", "type":"POST", "data":"data=" + encodeURI(JSON.stringify(lotusRequests))};
+    $.ajax(ajaxArgs);
   };
 };
-void 0 === jasmin && (jasmin = function() {
-});
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
 jasmin.EventManager = function() {
   this.responseManager = new jasmin.ResponseManager;
   this.syncTimer = new jasmin.SyncTimer;
-  this.callbackDone = void 0;
+  this.callbackDone = undefined;
 };
 jasmin.EventManager.ENDREASON_TIMEOUT = "timeout";
 jasmin.EventManager.ENDREASON_RESPONSE = "response";
 jasmin.EventManager.ENDREASON_CANCELED = "canceled";
-jasmin.EventManager.prototype.start = function(a, c) {
-  this.responseManager.attach(a);
+jasmin.EventManager.prototype.start = function(buttonDefinitions, callbackSynced) {
+  this.responseManager.attach(buttonDefinitions);
   this.syncTimer.sync(function() {
-    c();
+    callbackSynced();
   });
 };
 jasmin.EventManager.prototype.stop = function() {
   this.responseManager.detach();
   this.syncTimer.unsync();
 };
-jasmin.EventManager.prototype.startEvent = function(a, c, b, d, e, f) {
+jasmin.EventManager.prototype.startEvent = function(timeout, callbackDraw, callbackDone, buttonsActive, resetRt, name) {
   this.clearLoggingVars();
-  this.timeout = a;
-  this.callbackDraw = c;
-  this.callbackDone = b;
-  this.buttonsActive = d;
-  this.resetRt = void 0 !== e ? e : !0;
-  this.name = void 0 !== f ? f : "noname";
-  var g = this;
-  this.responseManager.activate(d, function() {
-    g.endEvent(jasmin.EventManager.ENDREASON_RESPONSE);
+  this.timeout = timeout;
+  this.callbackDraw = callbackDraw;
+  this.callbackDone = callbackDone;
+  this.buttonsActive = buttonsActive;
+  this.resetRt = resetRt !== undefined ? resetRt : true;
+  this.name = name !== undefined ? name : "noname";
+  var self = this;
+  this.responseManager.activate(buttonsActive, function() {
+    self.endEvent(jasmin.EventManager.ENDREASON_RESPONSE);
   }, this.name);
-  this.syncTimer.setTimeout(a, function() {
-    g.callbackDraw();
+  this.syncTimer.setTimeout(timeout, function() {
+    self.callbackDraw();
   }, function() {
-    g.endEvent(jasmin.EventManager.ENDREASON_TIMEOUT);
+    self.endEvent(jasmin.EventManager.ENDREASON_TIMEOUT);
   }, this.name);
 };
-jasmin.EventManager.prototype.endEvent = function(a) {
+jasmin.EventManager.prototype.endEvent = function(endReason) {
   this.responseManager.deactivate();
-  a !== jasmin.EventManager.ENDREASON_TIMEOUT && this.syncTimer.cancelTimeout();
-  this.resetRt && (this.timeRtStart = !1 === this.syncTimer.shown ? window.performance.now() : this.syncTimer.timeShown);
-  if (a === jasmin.EventManager.ENDREASON_RESPONSE) {
-    var c = this.responseManager.getResponseLog();
-    this.rt = c.time - this.syncTimer.timeShown;
-    this.responseLabel = c.label;
-    this.responseId = c.id;
-    this.responseModality = c.modality;
+  if (endReason !== jasmin.EventManager.ENDREASON_TIMEOUT) {
+    this.syncTimer.cancelTimeout();
   }
-  this.endReason = a;
+  if (this.resetRt) {
+    if (this.syncTimer.shown === false) {
+      this.timeRtStart = window.performance.now();
+    } else {
+      this.timeRtStart = this.syncTimer.timeShown;
+    }
+  }
+  if (endReason === jasmin.EventManager.ENDREASON_RESPONSE) {
+    var responseLog = this.responseManager.getResponseLog();
+    this.rt = responseLog["time"] - this.syncTimer.timeShown;
+    this.responseLabel = responseLog["label"];
+    this.responseId = responseLog["id"];
+    this.responseModality = responseLog["modality"];
+  }
+  this.endReason = endReason;
   this.updateEventLog();
-  a !== jasmin.EventManager.ENDREASON_CANCELED && this.callbackDone();
+  if (endReason !== jasmin.EventManager.ENDREASON_CANCELED) {
+    this.callbackDone();
+  }
 };
 jasmin.EventManager.prototype.cancelEvent = function() {
   this.endEvent(jasmin.EventManager.ENDREASON_CANCELED);
 };
 jasmin.EventManager.prototype.updateEventLog = function() {
-  this.eventLog = {name:this.name, rt:Math.round(1E3 * this.rt) / 1E3, endReason:this.endReason, responseLabel:this.responseLabel, modality:this.responseModality, id:this.responseId};
+  this.eventLog = {"name":this.name, "rt":Math.round(this.rt * 1E3) / 1E3, "endReason":this.endReason, "responseLabel":this.responseLabel, "modality":this.responseModality, "id":this.responseId};
 };
 jasmin.EventManager.prototype.getEventLog = function() {
   return this.eventLog;
 };
 jasmin.EventManager.prototype.clearLoggingVars = function() {
-  this.responseModality = this.responseId = this.responseLabel = this.endReason = this.rt = this.name = void 0;
+  this.name = undefined;
+  this.rt = undefined;
+  this.endReason = undefined;
+  this.responseLabel = undefined;
+  this.responseId = undefined;
+  this.responseModality = undefined;
 };
-void 0 === jasmin && (jasmin = function() {
-});
-jasmin.Loader = function(a, c) {
-  this.requestManager = a;
-  this.baseUrls = c;
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
+jasmin.Loader = function(requestManager, baseUrls) {
+  this.requestManager = requestManager;
+  this.baseUrls = baseUrls;
 };
-jasmin.Loader.prototype.load = function(a, c, b) {
-  this.allLoaded = c;
-  this.progressCallback = void 0 === b ? function() {
-  } : b;
+jasmin.Loader.prototype.load = function(requests, allLoaded, progressCallback) {
+  this.allLoaded = allLoaded;
+  this.progressCallback = progressCallback === undefined ? function() {
+  } : progressCallback;
   this.replies = {};
-  this.loadTotal = this.loadCounter = 0;
+  this.loadCounter = 0;
+  this.loadTotal = 0;
   this.progressCallback(0);
-  this.doRequests(a);
-  var d = this;
+  this.doRequests(requests);
+  var self = this;
   this.requestManager.flush(function() {
-    d.allLoaded(d.replies);
+    self.allLoaded(self.replies);
   });
 };
-jasmin.Loader.prototype.doRequests = function(a) {
-  var c = this, b;
-  for (b in a) {
-    this.loadTotal++, function(a, b, f, g) {
-      var h;
-      void 0 !== c.baseUrls && void 0 !== c.baseUrls[b] && (f = c.baseUrls[b] + f);
-      switch(b) {
+jasmin.Loader.prototype.doRequests = function(requests) {
+  var self = this;
+  for (var key in requests) {
+    this.loadTotal++;
+    var closure = function(key, dataType, url, request) {
+      var requestType, request;
+      if (self.baseUrls !== undefined && self.baseUrls[dataType] !== undefined) {
+        url = self.baseUrls[dataType] + url;
+      }
+      switch(dataType) {
         case "css":
-          h = jasmin.RequestManager.TYPE_AJAX;
-          g = {url:f, dataType:"text"};
+          requestType = jasmin.RequestManager.TYPE_AJAX;
+          request = {"url":url, "dataType":"text"};
           break;
         case "img":
-          h = jasmin.RequestManager.TYPE_IMG;
-          g = f;
+          requestType = jasmin.RequestManager.TYPE_IMG;
+          request = url;
           break;
         default:
-          h = jasmin.RequestManager.TYPE_AJAX, void 0 === g && (g = {}), g.dataType = b, g.url = f;
+          requestType = jasmin.RequestManager.TYPE_AJAX;
+          if (request === undefined) {
+            request = {};
+          }
+          request["dataType"] = dataType;
+          request["url"] = url;
+          break;
       }
-      "font" === b && (g.dataType = "binary", g.processData = !1);
-      DEBUG && console.log({what:"request", key:a, dataType:b, url:f, request:g});
-      c.requestManager.request(h, g, function(h) {
-        DEBUG && console.log({what:"reply", key:a, dataType:b, url:f, request:g, reply:h});
-        "css" === b && $('<link rel="stylesheet" type="text/css" href="' + f + '" />').appendTo("head");
-        "font" === b && $("head").prepend('<style type="text/css">@font-face {src : url("' + g.url + '");font-family : ' + g["font-family"] + ";font-weight : " + g["font-weight"] + ";font-style  : " + g["font-style"] + ";}");
-        c.replies[a] = h;
-        c.loadCounter++;
-        c.progress();
+      if (dataType === "font") {
+        request["dataType"] = "binary";
+        request["processData"] = false;
+      }
+      DEBUG && console.log({"what":"request", "key":key, "dataType":dataType, "url":url, "request":request});
+      self.requestManager.request(requestType, request, function(reply) {
+        DEBUG && console.log({"what":"reply", "key":key, "dataType":dataType, "url":url, "request":request, "reply":reply});
+        if (dataType === "css") {
+          $('<link rel="stylesheet" type="text/css" href="' + url + '" />').appendTo("head");
+        }
+        if (dataType === "font") {
+          $("head").prepend('<style type="text/css">@font-face {' + 'src : url("' + request["url"] + '");' + "font-family : " + request["font-family"] + ";" + "font-weight : " + request["font-weight"] + ";" + "font-style  : " + request["font-style"] + ";" + "}");
+        }
+        self.replies[key] = reply;
+        self.loadCounter++;
+        self.progress();
       });
-    }(b, a[b][0], a[b][1], a[b][2], a[b][3]);
+    };
+    closure(key, requests[key][0], requests[key][1], requests[key][2], requests[key][3]);
   }
 };
 jasmin.Loader.prototype.progress = function() {
   this.progressCallback(Math.round(100 * this.loadCounter / this.loadTotal));
 };
-void 0 === jasmin && (jasmin = function() {
-});
-jasmin.ModalDialog = function(a) {
-  this.spinner = $("<img>").css({"vertical-align":"middle", "margin-right":"10px"}).attr({src:"data:image/gif;base64,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"});
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
+jasmin.ModalDialog = function(target) {
+  this.spinner = $("<img>").css({"vertical-align":"middle", "margin-right":"10px"}).attr({"src":"data:image/gif;base64,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"});
   this.dialogMessage = $("<span>").css({});
-  this.dialogInner = $("<div>").css({margin:"20px", "text-align":"center"});
+  this.dialogInner = $("<div>").css({"margin":"20px", "text-align":"center"});
   this.dialogOuter = $("<div>").css(jasmin.ModalDialog.DIALOG_OUTER_CSS);
-  this.dialogContainer = $("<div>").css({position:"relative", width:"100%", height:"100%"});
-  this.dialogBackground = $("<div>").css({"background-color":"#000000", opacity:.85, position:"absolute", left:"0px", top:"0px", width:"100%", height:"100%", "z-index":9998, display:"none"});
+  this.dialogContainer = $("<div>").css({"position":"relative", "width":"100%", "height":"100%"});
+  this.dialogBackground = $("<div>").css({"background-color":"#000000", "opacity":.85, "position":"absolute", "left":"0px", "top":"0px", "width":"100%", "height":"100%", "z-index":9998, "display":"none"});
   this.dialogInner.append(this.spinner);
   this.dialogInner.append(this.dialogMessage);
   this.dialogOuter.append(this.dialogInner);
   this.dialogContainer.append(this.dialogOuter);
-  a.append(this.dialogBackground);
-  a.append(this.dialogContainer);
+  target.append(this.dialogBackground);
+  target.append(this.dialogContainer);
 };
-jasmin.ModalDialog.DIALOG_OUTER_CSS = {position:"absolute", top:"50%", left:"50%", transform:"translate(-50%, -50%)", "background-color":"#DDDDDD", opacity:1, "border-radius":"10px", "z-index":9999, display:"none"};
-jasmin.ModalDialog.prototype.show = function(a, c, b, d) {
-  this.dialogMessage.html(a);
-  c ? this.spinner.show() : this.spinner.hide();
-  this.callback = b;
-  if (void 0 !== b) {
-    var e = this;
-    this.dialogBackground.on("click", function(a) {
-      e.hide();
-      e.callback();
+jasmin.ModalDialog.DIALOG_OUTER_CSS = {"position":"absolute", "top":"50%", "left":"50%", "transform":"translate(-50%, -50%)", "background-color":"#DDDDDD", "opacity":1, "border-radius":"10px", "z-index":9999, "display":"none"};
+jasmin.ModalDialog.prototype.show = function(message, spinner, callback, outerCss) {
+  this.dialogMessage.html(message);
+  if (spinner) {
+    this.spinner.show();
+  } else {
+    this.spinner.hide();
+  }
+  this.callback = callback;
+  if (callback !== undefined) {
+    var self = this;
+    this.dialogBackground.on("click", function(e) {
+      self.hide();
+      self.callback();
     });
   } else {
     this.dialogBackground.off("click");
   }
   this.dialogOuter.css(jasmin.ModalDialog.DIALOG_OUTER_CSS);
-  void 0 !== d && this.dialogOuter.css(d);
+  if (outerCss !== undefined) {
+    this.dialogOuter.css(outerCss);
+  }
   this.dialogBackground.show();
   this.dialogOuter.show();
 };
@@ -189,697 +241,979 @@ jasmin.ModalDialog.prototype.hide = function() {
   this.dialogBackground.hide();
   this.dialogOuter.hide();
 };
-void 0 === window.performance && (window.performance = {});
-void 0 === window.performance.now && (window.performance.now = function() {
-  return(new Date).getTime();
-});
+if (window.performance === undefined) {
+  window.performance = new Object;
+}
+if (window.performance.now === undefined) {
+  window.performance.now = function() {
+    return(new Date).getTime();
+  };
+}
 (function() {
-  for (var a = 0, c = ["ms", "moz", "webkit", "o"], b = 0;b < c.length && !window.requestAnimationFrame;++b) {
-    window.requestAnimationFrame = window[c[b] + "RequestAnimationFrame"], window.cancelAnimationFrame = window[c[b] + "CancelAnimationFrame"] || window[c[b] + "CancelRequestAnimationFrame"];
+  var lastTime = 0;
+  var vendors = ["ms", "moz", "webkit", "o"];
+  for (var x = 0;x < vendors.length && !window.requestAnimationFrame;++x) {
+    window.requestAnimationFrame = window[vendors[x] + "RequestAnimationFrame"];
+    window.cancelAnimationFrame = window[vendors[x] + "CancelAnimationFrame"] || window[vendors[x] + "CancelRequestAnimationFrame"];
   }
-  window.requestAnimationFrame || (window.requestAnimationFrame = function(c) {
-    var b = (new Date).getTime(), f = Math.max(0, 16 - (b - a)), g = window.setTimeout(function() {
-      c(b + f);
-    }, f);
-    a = b + f;
-    return g;
-  });
-  window.cancelAnimationFrame || (window.cancelAnimationFrame = function(a) {
-    clearTimeout(a);
-  });
+  if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = function(callback) {
+      var currTime = (new Date).getTime();
+      var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+      var id = window.setTimeout(function() {
+        callback(currTime + timeToCall);
+      }, timeToCall);
+      lastTime = currTime + timeToCall;
+      return id;
+    };
+  }
+  if (!window.cancelAnimationFrame) {
+    window.cancelAnimationFrame = function(id) {
+      clearTimeout(id);
+    };
+  }
 })();
-void 0 === jasmin && (jasmin = function() {
-});
-jasmin.RequestManager = function(a, c, b, d, e, f, g) {
-  this.fail = void 0 === a ? function(a) {
-    alert(a);
-  } : a;
-  this.error = void 0 === c ? function() {
-  } : c;
-  this.report = void 0 === b ? function() {
-  } : b;
-  this.timeout = void 0 === d ? 4E3 : d;
-  this.retries = void 0 === e ? 8 : e;
-  this.active = void 0 === f ? !0 : f;
-  this.checkInterval = void 0 === g ? 300 : g;
-  this.flushing = !1;
-  this.flushCallback = void 0;
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
+jasmin.RequestManager = function(fail, error, report, timeout, retries, active, checkInterval) {
+  this.fail = fail === undefined ? function(errorMessage) {
+    alert(errorMessage);
+  } : fail;
+  this.error = error === undefined ? function() {
+  } : error;
+  this.report = report === undefined ? function() {
+  } : report;
+  this.timeout = timeout === undefined ? 4E3 : timeout;
+  this.retries = retries === undefined ? 8 : retries;
+  this.active = active === undefined ? true : active;
+  this.checkInterval = checkInterval === undefined ? 300 : checkInterval;
+  this.flushing = false;
+  this.flushCallback = undefined;
   this.STATE_OPEN = 1;
   this.STATE_FAILED = 2;
   this.STATE_FIRST = 3;
   this.states = {};
-  this.transactionCounter = this.stateCounter = 0;
-  this.failed = !1;
-  this.active && this.check();
+  this.stateCounter = 0;
+  this.transactionCounter = 0;
+  this.failed = false;
+  if (this.active) {
+    this.check();
+  }
 };
 jasmin.RequestManager.TYPE_AJAX = "ajax";
 jasmin.RequestManager.TYPE_IMG = "img";
-jasmin.RequestManager.prototype.request = function(a, c, b, d, e) {
-  var f = this.stateCounter;
-  this.states[f] = {type:a, request:c, callback:b, timeout:d, retries:e, state:this.STATE_FIRST, retryCounter:0, handled:!1};
+jasmin.RequestManager.prototype.request = function(type, request, callback, timeout, retries) {
+  var counter = this.stateCounter;
+  this.states[counter] = {"type":type, "request":request, "callback":callback, "timeout":timeout, "retries":retries, "state":this.STATE_FIRST, "retryCounter":0, "handled":false};
   this.stateCounter++;
-  this.report("RequestManager.request: ", "stateId " + f + JSON.stringify(c));
-  this.active && this.sendOpenRequests();
-  return f;
+  this.report("RequestManager.request: ", "stateId " + counter + JSON.stringify(request));
+  if (this.active) {
+    this.sendOpenRequests();
+  }
+  return counter;
 };
 jasmin.RequestManager.prototype.sendOpenRequests = function() {
-  if ((this.active || this.flushing) && !this.failed) {
-    var a = this.statesToSend();
-    if (0 < a.length) {
-      var c, b;
-      for (b in a) {
-        c = a[b];
-        transactionId = this.transactionCounter;
-        switch(this.states[c].type) {
-          case jasmin.RequestManager.TYPE_AJAX:
-            this.ajaxRequest(c, transactionId);
-            break;
-          case jasmin.RequestManager.TYPE_IMG:
-            this.imgRequest(c, transactionId);
-        }
-        this.transactionCounter++;
-        this.states[c].state = this.STATE_OPEN;
-        this.states[c].retryCounter++;
-        this.states[c].attemptTime = (new Date).getTime();
+  if (!((this.active || this.flushing) && !this.failed)) {
+    return;
+  }
+  var stateIds = this.statesToSend();
+  if (stateIds.length > 0) {
+    var stateId;
+    for (var i in stateIds) {
+      stateId = stateIds[i];
+      transactionId = this.transactionCounter;
+      switch(this.states[stateId]["type"]) {
+        case jasmin.RequestManager.TYPE_AJAX:
+          this.ajaxRequest(stateId, transactionId);
+          break;
+        case jasmin.RequestManager.TYPE_IMG:
+          this.imgRequest(stateId, transactionId);
+          break;
       }
+      this.transactionCounter++;
+      this.states[stateId]["state"] = this.STATE_OPEN;
+      this.states[stateId]["retryCounter"]++;
+      this.states[stateId]["attemptTime"] = (new Date).getTime();
     }
   }
 };
 jasmin.RequestManager.prototype.statesToSend = function() {
-  var a = (new Date).getTime(), c = [], b, d;
-  for (d in this.states) {
-    switch(this.states[d].state) {
+  var time = (new Date).getTime();
+  var sendList = new Array;
+  var timeout, retries;
+  for (var i in this.states) {
+    switch(this.states[i]["state"]) {
       case this.STATE_FIRST:
-        c.push(d);
-        this.report("RequestManager.statesToSend: ", "stateId " + d + ". STATE_FIRST");
+        sendList.push(i);
+        this.report("RequestManager.statesToSend: ", "stateId " + i + ". STATE_FIRST");
         break;
       case this.STATE_OPEN:
-        b = void 0 === this.states[d].timeout ? this.timeout : this.states[d].timeout, a - this.states[d].attemptTime > b && (this.report("RequestManager.statesToSend", "stateId " + d + " open and timed out"), this.states[d].state = this.STATE_FAILED);
+        timeout = this.states[i]["timeout"] === undefined ? this.timeout : this.states[i]["timeout"];
+        if (time - this.states[i]["attemptTime"] > timeout) {
+          this.report("RequestManager.statesToSend", "stateId " + i + " open and timed out");
+          this.states[i]["state"] = this.STATE_FAILED;
+        }
+        break;
     }
-    this.states[d].state === this.STATE_FAILED && (this.states[d].retryCounter >= this.retries ? (this.report("RequestManager.statesToSend", "stateId " + d + " failed; Exceeded " + this.retries + " attempts"), this.failed || (this.failed = !0, this.fail("RequestManager: Max attempts exceeded"))) : (this.report("RequestManager.statesToSend", "stateId " + d + " added to sendList"), c.push(d)));
-  }
-  return c;
-};
-jasmin.RequestManager.prototype.ajaxRequest = function(a, c) {
-  var b = this.states[a].request;
-  this.report("RequestManager.ajaxRequest", "stateId = " + a + ", transactionId = " + c + ", ajaxArgs = " + JSON.stringify(b));
-  var d = this, e = $.ajax(b);
-  e.done(function(b, e) {
-    d.report("RequestManager AJAX done", "stateId " + a + ", transactionId " + c + ", status " + e + ", received:" + JSON.stringify(b));
-    d.success(a, b);
-  });
-  e.fail(function(e, g) {
-    d.error("RequestManager AJAX fail", "stateId " + a + ", transactionId " + c + ", status " + g + ", ajaxArgs: " + JSON.stringify(b) + ", received:" + JSON.stringify(e));
-  });
-};
-jasmin.RequestManager.prototype.imgRequest = function(a, c) {
-  var b = this.states[a].request;
-  this.report("RequestManager.imgRequest", "stateId = " + a + ", transactionId = " + c + ", url = " + JSON.stringify(b));
-  var d = this;
-  this.states[a].reply = $("<img>").attr("src", b + "?_=" + (new Date).getTime()).load(function() {
-    void 0 === d.states[a].reply && d.error("RequestManager reply undefined", "stateId " + a + ", transactionId " + c);
-    d.report("RequestManager img load", "stateId " + a + ", transactionId " + c);
-    d.success(a, d.states[a].reply);
-  }).error(function() {
-    d.error("RequestManager img error", "stateId " + a + ", transactionId " + c);
-  });
-};
-jasmin.RequestManager.prototype.success = function(a, c) {
-  if (void 0 !== this.states[a] && !this.states[a].handled) {
-    this.states[a].handled = !0;
-    if (void 0 !== this.states[a].callback) {
-      try {
-        this.states[a].callback(c);
-      } catch (b) {
+    if (this.states[i]["state"] === this.STATE_FAILED) {
+      retries = this.states[i]["retries"] === undefined ? this.retries : this.states[i]["retries"];
+      if (this.states[i]["retryCounter"] >= this.retries) {
+        this.report("RequestManager.statesToSend", "stateId " + i + " failed; Exceeded " + this.retries + " attempts");
+        if (!this.failed) {
+          this.failed = true;
+          this.fail("RequestManager: Max attempts exceeded");
+        }
+      } else {
+        this.report("RequestManager.statesToSend", "stateId " + i + " added to sendList");
+        sendList.push(i);
       }
     }
-    delete this.states[a];
   }
-  this.flushing && $.isEmptyObject(this.states) && (this.flushing = !1, void 0 !== this.flushCallback && this.flushCallback());
+  return sendList;
+};
+jasmin.RequestManager.prototype.ajaxRequest = function(stateId, transactionId) {
+  var ajaxArgs = this.states[stateId]["request"];
+  this.report("RequestManager.ajaxRequest", "stateId = " + stateId + ", transactionId = " + transactionId + ", ajaxArgs = " + JSON.stringify(ajaxArgs));
+  var self = this;
+  var ajax = $.ajax(ajaxArgs);
+  ajax.done(function(response, status) {
+    self.report("RequestManager AJAX done", "stateId " + stateId + ", transactionId " + transactionId + ", status " + status + ", received:" + JSON.stringify(response));
+    self.success(stateId, response);
+  });
+  ajax.fail(function(response, status) {
+    self.error("RequestManager AJAX fail", "stateId " + stateId + ", transactionId " + transactionId + ", status " + status + ", ajaxArgs: " + JSON.stringify(ajaxArgs) + ", received:" + JSON.stringify(response));
+  });
+};
+jasmin.RequestManager.prototype.imgRequest = function(stateId, transactionId) {
+  var url = this.states[stateId]["request"];
+  this.report("RequestManager.imgRequest", "stateId = " + stateId + ", transactionId = " + transactionId + ", url = " + JSON.stringify(url));
+  var self = this;
+  this.states[stateId]["reply"] = $("<img>").attr("src", url + "?_=" + (new Date).getTime()).load(function() {
+    if (self.states[stateId]["reply"] === undefined) {
+      self.error("RequestManager reply undefined", "stateId " + stateId + ", transactionId " + transactionId);
+    }
+    self.report("RequestManager img load", "stateId " + stateId + ", transactionId " + transactionId);
+    self.success(stateId, self.states[stateId]["reply"]);
+  }).error(function() {
+    self.error("RequestManager img error", "stateId " + stateId + ", transactionId " + transactionId);
+  });
+};
+jasmin.RequestManager.prototype.success = function(stateId, reply) {
+  if (this.states[stateId] !== undefined && !this.states[stateId]["handled"]) {
+    this.states[stateId]["handled"] = true;
+    if (this.states[stateId]["callback"] !== undefined) {
+      try {
+        this.states[stateId]["callback"](reply);
+      } catch (e) {
+      }
+    }
+    delete this.states[stateId];
+  }
+  if (this.flushing && $.isEmptyObject(this.states)) {
+    this.flushing = false;
+    if (this.flushCallback !== undefined) {
+      this.flushCallback();
+    }
+  }
 };
 jasmin.RequestManager.prototype.check = function() {
   if ((this.active || this.flushing) && !this.failed) {
     this.sendOpenRequests();
-    var a = this;
+    var self = this;
     setTimeout(function() {
-      a.check();
+      self.check();
     }, this.checkInterval);
   }
 };
-jasmin.RequestManager.prototype.flush = function(a) {
-  this.flushing = !0;
-  this.flushCallback = a;
-  $.isEmptyObject(this.states) && void 0 !== this.flushCallback && this.flushCallback();
+jasmin.RequestManager.prototype.flush = function(flushCallback) {
+  this.flushing = true;
+  this.flushCallback = flushCallback;
+  if ($.isEmptyObject(this.states)) {
+    if (this.flushCallback !== undefined) {
+      this.flushCallback();
+    }
+  }
   this.check();
 };
-void 0 === jasmin && (jasmin = function() {
-});
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
 jasmin.ResponseManager = function() {
-  this.active = !1;
-  this.responseData = this.callbackResponse = this.buttonsActive = void 0;
+  this.active = false;
+  this.buttonsActive = undefined;
+  this.callbackResponse = undefined;
+  this.responseData = undefined;
 };
-jasmin.ResponseManager.prototype.attach = function(a) {
-  this.buttonDefinitions = a;
-  this.bindEvents(!0);
+jasmin.ResponseManager.prototype.attach = function(buttonDefinitions) {
+  this.buttonDefinitions = buttonDefinitions;
+  this.bindEvents(true);
 };
 jasmin.ResponseManager.prototype.detach = function() {
-  this.bindEvents(!1);
+  this.bindEvents(false);
 };
-jasmin.ResponseManager.prototype.bindEvents = function(a) {
-  var c = this, b = function(b, d, e) {
-    var f = "all" !== d ? $(d) : $(window.document), g = function(a) {
-      var f = window.performance.now();
-      c.stopBubble(a);
-      c.response(a, b, d, e, f, a.pageX, a.pageY);
+jasmin.ResponseManager.prototype.bindEvents = function(on) {
+  var self = this;
+  var pointerCallback = function(type, id, label) {
+    var target = id !== "all" ? $(id) : $(window.document);
+    var callback = function(event) {
+      var time = window.performance.now();
+      self.stopBubble(event);
+      self.response(event, type, id, label, time, event.pageX, event.pageY);
     };
-    a ? (f.off(b), f.on(b, g)) : f.off(b);
+    if (on) {
+      target.off(type);
+      target.on(type, callback);
+    } else {
+      target.off(type);
+    }
   };
-  this.keyboardMapping = {keyup:{}, keydown:{}};
-  var d = [], e = function(b) {
-    if (-1 === d.indexOf(b)) {
-      d.push(b);
-      b = "all" !== b ? $(b) : $(window.document);
-      var e = ["vmousecancel", "mousecancel", "touchcancel"], f, g;
-      for (f in e) {
-        g = e[f];
-        var l = function(a) {
-          c.stopBubble(a);
+  this.keyboardMapping = {"keyup":{}, "keydown":{}};
+  var attachedCancel = [];
+  var stopCancelBubble = function(id) {
+    if (attachedCancel.indexOf(id) === -1) {
+      attachedCancel.push(id);
+      var target = id !== "all" ? $(id) : $(window.document);
+      var cancelTypes = ["vmousecancel", "mousecancel", "touchcancel"], cancelType_i, cancelType;
+      for (cancelType_i in cancelTypes) {
+        cancelType = cancelTypes[cancelType_i];
+        var callback = function(event) {
+          self.stopBubble(event);
         };
-        if (a) {
-          b.on(g, l);
+        if (on) {
+          target.on(cancelType, callback);
         } else {
-          b.off(g);
+          target.off(cancelType);
         }
       }
     }
   };
   for (button_i in this.buttonDefinitions) {
-    for (modality_i in button = this.buttonDefinitions[button_i], button.modalities) {
-      modality = button.modalities[modality_i], "keyup" === modality.type || "keydown" === modality.type ? this.keyboardMapping[modality.type][modality.id] = button.label : (b(modality.type, modality.id, button.label), e(modality.id));
+    button = this.buttonDefinitions[button_i];
+    for (modality_i in button["modalities"]) {
+      modality = button["modalities"][modality_i];
+      if (modality["type"] === "keyup" || modality["type"] === "keydown") {
+        this.keyboardMapping[modality["type"]][modality["id"]] = button["label"];
+      } else {
+        pointerCallback(modality["type"], modality["id"], button["label"]);
+        stopCancelBubble(modality["id"]);
+      }
     }
   }
-  var b = function(b) {
-    var d = function(a) {
-      var d = window.performance.now();
-      c.stopBubble(a);
-      var e = c.keyboardMapping[b][a.which], e = void 0 !== e ? e : c.keyboardMapping[b].all;
-      c.response(a, b, a.which, e, d);
+  var keyboardCallback = function(type) {
+    var callback = function(event) {
+      var time = window.performance.now();
+      self.stopBubble(event);
+      var id = event.which;
+      var keyLabel = self.keyboardMapping[type][id];
+      keyLabel = keyLabel !== undefined ? keyLabel : self.keyboardMapping[type]["all"];
+      self.response(event, type, event.which, keyLabel, time);
     };
-    if (a) {
-      $(window.document).on(b, d);
+    if (on) {
+      $(window.document).on(type, callback);
     } else {
-      $(window.document).off(b);
+      $(window.document).off(type);
     }
-  }, e = ["keydown", "keyup"], f, g;
-  for (f in e) {
-    g = e[f], b(g);
+  };
+  var keyboardTypes = ["keydown", "keyup"], keyboardType_i, keyboardType;
+  for (keyboardType_i in keyboardTypes) {
+    keyboardType = keyboardTypes[keyboardType_i];
+    keyboardCallback(keyboardType);
   }
 };
-jasmin.ResponseManager.prototype.activate = function(a, c) {
-  this.buttonsActive = a;
-  this.callbackResponse = c;
-  this.active = !0;
+jasmin.ResponseManager.prototype.activate = function(buttonsActive, callbackResponse) {
+  this.buttonsActive = buttonsActive;
+  this.callbackResponse = callbackResponse;
+  this.active = true;
 };
-jasmin.ResponseManager.prototype.response = function(a, c, b, d, e, f, g) {
-  var h = !1;
-  this.active && void 0 !== this.buttonsActive && -1 !== this.buttonsActive.indexOf(d) && (h = !0);
-  h && (this.responseData = {modality:c, id:b, label:d, time:e, x:f, y:g, event:a}, this.callbackResponse());
+jasmin.ResponseManager.prototype.response = function(event, modality, id, label, time, x, y) {
+  var callCallback = false;
+  if (this.active && this.buttonsActive !== undefined && this.buttonsActive.indexOf(label) !== -1) {
+    callCallback = true;
+  }
+  if (callCallback) {
+    this.responseData = {"modality":modality, "id":id, "label":label, "time":time, "x":x, "y":y, "event":event};
+    this.callbackResponse();
+  }
 };
 jasmin.ResponseManager.prototype.getResponseLog = function() {
   return this.responseData;
 };
-jasmin.ResponseManager.prototype.stopBubble = function(a) {
-  a.stopPropagation();
-  a.preventDefault();
+jasmin.ResponseManager.prototype.stopBubble = function(event) {
+  event.stopPropagation();
+  event.preventDefault();
 };
 jasmin.ResponseManager.prototype.deactivate = function() {
-  this.active = !1;
+  this.active = false;
 };
-void 0 === jasmin && (jasmin = function() {
-});
-jasmin.ScalableCanvas = function(a, c, b) {
-  this.target = a;
-  this.aspectRatio = c;
-  this.rescaleInterval = void 0 === b ? 1E3 : b;
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
+jasmin.ScalableCanvas = function(target, aspectRatio, rescaleInterval) {
+  this.target = target;
+  this.aspectRatio = aspectRatio;
+  this.rescaleInterval = rescaleInterval === undefined ? 1E3 : rescaleInterval;
   this.sprites = {};
-  this.lastWidth = !1;
+  this.lastWidth = false;
 };
 jasmin.ScalableCanvas.prototype.start = function() {
-  var a = this;
-  a.rescale(!0);
+  var self = this;
+  self.rescale(true);
   this.timer = setInterval(function() {
-    a.rescale();
-  }, a.rescaleInterval);
+    self.rescale();
+  }, self.rescaleInterval);
 };
 jasmin.ScalableCanvas.prototype.stop = function() {
   clearInterval(this.timer);
 };
-jasmin.ScalableCanvas.prototype.addSprite = function(a, c, b, d) {
-  this.target.append(c);
-  this.sprites[a] = {node:c, scale:b, children:d};
+jasmin.ScalableCanvas.prototype.addSprite = function(key, node, scale, children) {
+  this.target.append(node);
+  this.sprites[key] = {"node":node, "scale":scale, "children":children};
 };
-jasmin.ScalableCanvas.prototype.addSprites = function(a) {
-  for (var c in a) {
-    this.addSprite(c, a[c].node, a[c].scale, a[c].children);
+jasmin.ScalableCanvas.prototype.addSprites = function(sprites) {
+  for (var i in sprites) {
+    this.addSprite(i, sprites[i]["node"], sprites[i]["scale"], sprites[i]["children"]);
   }
 };
-jasmin.ScalableCanvas.prototype.rescale = function(a) {
+jasmin.ScalableCanvas.prototype.rescale = function(force) {
   if (this.target === $(document.body)) {
-    var c = window.innerWidth, b = window.innerHeight;
-    this.offsetTop = this.offsetLeft = 0;
+    var targetWidth = window.innerWidth;
+    var targetHeight = window.innerHeight;
   } else {
-    c = this.target.width(), b = this.target.height(), this.offsetLeft = this.target.offset().left, this.offsetTop = this.target.offset().top;
+    var targetWidth = this.target.width();
+    var targetHeight = this.target.height();
   }
-  if (void 0 !== a || this.lastWidth !== c || this.lastHeight !== b) {
-    this.lastWidth = c;
-    this.lastHeight = b;
-    c / b > this.aspectRatio ? (this.scale = b, this.offsetLeft += (c - this.scale * this.aspectRatio) / 2) : (this.scale = c / this.aspectRatio, this.offsetTop += (b - this.scale) / 2);
-    for (var d in this.sprites) {
-      this.rescaleSprite(this.sprites[d]);
-    }
+  if (force === undefined && this.lastWidth === targetWidth && this.lastHeight === targetHeight) {
+    return;
+  } else {
+    this.lastWidth = targetWidth;
+    this.lastHeight = targetHeight;
+  }
+  this.offsetLeft = 0;
+  this.offsetTop = 0;
+  if (targetWidth / targetHeight > this.aspectRatio) {
+    this.scale = targetHeight;
+    this.offsetLeft = (targetWidth - this.scale * this.aspectRatio) / 2;
+  } else {
+    this.scale = targetWidth / this.aspectRatio;
+    this.offsetTop = (targetHeight - this.scale) / 2;
+  }
+  for (var i in this.sprites) {
+    this.rescaleSprite(this.sprites[i]);
   }
 };
-jasmin.ScalableCanvas.prototype.rescaleSprite = function(a) {
-  var c = {}, b, d;
-  for (d in a.scale) {
-    switch(d) {
+jasmin.ScalableCanvas.prototype.rescaleSprite = function(sprite) {
+  var css = {}, offset, scaledValue;
+  for (var j in sprite["scale"]) {
+    switch(j) {
       case "left":
-        b = this.offsetLeft;
+        offset = this.offsetLeft;
         break;
       case "top":
-        b = this.offsetTop;
+        offset = this.offsetTop;
         break;
       default:
-        b = 0;
+        offset = 0;
+        break;
     }
-    "relative" === a.node.css("position") && (b = 0);
-    b = a.scale[d] * this.scale + b;
-    if ("left" === d || "top" === d || "width" === d || "height" === d) {
-      b = Math.floor(b);
+    if (sprite["node"].css("position") === "relative") {
+      offset = 0;
     }
-    c[d] = b;
+    scaledValue = sprite["scale"][j] * this.scale + offset;
+    if (j === "left" || j === "top" || j === "width" || j === "height") {
+      scaledValue = Math.floor(scaledValue);
+    }
+    css[j] = scaledValue;
   }
-  a.node.css(c);
-  if (void 0 !== a.children) {
-    for (var e in a.children) {
-      this.rescaleSprite(a.children[e]);
+  sprite["node"].css(css);
+  if (sprite["children"] !== undefined) {
+    for (var child_i in sprite["children"]) {
+      this.rescaleSprite(sprite["children"][child_i]);
     }
   }
 };
-jasmin.ScalableCanvas.prototype.extend = function(a, c) {
-  for (var b in c) {
-    c.hasOwnProperty(b) && (a[b] = c[b]);
-  }
-  return a;
-};
-jasmin.ScalableCanvas.prototype.spritesFromJSON = function(a, c) {
-  var b = {}, d, e, f;
-  for (e in a) {
-    d = {};
-    d.node = $(a[e].type).attr(a[e].attr).css(a[e].css);
-    if (void 0 !== a[e]["class"]) {
-      for (f in a[e]["class"]) {
-        d.node.addClass(a[e]["class"][f]);
+jasmin.ScalableCanvas.prototype.spritesFromJSON = function(spritesJSON, parent) {
+  var sprites = {}, sprite, key, cssClass, cssClass_i;
+  for (var key in spritesJSON) {
+    sprite = {};
+    sprite["node"] = $(spritesJSON[key]["type"]).attr(spritesJSON[key]["attr"]).css(spritesJSON[key]["css"]);
+    if (spritesJSON[key]["class"] !== undefined) {
+      for (cssClass_i in spritesJSON[key]["class"]) {
+        sprite["node"].addClass(spritesJSON[key]["class"][cssClass_i]);
       }
     }
-    d.scale = a[e].scale;
-    void 0 !== a[e].children && (d.children = this.spritesFromJSON(a[e].children, d));
-    b[e] = d;
-    void 0 !== c && c.node.append(d.node);
+    sprite["scale"] = spritesJSON[key]["scale"];
+    if (spritesJSON[key]["children"] !== undefined) {
+      sprite["children"] = this.spritesFromJSON(spritesJSON[key]["children"], sprite);
+    }
+    sprites[key] = sprite;
+    if (parent !== undefined) {
+      parent["node"].append(sprite["node"]);
+    }
   }
-  return b;
+  return sprites;
 };
 jasmin.ScalableCanvas.prototype.removeSprites = function() {
-  for (var a in this.sprites) {
-    this.sprites[a].node.remove();
+  for (var i in this.sprites) {
+    this.sprites[i]["node"].remove();
   }
 };
-void 0 === jasmin && (jasmin = function() {
-});
-jasmin.ScreenManager = function(a) {
-  this.watchTimeout = void 0 === a ? 1E3 : a;
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
+jasmin.ScreenManager = function(watchTimeout) {
+  this.watchTimeout = watchTimeout === undefined ? 1E3 : watchTimeout;
   this.callbacks = {};
-  this.logger = new jasmin.TableLogger(["name", "phase", "time", "value"], function(a) {
-    console.log(a);
+  this.logger = new jasmin.TableLogger(["name", "phase", "time", "value"], function(message) {
+    console.log(message);
   }, "NA");
-  var c = this;
+  var self = this;
   this.logger.oldLog = this.logger.log;
-  this.logger.log = function(a) {
-    DEBUG && console.log({screenState:c.screenState});
-    c.logger.oldLog(a);
+  this.logger.log = function(logMe) {
+    DEBUG && console.log({"screenState":self.screenState});
+    self.logger.oldLog(logMe);
   };
   this.requirements = [];
-  this.satisfiedEach = this.satisfiedFirst = void 0;
-  this.screenState = {orientation:$(window).width() >= $(window).height() ? "landscape" : "portrait", focus:!0, fullscreen:this.isFullscreen()};
-  c = this;
-  a = {orientationchange:{source:window, event:"orientationchange", on:function(a) {
-    var b = $(window).width() >= $(window).height() ? "landscape" : "portrait";
-    c.screenState.orientation = b;
-    c.checkRequirements();
-    return{"window.orientation":a.orientation};
-  }}, focusout:{source:window, event:"focusout", on:function(a) {
-    c.screenState.focus = !1;
-    c.checkRequirements();
+  this.satisfiedFirst = undefined;
+  this.satisfiedEach = undefined;
+  this.screenState = {"orientation":$(window).width() >= $(window).height() ? "landscape" : "portrait", "focus":true, "fullscreen":this.isFullscreen()};
+  var self = this;
+  var watchThese = {"orientationchange":{"source":window, "event":"orientationchange", "on":function(event) {
+    var orientation = $(window).width() >= $(window).height() ? "landscape" : "portrait";
+    self.screenState["orientation"] = orientation;
+    self.checkRequirements();
+    return{"window.orientation":event.orientation};
+  }}, "focusout":{"source":window, "event":"focusout", "on":function(event) {
+    self.screenState["focus"] = false;
+    self.checkRequirements();
     return{};
-  }}, focusin:{source:window, event:"focusin", on:function(a) {
-    c.screenState.focus = !0;
-    c.checkRequirements();
+  }}, "focusin":{"source":window, "event":"focusin", "on":function(event) {
+    self.screenState["focus"] = true;
+    self.checkRequirements();
     return{};
-  }}, resize:{source:window, event:"resize", on:function(a) {
-    a = $(window).width() >= $(window).height() ? "landscape" : "portrait";
-    c.screenState.orientation = a;
-    c.checkRequirements();
+  }}, "resize":{"source":window, "event":"resize", "on":function(event) {
+    var orientation = $(window).width() >= $(window).height() ? "landscape" : "portrait";
+    self.screenState["orientation"] = orientation;
+    self.checkRequirements();
     return{"window.width":$(window).width(), "window.height":$(window).height(), "avail.width":screen.availWidth, "avail.height":screen.availHeight};
-  }}, beforeunload:{source:window, event:"beforeunload", on:function() {
+  }}, "beforeunload":{"source":window, "event":"beforeunload", "on":function() {
     return{};
-  }}, unload:{source:window, event:"unload", on:function() {
+  }}, "unload":{"source":window, "event":"unload", "on":function() {
     return{};
   }}};
-  screenfull && void 0 !== screenfull.raw && (a.fullscreenchange = {source:document, event:screenfull.raw.fullscreenchange, on:function() {
-    var a = $(window).width() >= $(window).height() ? "landscape" : "portrait";
-    c.screenState.orientation = a;
-    c.checkRequirements();
-    return{"window.width":$(window).width(), "window.height":$(window).height(), "avail.width":screen.availWidth, "avail.height":screen.availHeight, "screenfull.isFullscreen":screenfull.isFullscreen};
-  }});
-  var b, c = this, d, e;
-  for (e in a) {
-    b = a[e], d = function(a, b) {
-      return function(d) {
-        return c.changed(a, b, d);
+  if (screenfull && screenfull.raw !== undefined) {
+    watchThese["fullscreenchange"] = {"source":document, "event":screenfull.raw.fullscreenchange, "on":function() {
+      var orientation = $(window).width() >= $(window).height() ? "landscape" : "portrait";
+      self.screenState["orientation"] = orientation;
+      self.checkRequirements();
+      return{"window.width":$(window).width(), "window.height":$(window).height(), "avail.width":screen.availWidth, "avail.height":screen.availHeight, "screenfull.isFullscreen":screenfull.isFullscreen};
+    }};
+  }
+  var watchThis, self = this, closure;
+  for (var e in watchThese) {
+    watchThis = watchThese[e];
+    var closure = function(param1, param2) {
+      return function(event) {
+        return self.changed(param1, param2, event);
       };
-    }, $(b.source).on(b.event, d(e, b.on));
+    };
+    $(watchThis["source"]).on(watchThis["event"], closure(e, watchThis["on"]));
   }
   this.watching = {};
-  this.logger.log({name:"init", phase:"start", time:1E3 * window.performance.now() / 1E3, value:{"screen.width":screen.width, "screen.height":screen.height, "avail.width":screen.availWidth, "avail.height":screen.availHeight, "window.width":$(window).width(), "window.height":$(window).height()}});
-  c = this;
-  setTimeout(c.updateWatch(), this.watchTimeout);
+  this.logger.log({"name":"init", "phase":"start", "time":1E3 * window.performance.now() / 1E3, "value":{"screen.width":screen.width, "screen.height":screen.height, "avail.width":screen.availWidth, "avail.height":screen.availHeight, "window.width":$(window).width(), "window.height":$(window).height()}});
+  var self = this;
+  setTimeout(self.updateWatch(), this.watchTimeout);
 };
-jasmin.ScreenManager.prototype.changed = function(a, c, b) {
-  this.watch(a, c(b));
-  var d;
-  void 0 !== this.callbacks[a] && (d = this.callbacks[a](b));
-  return d;
+jasmin.ScreenManager.prototype.changed = function(name, logThis, event) {
+  this.watch(name, logThis(event));
+  var result;
+  if (this.callbacks[name] !== undefined) {
+    result = this.callbacks[name](event);
+  }
+  return result;
 };
-jasmin.ScreenManager.prototype.watch = function(a, c) {
-  var b = 1E3 * window.performance.now() / 1E3;
-  void 0 === this.watch[a] && this.logger.log({name:a, phase:"start", time:b, value:c});
-  this.watch[a] = b;
+jasmin.ScreenManager.prototype.watch = function(name, value) {
+  var now = 1E3 * window.performance.now() / 1E3;
+  if (this.watch[name] === undefined) {
+    this.logger.log({"name":name, "phase":"start", "time":now, "value":value});
+  }
+  this.watch[name] = now;
 };
 jasmin.ScreenManager.prototype.updateWatch = function() {
-  var a = 1E3 * window.performance.now() / 1E3, c;
-  for (c in this.watch) {
-    this.watch[c] + this.watchTimeout < a && (this.logger.log({name:c, phase:"end", time:this.watch[c], value:{}}), delete this.watch[c]), this.checkRequirements();
+  var now = 1E3 * window.performance.now() / 1E3;
+  for (var w in this.watch) {
+    if (this.watch[w] + this.watchTimeout < now) {
+      this.logger.log({"name":w, "phase":"end", "time":this.watch[w], "value":{}});
+      delete this.watch[w];
+    }
+    this.checkRequirements();
   }
-  var b = this;
+  var self = this;
   setTimeout(function() {
-    b.updateWatch();
+    self.updateWatch();
   }, this.watchTimeout);
 };
-jasmin.ScreenManager.prototype.fullscreen = function(a, c, b) {
-  this.fullscreenEnabled = a;
-  this.fullscreenAsk = c;
-  this.fullscreenDone = b;
-  this.fullscreenEnabled && !this.isFullscreen() && (void 0 !== this.fullscreenAsk && this.fullscreenAsk(), this.attachFullscreenCallback());
-  this.fullscreenEnabled || screenfull.exit();
+jasmin.ScreenManager.prototype.fullscreen = function(fullscreenEnabled, fullscreenAsk, fullscreenDone) {
+  this.fullscreenEnabled = fullscreenEnabled;
+  this.fullscreenAsk = fullscreenAsk;
+  this.fullscreenDone = fullscreenDone;
+  if (this.fullscreenEnabled && !this.isFullscreen()) {
+    if (this.fullscreenAsk !== undefined) {
+      this.fullscreenAsk();
+    }
+    this.attachFullscreenCallback();
+  }
+  if (!this.fullscreenEnabled) {
+    screenfull.exit();
+  }
 };
 jasmin.ScreenManager.prototype.isFullscreen = function() {
   return!screenfull || !screenfull.enabled || screenfull.isFullscreen;
 };
 jasmin.ScreenManager.prototype.attachFullscreenCallback = function() {
-  var a = this;
-  a.fullscreenCallback = function(a) {
+  var callback = function(self) {
     return function() {
-      void 0 === this.fullScreenTarget ? screenfull.request() : screenfull.request(this.fullScreenTarget);
-      a.screenState.fullscreen = !0;
-      $(document).off("vmousedown", a.fullscreenCallback);
-      a.checkRequirements();
+      if (this.fullScreenTarget === undefined) {
+        screenfull.request();
+      } else {
+        screenfull.request(this.fullScreenTarget);
+      }
+      self.screenState["fullscreen"] = true;
+      $(document).off("vmousedown", self.fullscreenCallback);
+      self.checkRequirements();
     };
-  }(this);
-  this.isFullscreen() || this.attached || ($(document).on("vmousedown", function() {
-    a.fullscreenCallback();
-  }), this.attached = !0);
+  };
+  var self = this;
+  self.fullscreenCallback = callback(this);
+  if (!this.isFullscreen() && !this.attached) {
+    $(document).on("vmousedown", function() {
+      self.fullscreenCallback();
+    });
+    this.attached = true;
+  }
 };
 jasmin.ScreenManager.prototype.detachFullscreenCallback = function() {
   $(document).off("vmousedown", self.fullscreenCallback);
 };
-jasmin.ScreenManager.prototype.addCallback = function(a, c) {
-  this.callbacks[a] = c;
+jasmin.ScreenManager.prototype.addCallback = function(name, callback) {
+  this.callbacks[name] = callback;
 };
 jasmin.ScreenManager.prototype.checkRequirements = function() {
-  var a, c, b = !1, d = !1;
-  for (c in this.requirements) {
-    d || (a = this.requirements[c], -1 === a.values.indexOf(this.screenState[a.req]) && (DEBUG && console.log({what:"requirement not satisfied", req:a.req, values:a.values, state:this.screenState[a.req]}), this.satisfied = !1, a.warn(), "fullscreen" === a.req && (b = !0, this.attachFullscreenCallback()), d = !0));
+  var requirement, i, fullscreenOn = false, failedRequirement = false;
+  for (i in this.requirements) {
+    if (!failedRequirement) {
+      requirement = this.requirements[i];
+      if (requirement["values"].indexOf(this.screenState[requirement["req"]]) === -1) {
+        DEBUG && console.log({"what":"requirement not satisfied", "req":requirement["req"], "values":requirement["values"], "state":this.screenState[requirement["req"]]});
+        this.satisfied = false;
+        requirement["warn"]();
+        if (requirement["req"] === "fullscreen") {
+          fullscreenOn = true;
+          this.attachFullscreenCallback();
+        }
+        failedRequirement = true;
+      }
+    }
   }
-  b || this.detachFullscreenCallback();
-  d || (a = function() {
-  }, this.satisfiedNever ? (DEBUG && console.log("callback to this.satisfiedFirst"), a = this.satisfiedFirst, this.satisfiedNever = !1) : this.satisfied || (DEBUG && console.log("callback to this.satisfiedEach"), a = this.satisfiedEach), this.satisfied = !0, a instanceof Function && a());
+  if (!fullscreenOn) {
+    this.detachFullscreenCallback();
+  }
+  if (!failedRequirement) {
+    var callback = function() {
+    };
+    if (this.satisfiedNever) {
+      DEBUG && console.log("callback to this.satisfiedFirst");
+      callback = this.satisfiedFirst;
+      this.satisfiedNever = false;
+    } else {
+      if (!this.satisfied) {
+        DEBUG && console.log("callback to this.satisfiedEach");
+        callback = this.satisfiedEach;
+      }
+    }
+    this.satisfied = true;
+    if (callback instanceof Function) {
+      callback();
+    }
+  }
 };
-jasmin.ScreenManager.prototype.require = function(a, c, b, d) {
-  this.requirements = a;
-  this.satisfiedFirst = c;
-  this.satisfiedEach = b;
-  this.fullScreenTarget = d;
-  this.satisfiedNever = !0;
-  this.satisfied = !1;
+jasmin.ScreenManager.prototype.require = function(requirements, satisfiedFirst, satisfiedEach, fullScreenTarget) {
+  this.requirements = requirements;
+  this.satisfiedFirst = satisfiedFirst;
+  this.satisfiedEach = satisfiedEach;
+  this.fullScreenTarget = fullScreenTarget;
+  this.satisfiedNever = true;
+  this.satisfied = false;
   this.checkRequirements();
 };
-void 0 === jasmin && (jasmin = function() {
-});
-jasmin.Slideshow = function(a, c, b, d, e, f, g) {
-  this.target = a;
-  this.eventManager = c;
-  this.translator = g;
-  this.slideButtons = b;
-  this.buttonDelay = void 0 !== d ? d : 0;
-  this.buttonHide = void 0 !== e ? e : function() {
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
+jasmin.Slideshow = function(target, eventManager, slideButtons, buttonDelay, buttonHide, buttonShow, translator) {
+  this.target = target;
+  this.eventManager = eventManager;
+  this.translator = translator;
+  this.slideButtons = slideButtons;
+  this.buttonDelay = buttonDelay !== undefined ? buttonDelay : 0;
+  this.buttonHide = buttonHide !== undefined ? buttonHide : function() {
   };
-  this.buttonShow = void 0 !== f ? f : function() {
+  this.buttonShow = buttonShow !== undefined ? buttonShow : function() {
   };
-  void 0 === g ? (this.translator = {}, this.translator.translate = function(a) {
-    return a;
-  }) : this.translator = g;
-  this.logger = new jasmin.TableLogger("set slide delay phase response rt modality id time_start time_buttons time_response".split(" "));
+  if (translator === undefined) {
+    this.translator = {};
+    this.translator.translate = function(term) {
+      return term;
+    };
+  } else {
+    this.translator = translator;
+  }
+  this.logger = new jasmin.TableLogger(["set", "slide", "delay", "phase", "response", "rt", "modality", "id", "time_start", "time_buttons", "time_response"]);
   this.buttonsActive = [];
   this.buttonMapping = {};
-  a = ["next", "previous", "up"];
-  var h, k;
-  for (h in a) {
-    for (k in c = a[h], d = b[c], d) {
-      e = d[k], this.buttonsActive.push(e), this.buttonMapping[e] = c;
+  var slideRoles = ["next", "previous", "up"], slideRole_i, slideRole, slideRoleButtons, slideRoleButton_i, slideRoleButton;
+  for (slideRole_i in slideRoles) {
+    slideRole = slideRoles[slideRole_i];
+    slideRoleButtons = slideButtons[slideRole];
+    for (slideRoleButton_i in slideRoleButtons) {
+      slideRoleButton = slideRoleButtons[slideRoleButton_i];
+      this.buttonsActive.push(slideRoleButton);
+      this.buttonMapping[slideRoleButton] = slideRole;
     }
   }
   DEBUG && console.log({"this.buttonMapping":this.buttonMapping});
 };
-jasmin.Slideshow.prototype.show = function(a, c, b) {
-  0 === a.length ? c() : (this.slides = a, this.callbackDone = c, this.slideSet = void 0 !== b ? b : "noname", this.firstSlide = !0, this.slideCounter = 0, this.slideFurthest = -1, this.showSlide());
+jasmin.Slideshow.prototype.show = function(slides, callbackDone, slideSet) {
+  if (slides.length === 0) {
+    callbackDone();
+    return;
+  }
+  this.slides = slides;
+  this.callbackDone = callbackDone;
+  this.slideSet = slideSet !== undefined ? slideSet : "noname";
+  this.firstSlide = true;
+  this.slideCounter = 0;
+  this.slideFurthest = -1;
+  this.showSlide();
 };
 jasmin.Slideshow.prototype.nextSlide = function() {
   DEBUG && console.log("nextSlide");
   this.logSlideInfo("down");
-  var a = this;
+  var self = this;
   this.eventManager.startEvent(-1, function() {
-    a.target.hide();
+    self.target.hide();
   }, function() {
-    a.showSlide();
-  }, this.slideButtons.up, "released_silent");
+    self.showSlide();
+  }, this.slideButtons["up"], "released_silent");
 };
 jasmin.Slideshow.prototype.showSlide = function() {
   DEBUG && console.log("showSlide");
-  this.firstSlide ? this.firstSlide = !1 : (this.timeResponse = window.performance.now(), this.logSlideInfo("up"));
-  var a = this;
-  this.slideCounter >= this.slides.length ? a.callbackDone() : (this.timeStart = window.performance.now(), 0 === this.buttonDelay ? this.showButtons() : this.slideFurthest >= this.slideCounter ? this.showButtons() : (this.slideFurthest = this.slideCounter, this.eventManager.startEvent(this.buttonDelay, function() {
-    a.target.show();
-    a.target.html(a.translator.translate(a.slides[a.slideCounter]));
-    a.buttonHide();
-  }, function() {
-    a.showButtons();
-  }, [], !0, "slide_nobutton_" + a.slideCounter)));
+  if (!this.firstSlide) {
+    this.timeResponse = window.performance.now();
+    this.logSlideInfo("up");
+  } else {
+    this.firstSlide = false;
+  }
+  var self = this;
+  if (this.slideCounter >= this.slides.length) {
+    self.callbackDone();
+    return;
+  }
+  this.timeStart = window.performance.now();
+  if (this.buttonDelay === 0) {
+    this.showButtons();
+  } else {
+    if (this.slideFurthest >= this.slideCounter) {
+      this.showButtons();
+    } else {
+      this.slideFurthest = this.slideCounter;
+      this.eventManager.startEvent(this.buttonDelay, function() {
+        self.target.show();
+        self.target.html(self.translator.translate(self.slides[self.slideCounter]));
+        self.buttonHide();
+      }, function() {
+        self.showButtons();
+      }, [], true, "slide_nobutton_" + self.slideCounter);
+    }
+  }
 };
 jasmin.Slideshow.prototype.showButtons = function() {
   this.timeButtons = window.performance.now();
-  var a = this;
+  var self = this;
   this.eventManager.startEvent(-1, function() {
-    a.target.html(a.translator.translate(a.slides[a.slideCounter]));
-    a.target.show();
-    a.buttonShow();
+    self.target.html(self.translator.translate(self.slides[self.slideCounter]));
+    self.target.show();
+    self.buttonShow();
   }, function() {
-    a.response();
-  }, this.buttonsActive, "slide_nobutton_" + a.slideCounter);
+    self.response();
+  }, this.buttonsActive, "slide_nobutton_" + self.slideCounter);
 };
 jasmin.Slideshow.prototype.response = function() {
   this.timeResponse = window.performance.now();
-  var a = this.buttonMapping[this.eventManager.responseLabel];
-  "next" === a ? (this.slideCounter++, this.nextSlide()) : "previous" === a && 0 < this.slideCounter ? (this.slideCounter--, this.nextSlide()) : this.showSlide();
+  var buttonPressed = this.buttonMapping[this.eventManager.responseLabel];
+  if (buttonPressed === "next") {
+    this.slideCounter++;
+    this.nextSlide();
+  } else {
+    if (buttonPressed === "previous" && this.slideCounter > 0) {
+      this.slideCounter--;
+      this.nextSlide();
+    } else {
+      this.showSlide();
+    }
+  }
 };
-jasmin.Slideshow.prototype.logSlideInfo = function(a) {
-  a = {set:this.slideSet, slide:this.slideCounter, delay:this.buttonDelay, phase:a, response:this.buttonMapping[this.eventManager.responseLabel], rt:Math.round(1E3 * this.eventManager.rt) / 1E3, modality:this.eventManager.responseManager.responseData.modality, id:this.eventManager.responseManager.responseData.id, time_start:Math.round(1E3 * this.timeStart) / 1E3, time_buttons:Math.round(1E3 * this.timeButtons) / 1E3, time_response:Math.round(1E3 * this.timeResponse) / 1E3};
-  this.logger.log(a);
-  DEBUG && console.log(a);
+jasmin.Slideshow.prototype.logSlideInfo = function(phase) {
+  var modality = this.eventManager.responseManager.responseData["modality"] !== undefined;
+  var slideLogs = {"set":this.slideSet, "slide":this.slideCounter, "delay":this.buttonDelay, "phase":phase, "response":this.buttonMapping[this.eventManager.responseLabel], "rt":Math.round(1E3 * this.eventManager.rt) / 1E3, "modality":this.eventManager.responseManager.responseData["modality"], "id":this.eventManager.responseManager.responseData["id"], "time_start":Math.round(1E3 * this.timeStart) / 1E3, "time_buttons":Math.round(1E3 * this.timeButtons) / 1E3, "time_response":Math.round(1E3 * this.timeResponse) / 
+  1E3};
+  this.logger.log(slideLogs);
+  DEBUG && console.log(slideLogs);
 };
-void 0 === jasmin && (jasmin = function() {
-});
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
 jasmin.Statistics = function() {
 };
-jasmin.Statistics.rep = function(a, c) {
-  var b = [];
-  "object" !== typeof a && (a = [a]);
-  for (var d in a) {
-    for (var e = 0;e < c;e += 1) {
-      b.push(a[d]);
+jasmin.Statistics.rep = function(x, reps) {
+  var result = [];
+  if (typeof x !== "object") {
+    x = [x];
+  }
+  for (var i in x) {
+    for (var j = 0;j < reps;j += 1) {
+      result.push(x[i]);
     }
   }
-  return b;
+  return result;
 };
-jasmin.Statistics.fill = function(a, c) {
-  for (var b = [], d = c;0 < d;) {
-    if (d >= a.length) {
-      b = b.concat(JSON.parse(JSON.stringify(a))), d -= a.length;
+jasmin.Statistics.fill = function(items, length) {
+  var result = [];
+  var remaining = length;
+  while (remaining > 0) {
+    if (remaining >= items.length) {
+      result = result.concat(JSON.parse(JSON.stringify(items)));
+      remaining -= items.length;
     } else {
-      a = jasmin.Statistics.fisherYates(a);
-      for (var e = 0;e < d;e++) {
-        b.push(JSON.parse(JSON.stringify(a[e])));
+      items = jasmin.Statistics.fisherYates(items);
+      for (var i = 0;i < remaining;i++) {
+        result.push(JSON.parse(JSON.stringify(items[i])));
       }
-      d = 0;
+      remaining = 0;
     }
   }
-  return b;
+  return result;
 };
-jasmin.Statistics.seq = function(a, c, b, d) {
-  b = void 0 === b ? 1 : b;
-  d = void 0 === d ? 1 : d;
-  for (var e = [], f;a <= c;a += b) {
-    for (f = 0;f < d;f += 1) {
-      e.push(a);
+jasmin.Statistics.seq = function(from, to, step, reps) {
+  step = step === undefined ? 1 : step;
+  reps = reps === undefined ? 1 : reps;
+  var result = [], i, j;
+  for (i = from;i <= to;i += step) {
+    for (var j = 0;j < reps;j += 1) {
+      result.push(i);
     }
   }
-  return e;
+  return result;
 };
-jasmin.Statistics.combine = function(a, c, b, d) {
-  var e = [], f, g, h;
-  for (g = 0;g < a.length;g++) {
-    for (h = 0;h < c.length;h++) {
-      void 0 !== b && void 0 !== d ? (f = {}, f[b] = a[g], f[d] = c[h]) : f = [a[g], c[h]], e.push(f);
+jasmin.Statistics.combine = function(left, right, keyLeft, keyRight) {
+  var result = [], current;
+  var i, j;
+  for (i = 0;i < left.length;i++) {
+    for (j = 0;j < right.length;j++) {
+      if (keyLeft !== undefined && keyRight !== undefined) {
+        current = {};
+        current[keyLeft] = left[i];
+        current[keyRight] = right[j];
+      } else {
+        current = [left[i], right[j]];
+      }
+      result.push(current);
     }
   }
-  return e;
+  return result;
 };
-jasmin.Statistics.fisherYates = function(a) {
-  for (var c = a.length, b, d;c;) {
-    d = Math.floor(Math.random() * c--), b = a[c], a[c] = a[d], a[d] = b;
+jasmin.Statistics.fisherYates = function(array) {
+  var m = array.length, t, i;
+  while (m) {
+    i = Math.floor(Math.random() * m--);
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
   }
-  return a;
+  return array;
 };
-jasmin.Statistics.fisherYatesRestrictReps = function(a, c) {
-  for (var b = !1, d;!b;) {
-    d = jasmin.Statistics.fisherYates(a), b = !jasmin.Statistics.repetitions(d, c + 1);
+jasmin.Statistics.fisherYatesRestrictReps = function(array, repetitionCount) {
+  var accepted = false, candidate;
+  while (!accepted) {
+    candidate = jasmin.Statistics.fisherYates(array);
+    accepted = !jasmin.Statistics.repetitions(candidate, repetitionCount + 1);
   }
-  return d;
+  return candidate;
 };
-jasmin.Statistics.fisherYatesRestrictRepsNested = function(a, c) {
-  for (var b = !1, d, e;!b;) {
-    for (e in d = jasmin.Statistics.fisherYates(a), b = !0, c) {
-      if (b = c[e], b = !jasmin.Statistics.repetitions(d, b + 1, e), !b) {
+jasmin.Statistics.fisherYatesRestrictRepsNested = function(array, repetitionCounts) {
+  var accepted = false, candidate, key, repetitionCount, values;
+  while (!accepted) {
+    candidate = jasmin.Statistics.fisherYates(array);
+    accepted = true;
+    for (key in repetitionCounts) {
+      repetitionCount = repetitionCounts[key];
+      accepted = !jasmin.Statistics.repetitions(candidate, repetitionCount + 1, key);
+      if (!accepted) {
         break;
       }
     }
   }
-  return d;
+  return candidate;
 };
-jasmin.Statistics.randomInt = function(a, c) {
-  var b = Math.random();
-  return Math.floor(a + b * (c - a + 1));
+jasmin.Statistics.randomInt = function(min, max) {
+  var x = Math.random();
+  var diff = max - min + 1;
+  var r = min + x * diff;
+  return Math.floor(r);
 };
-jasmin.Statistics.repetitions = function(a, c, b) {
-  if (2 > c) {
-    return!0;
+jasmin.Statistics.repetitions = function(array, repLength, index) {
+  if (repLength < 2) {
+    return true;
   }
-  if (a.length < c) {
-    return!1;
+  if (array.length < repLength) {
+    return false;
   }
-  var d = 1, e = a[0], f, g;
-  for (f = 1;f < a.length;f++) {
-    void 0 === b ? g = a[f] : (e = e[b], g = a[f][b]);
-    JSON.stringify(e) === JSON.stringify(g) ? d++ : d = 1;
-    if (d >= c) {
-      return!0;
+  var repCounter = 1;
+  var prevElement = array[0];
+  var i, left, right;
+  for (var i = 1;i < array.length;i++) {
+    if (index === undefined) {
+      left = prevElement;
+      right = array[i];
+    } else {
+      left = prevElement[index];
+      right = array[i][index];
     }
-    e = a[f];
+    if (JSON.stringify(left) === JSON.stringify(right)) {
+      repCounter++;
+    } else {
+      repCounter = 1;
+    }
+    if (repCounter >= repLength) {
+      return true;
+    }
+    prevElement = array[i];
   }
-  return!1;
+  return false;
 };
-jasmin.Statistics.mean = function(a) {
-  var c = 0, b = 0, d;
-  for (d in a) {
-    c += a[d], b++;
+jasmin.Statistics.mean = function(scores) {
+  var sum = 0, count = 0;
+  for (var i in scores) {
+    sum += scores[i];
+    count++;
   }
-  return 0 >= b ? void 0 : c / b;
-};
-jasmin.Statistics.sum = function(a) {
-  var c = 0, b;
-  for (b in a) {
-    c += a[b];
+  if (count <= 0) {
+    return undefined;
   }
-  return c;
+  return sum / count;
 };
-jasmin.Statistics.variance = function(a) {
-  var c = jasmin.Statistics.mean(a), b = 0, d = 0, e;
-  for (e in a) {
-    b += Math.pow(a[e] - c, 2), d++;
+jasmin.Statistics.sum = function(scores) {
+  var sum = 0;
+  for (var i in scores) {
+    sum += scores[i];
   }
-  return 1 >= d ? 0 : b / (d - 1);
+  return sum;
 };
-jasmin.Statistics.sd = function(a) {
-  return Math.sqrt(jasmin.Statistics.variance(a));
-};
-jasmin.Statistics.transformZ = function(a, c, b) {
-  var d = jasmin.Statistics.similarArray(a), e;
-  for (e in a) {
-    d[e] = (parseInt(a[e]) - c) / b;
+jasmin.Statistics.variance = function(scores) {
+  var mean = jasmin.Statistics.mean(scores);
+  var sumOfSquares = 0, count = 0;
+  for (var i in scores) {
+    sumOfSquares += Math.pow(scores[i] - mean, 2);
+    count++;
   }
-  return d;
-};
-jasmin.Statistics.similarArray = function(a) {
-  return a instanceof Array ? [] : {};
-};
-jasmin.Statistics.orderBy = function(a, c) {
-  var b = [], d;
-  for (d in c) {
-    b.push(a[c[d]]);
+  if (count <= 1) {
+    return 0;
   }
-  return b;
+  return sumOfSquares / (count - 1);
 };
-jasmin.Statistics.applyRow = function(a, c) {
-  var b, d;
-  if (a instanceof Array) {
-    b = [];
-    for (var e in a) {
-      d = c(a[e]), void 0 !== d && b.push(d);
+jasmin.Statistics.sd = function(scores) {
+  return Math.sqrt(jasmin.Statistics.variance(scores));
+};
+jasmin.Statistics.transformZ = function(scores, mean, sd) {
+  var result = jasmin.Statistics.similarArray(scores);
+  for (var i in scores) {
+    result[i] = (parseInt(scores[i]) - mean) / sd;
+  }
+  return result;
+};
+jasmin.Statistics.similarArray = function(source) {
+  if (source instanceof Array) {
+    return[];
+  }
+  return{};
+};
+jasmin.Statistics.orderBy = function(values, indexes) {
+  var result = [];
+  for (var i in indexes) {
+    result.push(values[indexes[i]]);
+  }
+  return result;
+};
+jasmin.Statistics.applyRow = function(source, fun) {
+  var results, result;
+  if (source instanceof Array) {
+    results = [];
+    for (var i in source) {
+      result = fun(source[i]);
+      if (result !== undefined) {
+        results.push(result);
+      }
     }
   } else {
-    for (e in b = {}, a) {
-      d = c(a[e]), void 0 !== d && (b[e] = d);
+    results = {};
+    for (var i in source) {
+      result = fun(source[i]);
+      if (result !== undefined) {
+        results[i] = result;
+      }
     }
   }
-  return b;
+  return results;
 };
-jasmin.Statistics.balancedSequence = function(a, c, b, d, e, f, g) {
-  f = void 0 === f ? "item" : f;
-  g = void 0 === g ? "label" : g;
-  var h = [];
-  b = Math.floor(a.length * c * b);
-  var k, n, m, l;
-  for (n = 0;n < c;n++) {
-    for (k in b >= a.length ? m = jasmin.Statistics.rep(d, a.length) : 0 >= b ? m = jasmin.Statistics.rep(e, a.length) : (m = jasmin.Statistics.fisherYates(jasmin.Statistics.rep(d, b).concat(jasmin.Statistics.rep(e, a.length - b))), console.log(m)), b -= a.length, a) {
-      l = {}, l[f] = a[k], l[g] = m[k], h.push(l);
+jasmin.Statistics.balancedSequence = function(items, reps, proportionA, labelA, labelB, itemKey, labelKey) {
+  itemKey = itemKey === undefined ? "item" : itemKey;
+  labelKey = labelKey === undefined ? "label" : labelKey;
+  var result = [];
+  var countA = Math.floor(items.length * reps * proportionA);
+  var i, j, labels, newElement;
+  for (j = 0;j < reps;j++) {
+    if (countA >= items.length) {
+      labels = jasmin.Statistics.rep(labelA, items.length);
+    } else {
+      if (countA <= 0) {
+        labels = jasmin.Statistics.rep(labelB, items.length);
+      } else {
+        labels = jasmin.Statistics.fisherYates(jasmin.Statistics.rep(labelA, countA).concat(jasmin.Statistics.rep(labelB, items.length - countA)));
+        console.log(labels);
+      }
+    }
+    countA -= items.length;
+    for (i in items) {
+      newElement = {};
+      newElement[itemKey] = items[i];
+      newElement[labelKey] = labels[i];
+      result.push(newElement);
     }
   }
-  return h;
+  return result;
 };
-void 0 === jasmin && (jasmin = function() {
-});
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
 jasmin.SyncTimer = function() {
   this.state = jasmin.SyncTimer.STATE_NOT_SYNCED;
-  this.synchronousCallback = !1;
+  this.synchronousCallback = false;
   this.callbackDrawList = [];
 };
 jasmin.SyncTimer.STATE_NOT_SYNCED = "not_synced";
@@ -889,13 +1223,17 @@ jasmin.SyncTimer.STATE_DRAWN = "drawn";
 jasmin.SyncTimer.STATE_SHOWN = "shown";
 jasmin.SyncTimer.STATE_DEACTIVATED = "deactivated";
 jasmin.SyncTimer.prototype.clearLoggingVars = function() {
-  this.canceled = this.timeStopped = this.timeShown = this.timeDrawn = this.timeRequested = void 0;
+  this.timeRequested = undefined;
+  this.timeDrawn = undefined;
+  this.timeShown = undefined;
+  this.timeStopped = undefined;
+  this.canceled = undefined;
 };
-jasmin.SyncTimer.prototype.sync = function(a) {
-  this.callbackDone = a;
-  var c = this;
+jasmin.SyncTimer.prototype.sync = function(callbackSynced) {
+  this.callbackDone = callbackSynced;
+  var self = this;
   window.requestAnimationFrame(function() {
-    c.refreshFirst();
+    self.refreshFirst();
   });
 };
 jasmin.SyncTimer.prototype.unsync = function() {
@@ -904,131 +1242,173 @@ jasmin.SyncTimer.prototype.unsync = function() {
 };
 jasmin.SyncTimer.prototype.refreshFirst = function() {
   this.frameNow = window.performance.now();
-  var a = this;
+  var self = this;
   window.requestAnimationFrame(function() {
-    a.name = "sync";
-    a.state = jasmin.SyncTimer.STATE_SHOWN;
-    a.timeToErase = window.performance.now();
-    a.refresh();
+    self.name = "sync";
+    self.state = jasmin.SyncTimer.STATE_SHOWN;
+    self.timeToErase = window.performance.now();
+    self.refresh();
   });
 };
 jasmin.SyncTimer.prototype.refresh = function() {
-  if (0 < this.callbackDrawList.length) {
-    for (var a in this.callbackDrawList) {
-      this.callbackDrawList[a]();
+  if (this.callbackDrawList.length > 0) {
+    for (var i in this.callbackDrawList) {
+      this.callbackDrawList[i]();
     }
     this.callbackDrawList = [];
   }
   if (this.state === jasmin.SyncTimer.STATE_DEACTIVATED) {
     this.state = jasmin.SyncTimer.STATE_NOT_SYNCED;
-  } else {
-    this.framePrev = this.frameNow;
-    this.frameNow = window.performance.now();
-    this.frameDur = this.frameNow - this.framePrev;
-    switch(this.state) {
-      case jasmin.SyncTimer.STATE_REQUESTED:
-        this.callbackDraw();
-        this.drawn = !0;
-        this.timeDrawnNew = window.performance.now();
-        this.state = jasmin.SyncTimer.STATE_DRAWN;
-        break;
-      case jasmin.SyncTimer.STATE_DRAWN:
-        this.timeShownNew = window.performance.now(), this.realized = this.timeShownNew - this.timeShown, this.updateTimeoutLog(), this.timeRequested = this.timeRequestedNew, this.timeDrawn = this.timeDrawnNew, this.timeShown = this.timeShownNew, this.shown = !0, this.timeout = this.timeoutNew, this.name = this.nameNew, -1 !== this.timeout && (this.timeToErase = this.timeShown + this.timeout), this.state = jasmin.SyncTimer.STATE_SHOWN;
-      case jasmin.SyncTimer.STATE_SHOWN:
-        -1 !== this.timeout && this.frameNow > this.timeToErase - 1.5 * this.frameDur && (this.timeStopped = window.performance.now(), this.canceled = !1, this.state = jasmin.SyncTimer.STATE_WAITING, this.synchronousCallback = !0, this.callbackDone(), this.synchronousCallback = !1, this.timeDone = window.performance.now(), this.tear = this.timeDone - this.timeStopped > this.frameDur);
-    }
-    var c = this;
-    window.requestAnimationFrame(function() {
-      c.refresh();
-    });
+    return;
   }
+  this.framePrev = this.frameNow;
+  this.frameNow = window.performance.now();
+  this.frameDur = this.frameNow - this.framePrev;
+  switch(this.state) {
+    case jasmin.SyncTimer.STATE_REQUESTED:
+      this.callbackDraw();
+      this.drawn = true;
+      this.timeDrawnNew = window.performance.now();
+      this.state = jasmin.SyncTimer.STATE_DRAWN;
+      break;
+    case jasmin.SyncTimer.STATE_DRAWN:
+      this.timeShownNew = window.performance.now();
+      this.realized = this.timeShownNew - this.timeShown;
+      this.updateTimeoutLog();
+      this.timeRequested = this.timeRequestedNew;
+      this.timeDrawn = this.timeDrawnNew;
+      this.timeShown = this.timeShownNew;
+      this.shown = true;
+      this.timeout = this.timeoutNew;
+      this.name = this.nameNew;
+      if (this.timeout !== -1) {
+        this.timeToErase = this.timeShown + this.timeout;
+      }
+      this.state = jasmin.SyncTimer.STATE_SHOWN;
+    case jasmin.SyncTimer.STATE_SHOWN:
+      if (this.timeout !== -1 && this.frameNow > this.timeToErase - 1.5 * this.frameDur) {
+        this.timeStopped = window.performance.now();
+        this.canceled = false;
+        this.state = jasmin.SyncTimer.STATE_WAITING;
+        this.synchronousCallback = true;
+        this.callbackDone();
+        this.synchronousCallback = false;
+        this.timeDone = window.performance.now();
+        this.tear = this.timeDone - this.timeStopped > this.frameDur;
+      }
+      break;
+  }
+  var self = this;
+  window.requestAnimationFrame(function() {
+    self.refresh();
+  });
 };
-jasmin.SyncTimer.prototype.setTimeout = function(a, c, b, d) {
-  this.state === jasmin.SyncTimer.STATE_NOT_SYNCED && alert("SyncTimer.setTimeout called but state == NOT_SYNCED; call sync first");
+jasmin.SyncTimer.prototype.setTimeout = function(timeout, callbackDraw, callbackDone, name) {
+  if (this.state === jasmin.SyncTimer.STATE_NOT_SYNCED) {
+    alert("SyncTimer.setTimeout called but state == NOT_SYNCED; call sync first");
+  }
   this.timeRequestedNew = window.performance.now();
-  this.timeoutNew = a;
-  this.callbackDraw = c;
-  this.callbackDone = b;
-  this.nameNew = void 0 === d ? "noname" : d;
-  this.drawn = this.shown = !1;
-  this.synchronousCallback ? (this.timeDrawnNew = this.timeRequestedNew, this.callbackDraw(), this.drawn = !0, this.state = jasmin.SyncTimer.STATE_DRAWN) : this.state = jasmin.SyncTimer.STATE_REQUESTED;
+  this.timeoutNew = timeout;
+  this.callbackDraw = callbackDraw;
+  this.callbackDone = callbackDone;
+  this.nameNew = name === undefined ? "noname" : name;
+  this.shown = false;
+  this.drawn = false;
+  if (this.synchronousCallback) {
+    this.timeDrawnNew = this.timeRequestedNew;
+    this.callbackDraw();
+    this.drawn = true;
+    this.state = jasmin.SyncTimer.STATE_DRAWN;
+  } else {
+    this.state = jasmin.SyncTimer.STATE_REQUESTED;
+  }
 };
 jasmin.SyncTimer.prototype.cancelTimeout = function() {
   this.timeStopped = window.performance.now();
   this.realized = this.timeStopped - this.timeShown;
-  this.canceled = !0;
+  this.canceled = true;
   this.state = jasmin.SyncTimer.STATE_WAITING;
-  !1 === this.drawn && this.callbackDrawList.push(this.callbackDraw);
+  if (this.drawn === false) {
+    this.callbackDrawList.push(this.callbackDraw);
+  }
 };
-jasmin.SyncTimer.prototype.round = function(a, c) {
-  return Math.round(a * c) / c;
+jasmin.SyncTimer.prototype.round = function(number, precision) {
+  return Math.round(number * precision) / precision;
 };
 jasmin.SyncTimer.prototype.updateTimeoutLog = function() {
-  this.timeoutLog = {name:this.name, timeRequested:this.round(this.timeRequested, 1E3), timeDrawn:this.round(this.timeDrawn, 1E3), timeShown:this.round(this.timeShown, 1E3), timeStopped:this.round(this.timeStopped, 1E3), timeDone:this.round(this.timeStopped, 1E3), frameDur:this.frameDur, tear:this.tear, canceled:this.canceled, timeout:this.round(this.timeout, 1E3), realized:this.round(this.realized, 1E3)};
+  this.timeoutLog = {"name":this.name, "timeRequested":this.round(this.timeRequested, 1E3), "timeDrawn":this.round(this.timeDrawn, 1E3), "timeShown":this.round(this.timeShown, 1E3), "timeStopped":this.round(this.timeStopped, 1E3), "timeDone":this.round(this.timeStopped, 1E3), "frameDur":this.frameDur, "tear":this.tear, "canceled":this.canceled, "timeout":this.round(this.timeout, 1E3), "realized":this.round(this.realized, 1E3)};
 };
 jasmin.SyncTimer.prototype.getPrevTimeoutLog = function() {
   return this.timeoutLog;
 };
-void 0 === jasmin && (jasmin = function() {
-});
-jasmin.TableLogger = function(a, c, b) {
-  this.columns = a;
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
+jasmin.TableLogger = function(columns, fail, na) {
+  this.columns = columns;
   this.columns.push("logger_sn");
   this.columns.push("logger_time");
-  this.fail = c;
-  this.na = b;
+  this.fail = fail;
+  this.na = na;
   this.sn = 0;
   this.clearLogs();
 };
 jasmin.TableLogger.prototype.clearLogs = function() {
   this.logs = [];
 };
-jasmin.TableLogger.prototype.log = function(a) {
-  a.logger_sn = this.sn;
-  a.logger_time = Math.round(1E3 * window.performance.now()) / 1E3;
+jasmin.TableLogger.prototype.log = function(logMe) {
+  logMe["logger_sn"] = this.sn;
+  logMe["logger_time"] = Math.round(window.performance.now() * 1E3) / 1E3;
   this.sn++;
-  if (void 0 !== this.fail) {
-    for (var c in a) {
-      -1 === this.columns.indexOf(c) && this.fail("TableLogger.log: Column " + c + " in logMe not found in this.columns");
+  if (this.fail !== undefined) {
+    for (var column in logMe) {
+      if (this.columns.indexOf(column) === -1) {
+        this.fail("TableLogger.log: Column " + column + " in logMe not found in this.columns");
+      }
     }
   }
-  this.logs.push(a);
+  this.logs.push(logMe);
 };
-jasmin.TableLogger.prototype.getLogs = function(a) {
-  if (a) {
+jasmin.TableLogger.prototype.getLogs = function(associative) {
+  if (associative) {
     return this.logs;
   }
-  a = [];
-  var c, b, d;
-  b = [];
-  for (c = 0;c < this.columns.length;c++) {
-    b.push(this.columns[c]);
+  var result = [], i, row, value;
+  row = [];
+  for (var i = 0;i < this.columns.length;i++) {
+    row.push(this.columns[i]);
   }
-  a.push(b);
-  for (var e = 0;e < this.logs.length;e++) {
-    b = [];
-    for (c = 0;c < this.columns.length;c++) {
-      d = this.logs[e][this.columns[c]], b.push(void 0 === d ? this.na : d);
+  result.push(row);
+  for (var j = 0;j < this.logs.length;j++) {
+    row = [];
+    for (var i = 0;i < this.columns.length;i++) {
+      value = this.logs[j][this.columns[i]];
+      row.push(value === undefined ? this.na : value);
     }
-    a.push(b);
+    result.push(row);
   }
-  return a;
+  return result;
 };
-void 0 === jasmin && (jasmin = function() {
-});
-jasmin.TaskManager = function(a, c, b, d, e, f, g) {
-  this.task = a;
-  this.config = c;
-  this.onCompleted = b;
-  this.translator = d;
-  this.eventManager = e;
-  this.eventManager = void 0 !== e ? e : new jasmin.EventManager;
-  this.translator = void 0 !== d ? d : new jasmin.Translator;
-  this.logger = new jasmin.TableLogger(this.config.logging);
-  this.state = f;
-  this.state instanceof Object || (this.state = {block:0, trial:0, done:!1, results:[], block_attempt:0, block_correct:0, block_trial_count:0});
-  this.setState = void 0 === g ? function() {
-  } : g;
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
+jasmin.TaskManager = function(task, config, onCompleted, translator, eventManager, state, setState) {
+  this.task = task;
+  this.config = config;
+  this.onCompleted = onCompleted;
+  this.translator = translator;
+  this.eventManager = eventManager;
+  this.eventManager = eventManager !== undefined ? eventManager : new jasmin.EventManager;
+  this.translator = translator !== undefined ? translator : new jasmin.Translator;
+  this.logger = new jasmin.TableLogger(this.config["logging"]);
+  this.state = state;
+  if (!(this.state instanceof Object)) {
+    this.state = {"block":0, "trial":0, "done":false, "results":[], "block_attempt":0, "block_correct":0, "block_trial_count":0};
+  }
+  this.setState = setState === undefined ? function() {
+  } : setState;
 };
 jasmin.TaskManager.RESPONSE_NONE = 0;
 jasmin.TaskManager.RESPONSE_CORRECT = 1;
@@ -1046,159 +1426,198 @@ jasmin.TaskManager.EVENT_RELEASE = "release";
 jasmin.TaskManager.EVENT_TRIAL_NEXT = "trial_next";
 jasmin.TaskManager.EVENT_TRIAL_REPEAT = "trial_repeat";
 jasmin.TaskManager.prototype.start = function() {
-  this.configTask = this.config.task_vars;
+  this.configTask = this.config["task_vars"];
   this.task.taskSetup(this.configTask, this.canvas);
-  var a = this;
-  this.slideshow = new jasmin.Slideshow($(this.config.slideshow.slide_id), this.eventManager, this.config.slideshow.buttons, this.config.slideshow.button_delay, function() {
-    a.task.slideshowButtonsHide();
+  var self = this;
+  this.slideshow = new jasmin.Slideshow($(this.config["slideshow"]["slide_id"]), this.eventManager, this.config["slideshow"]["buttons"], this.config["slideshow"]["button_delay"], function() {
+    self.task.slideshowButtonsHide();
   }, function() {
-    a.task.slideshowButtonsShow();
+    self.task.slideshowButtonsShow();
   }, this.translator);
-  a = this;
-  this.eventManager.start(this.config.button_definitions, function() {
-    a.blockSetup();
+  var self = this;
+  this.eventManager.start(this.config["button_definitions"], function() {
+    self.blockSetup();
   });
 };
 jasmin.TaskManager.prototype.blockSetup = function() {
-  if (this.state.block >= this.config.blocks.length) {
+  if (this.state["block"] >= this.config.blocks.length) {
     this.done();
-  } else {
-    this.specsBlock = this.config.blocks[this.state.block];
-    this.configBlock = this.specsBlock.block_vars;
-    if (void 0 !== this.specsBlock.trial_rep) {
-      var a = this.specsBlock.trials;
-      this.specsBlock.trials = [];
-      var c, b;
-      for (b = 0;b < a.length;b++) {
-        for (c = 0;c < this.specsBlock.trial_rep;c++) {
-          this.specsBlock.trials.push(a[b]);
-        }
+    return;
+  }
+  this.specsBlock = this.config["blocks"][this.state["block"]];
+  this.configBlock = this.specsBlock["block_vars"];
+  if (this.specsBlock["trial_rep"] !== undefined) {
+    var sourceTrials = this.specsBlock["trials"];
+    this.specsBlock["trials"] = [];
+    var rep_i, trial_i;
+    for (trial_i = 0;trial_i < sourceTrials.length;trial_i++) {
+      for (rep_i = 0;rep_i < this.specsBlock["trial_rep"];rep_i++) {
+        this.specsBlock["trials"].push(sourceTrials[trial_i]);
       }
     }
-    this.specsBlock.randomize && (this.specsBlock.trials = jasmin.Statistics.fisherYates(this.specsBlock.trials));
-    this.task.blockSetup(this.configBlock);
-    this.blockIntroduce();
   }
+  if (this.specsBlock["randomize"]) {
+    this.specsBlock["trials"] = jasmin.Statistics.fisherYates(this.specsBlock["trials"]);
+  }
+  this.task.blockSetup(this.configBlock);
+  this.blockIntroduce();
 };
 jasmin.TaskManager.prototype.blockIntroduce = function() {
-  var a = this;
+  var self = this;
   this.translator.setCallback("block_counter", function() {
-    return a.state.block + 1;
+    return self.state["block"] + 1;
   });
   this.translator.setCallback("block_total", function() {
-    return a.config.blocks.length;
+    return self["config"]["blocks"].length;
   });
   this.task.slideshowShow();
-  this.slideshow.show(this.specsBlock.intro_slides, function() {
-    a.task.slideshowHide();
-    a.trialStart();
+  this.slideshow.show(this.specsBlock["intro_slides"], function() {
+    self.task.slideshowHide();
+    self.trialStart();
   });
 };
 jasmin.TaskManager.prototype.blockNext = function() {
-  void 0 !== this.configBlock.min_correct && this.state.block_correct / this.state.trial >= this.configBlock.min_correct && (void 0 === this.configBlock.max_attempts || this.state.block_attempt < this.configBlock.max_attempts) ? (console.log("retry block"), this.state.block_attempt = 0, this.state.block++) : (console.log("next block"), this.state.block_attempt++);
-  this.state.block_correct = 0;
-  this.state.trial = 0;
+  if (this.configBlock["min_correct"] !== undefined && this.state["block_correct"] / this.state["trial"] >= this.configBlock["min_correct"] && (this.configBlock["max_attempts"] === undefined || this.state["block_attempt"] < this.configBlock["max_attempts"])) {
+    console.log("retry block");
+    this.state["block_attempt"] = 0;
+    this.state["block"]++;
+  } else {
+    console.log("next block");
+    this.state["block_attempt"]++;
+  }
+  this.state["block_correct"] = 0;
+  this.state["trial"] = 0;
   this.blockSetup();
 };
 jasmin.TaskManager.prototype.trialStart = function() {
-  this.state.trial >= this.specsBlock.trials.length ? this.blockNext() : (this.state.attempt = 0, this.trial = this.state.trial, this.configTrial = this.specsBlock.trials[this.trial], this.task.trialSetup(this.configTrial), this.eventNow = "start", this.trialEventStart());
+  var trialsInBlock = this.specsBlock["trials"].length;
+  if (this.state["trial"] >= trialsInBlock) {
+    this.blockNext();
+  } else {
+    this.state["attempt"] = 0;
+    this.trial = this.state["trial"];
+    this.configTrial = this.specsBlock["trials"][this.trial];
+    this.task.trialSetup(this.configTrial);
+    this.eventNow = "start";
+    this.trialEventStart();
+  }
 };
-jasmin.TaskManager.prototype.trialEventStart = function(a) {
-  var c = this.eventManager.getEventLog();
-  a = this.task.trialEvent(this.eventNow, c, a);
-  this.eventNext = a.next;
-  void 0 !== a.log && (c = this.collectLogs(a.log), this.logger.log(c), this.state.results.push(c));
-  a.response === jasmin.TaskManager.RESPONSE_CORRECT && 0 === this.state.attempt && this.state.block_correct++;
-  a.retry && this.state.attempt++;
-  var c = void 0 === this.configBlock.button_instruction ? "" : " " + this.configBlock.button_instruction, b = this;
-  switch(a.type) {
+jasmin.TaskManager.prototype.trialEventStart = function(feedbackLog) {
+  var eventLog = this.eventManager.getEventLog();
+  var eventConfig = this.task.trialEvent(this.eventNow, eventLog, feedbackLog);
+  this.eventNext = eventConfig["next"];
+  if (eventConfig["log"] !== undefined) {
+    var logRow = this.collectLogs(eventConfig["log"]);
+    this.logger.log(logRow);
+    this.state["results"].push(logRow);
+  }
+  if (eventConfig["response"] === jasmin.TaskManager.RESPONSE_CORRECT && this.state["attempt"] === 0) {
+    this.state["block_correct"]++;
+  }
+  if (eventConfig["retry"]) {
+    this.state["attempt"]++;
+  }
+  var buttons = this.configBlock["button_instruction"] === undefined ? "" : " " + this.configBlock["button_instruction"];
+  var self = this;
+  switch(eventConfig["type"]) {
     case jasmin.TaskManager.EVENT_NORESPONSE:
-      this.eventManager.startEvent(a.dur, a.draw, function() {
-        b.trialEventDone();
-      }, [], this.event, a.resetRT);
+      this.eventManager.startEvent(eventConfig["dur"], eventConfig["draw"], function() {
+        self.trialEventDone();
+      }, [], this.event, eventConfig["resetRT"]);
       break;
     case jasmin.TaskManager.EVENT_RESPONSE:
-      c = void 0 !== a.buttons ? a.buttons : "down";
-      this.eventManager.startEvent(a.dur, a.draw, function() {
-        b.trialEventDone();
-      }, this.config.task_buttons[c], this.event, a.resetRT);
+      var buttons = eventConfig["buttons"] !== undefined ? eventConfig["buttons"] : "down";
+      this.eventManager.startEvent(eventConfig["dur"], eventConfig["draw"], function() {
+        self.trialEventDone();
+      }, this.config["task_buttons"][buttons], this.event, eventConfig["resetRT"]);
       break;
     case jasmin.TaskManager.EVENT_RELEASE:
       this.checkReleasedSilent(function() {
-        b.trialEventDone();
-      }, a.draw);
+        self.trialEventDone();
+      }, eventConfig["draw"]);
       break;
     case jasmin.TaskManager.EVENT_TOOSLOW:
-      b.showFeedbackSlide(this.translator.translate(b.config.feedback.tooslow), a.draw, !1);
+      self.showFeedbackSlide(this.translator.translate(self.config["feedback"]["tooslow"]), eventConfig["draw"], false);
       break;
     case jasmin.TaskManager.EVENT_INVALID:
-      b.showFeedbackSlide(this.translator.translate(b.config.feedback.invalid), a.draw);
+      self.showFeedbackSlide(this.translator.translate(self.config["feedback"]["invalid"]), eventConfig["draw"]);
       break;
     case jasmin.TaskManager.EVENT_INCORRECT:
-      b.showFeedbackSlide(this.translator.translate(b.config.feedback.incorrect), a.draw);
+      self.showFeedbackSlide(this.translator.translate(self.config["feedback"]["incorrect"]), eventConfig["draw"]);
       break;
     case jasmin.TaskManager.EVENT_CORRECT:
-      b.showFeedbackSlide(this.translator.translate(b.config.feedback.correct), a.draw);
+      self.showFeedbackSlide(this.translator.translate(self.config["feedback"]["correct"]), eventConfig["draw"]);
       break;
     case jasmin.TaskManager.EVENT_NEXT:
-      b.trialEventDone();
+      self.trialEventDone();
       break;
     case jasmin.TaskManager.EVENT_TRIAL_NEXT:
-      this.state.trial++;
+      this.state["trial"]++;
       this.trialStart();
       break;
     case jasmin.TaskManager.EVENT_TRIAL_REPEAT:
       this.trialStart();
       break;
     default:
-      console.log("TaskManager.trialEventStart, unrecognized eventType in eventConfig:"), console.log(a);
+      console.log("TaskManager.trialEventStart, unrecognized eventType in eventConfig:");
+      console.log(eventConfig);
   }
 };
-jasmin.TaskManager.prototype.trialEventDone = function(a) {
+jasmin.TaskManager.prototype.trialEventDone = function(feedbackLog) {
   this.eventNow = this.eventNext;
-  this.trialEventStart(a);
+  this.trialEventStart(feedbackLog);
 };
-jasmin.TaskManager.prototype.checkReleasedSilent = function(a, c) {
-  this.afterRelease = a;
-  var b = this;
-  this.eventManager.startEvent(b.config.task_buttons.release_timeout, c, function(c) {
-    b.checkReleasedMessage(c, a);
-  }, this.config.task_buttons.up, "released_silent");
+jasmin.TaskManager.prototype.checkReleasedSilent = function(afterRelease, draw) {
+  this.afterRelease = afterRelease;
+  var self = this;
+  this.eventManager.startEvent(self.config["task_buttons"]["release_timeout"], draw, function(eventLog) {
+    self.checkReleasedMessage(eventLog, afterRelease);
+  }, this.config["task_buttons"]["up"], "released_silent");
 };
-jasmin.TaskManager.prototype.checkReleasedMessage = function(a, c) {
-  a = this.eventManager.getEventLog();
-  var b = this;
-  a.endReason === jasmin.EventManager.ENDREASON_TIMEOUT ? this.eventManager.startEvent(-1, function() {
-    $(b.config.slideshow.slide_id).html(b.translator.translate(b.config.feedback.release));
-    b.task.slideshowShow();
-  }, function() {
-    c();
-  }, this.config.task_buttons.up, "released_message") : c();
+jasmin.TaskManager.prototype.checkReleasedMessage = function(eventLog, afterRelease) {
+  var eventLog = this.eventManager.getEventLog();
+  var self = this;
+  if (eventLog["endReason"] === jasmin.EventManager.ENDREASON_TIMEOUT) {
+    this.eventManager.startEvent(-1, function() {
+      $(self.config["slideshow"]["slide_id"]).html(self.translator.translate(self.config["feedback"]["release"]));
+      self.task.slideshowShow();
+    }, function() {
+      afterRelease();
+    }, this.config["task_buttons"]["up"], "released_message");
+  } else {
+    afterRelease();
+  }
 };
-jasmin.TaskManager.prototype.showFeedbackSlide = function(a, c, b) {
-  var d = this, e = function() {
-    c();
-    $(d.config.slideshow.slide_id).html(d.translator.translate(a));
-    d.task.slideshowShow();
+jasmin.TaskManager.prototype.showFeedbackSlide = function(message, draw, waitForUp) {
+  var self = this;
+  var drawCallback = function() {
+    draw();
+    $(self.config["slideshow"]["slide_id"]).html(self.translator.translate(message));
+    self.task.slideshowShow();
   };
-  (void 0 !== b ? b : 1) ? this.eventManager.startEvent(1E3, e, function(a) {
-    d.checkReleasedMessage(a, function() {
-      d.shownFeedbackSlide(e);
-    }, function() {
-      d.task.slideshowHide();
-    });
-  }, this.config.task_buttons.up, "feedback") : this.shownFeedbackSlide(e);
+  waitForUp = waitForUp !== undefined ? waitForUp : true;
+  if (!waitForUp) {
+    this.shownFeedbackSlide(drawCallback);
+  } else {
+    this.eventManager.startEvent(1E3, drawCallback, function(eventLog) {
+      self.checkReleasedMessage(eventLog, function() {
+        self.shownFeedbackSlide(drawCallback);
+      }, function() {
+        self.task.slideshowHide();
+      });
+    }, this.config["task_buttons"]["up"], "feedback");
+  }
 };
-jasmin.TaskManager.prototype.shownFeedbackSlide = function(a) {
-  var c = this;
-  this.eventManager.startEvent(-1, a, function(a) {
-    var d = c.eventManager.getEventLog();
-    c.checkReleasedSilent(function() {
-      c.trialEventDone(d);
+jasmin.TaskManager.prototype.shownFeedbackSlide = function(drawCallback) {
+  var self = this;
+  this.eventManager.startEvent(-1, drawCallback, function(eventLog) {
+    var feedbackLog = self.eventManager.getEventLog();
+    self.checkReleasedSilent(function() {
+      self.trialEventDone(feedbackLog);
     }, function() {
-      c.task.slideshowHide();
+      self.task.slideshowHide();
     });
-  }, this.config.task_buttons.down, "feedback");
+  }, this.config["task_buttons"]["down"], "feedback");
 };
 jasmin.TaskManager.prototype.restart = function() {
   this.blockSetup();
@@ -1208,68 +1627,103 @@ jasmin.TaskManager.prototype.done = function() {
   this.task.taskDone();
   this.onCompleted();
 };
-jasmin.TaskManager.prototype.collectLogs = function(a) {
-  var c = {}, b = [];
-  b.push(this.configTask);
-  b.push(this.configBlock);
-  b.push(this.configTrial);
-  b.push(this.state);
-  b.push(a);
-  var d, e, f, g;
-  for (e in this.config.logging) {
-    d = this.config.logging[e];
-    g = !1;
-    for (f = 0;!g && f < b.length;) {
-      a = b[f], void 0 !== a[d] && (g = !0, c[d] = a[d]), f++;
+jasmin.TaskManager.prototype.collectLogs = function(eventLog) {
+  var result = {};
+  var haystacks = [];
+  haystacks.push(this.configTask);
+  haystacks.push(this.configBlock);
+  haystacks.push(this.configTrial);
+  haystacks.push(this.state);
+  haystacks.push(eventLog);
+  var haystack, key, i, j, found;
+  for (i in this.config["logging"]) {
+    key = this.config["logging"][i];
+    found = false;
+    j = 0;
+    while (!found && j < haystacks.length) {
+      haystack = haystacks[j];
+      if (haystack[key] !== undefined) {
+        found = true;
+        result[key] = haystack[key];
+      }
+      j++;
     }
-    g || (c[d] = "NA");
+    if (!found) {
+      result[key] = "NA";
+    }
   }
-  return c;
+  return result;
 };
-jasmin.TaskManager.pictureUrlsToRequests = function(a, c) {
-  var b = {};
-  c = void 0 === c ? "" : c;
-  for (var d in a) {
-    b[d] = ["img", c + a[d]];
+jasmin.TaskManager.pictureUrlsToRequests = function(pictures, baseUrl) {
+  var requests = {};
+  baseUrl = baseUrl === undefined ? "" : baseUrl;
+  for (var p in pictures) {
+    requests[p] = ["img", baseUrl + pictures[p]];
   }
-  return b;
+  return requests;
 };
-void 0 === jasmin && (jasmin = function() {
-});
+if (jasmin === undefined) {
+  var jasmin = function() {
+  }
+}
 jasmin.Translator = function() {
   this.translations = {};
-  this.honorific = void 0;
+  this.honorific = undefined;
   this.callbacks = {};
 };
-jasmin.Translator.prototype.extend = function(a, c) {
-  for (var b in c) {
-    c.hasOwnProperty(b) && (a[b] = c[b]);
+jasmin.Translator.prototype.extend = function(destination, source) {
+  for (var property in source) {
+    if (source.hasOwnProperty(property)) {
+      destination[property] = source[property];
+    }
   }
-  return a;
+  return destination;
 };
-jasmin.Translator.prototype.setHonorific = function(a) {
-  this.honorific = a;
+jasmin.Translator.prototype.setHonorific = function(honorific) {
+  this.honorific = honorific;
 };
-jasmin.Translator.prototype.addTranslations = function(a) {
-  this.translations = this.extend(this.translations, a);
+jasmin.Translator.prototype.addTranslations = function(translations) {
+  this.translations = this.extend(this.translations, translations);
 };
-jasmin.Translator.prototype.setCallback = function(a, c) {
-  this.callbacks[a] = c;
+jasmin.Translator.prototype.setCallback = function(term, callback) {
+  this.callbacks[term] = callback;
 };
-jasmin.Translator.prototype.translateTerm = function(a, c) {
-  c = void 0 === c ? !0 : c;
-  if (void 0 !== this.callbacks[a]) {
-    return this.translate(this.callbacks[a](), c);
+jasmin.Translator.prototype.translateTerm = function(term, pretty) {
+  pretty = pretty === undefined ? true : pretty;
+  if (this.callbacks[term] !== undefined) {
+    return this.translate(this.callbacks[term](), pretty);
   }
-  var b;
-  void 0 !== this.honorific && (b = this.translations[this.honorific + "_" + a]);
-  void 0 === b && (b = this.translations[a]);
-  return void 0 === b ? c ? "!" + a + "!" : void 0 : this.translate(b, c);
-};
-jasmin.Translator.prototype.translate = function(a, c) {
-  for (var b = new RegExp(/[#]\[+[A-Za-z0-9-_ ]+?\]/), d, e = !0;null !== e;) {
-    e = b.exec(a), null !== e && (d = new RegExp(/[A-Za-z0-9-_ ]+/g), d = d.exec(e), d = this.translateTerm(d), a = a.replace(b, d));
+  var translation;
+  if (this.honorific !== undefined) {
+    translation = this.translations[this.honorific + "_" + term];
   }
-  return a;
+  if (translation === undefined) {
+    translation = this.translations[term];
+  }
+  if (translation === undefined) {
+    if (!pretty) {
+      return undefined;
+    }
+    return "!" + term + "!";
+  } else {
+    return this.translate(translation, pretty);
+  }
+};
+jasmin.Translator.prototype.translate = function(haystack, pretty) {
+  pretty = pretty === undefined ? true : pretty;
+  var regExpTerm = new RegExp(/[#]\[+[A-Za-z0-9-_ ]+?\]/);
+  var regExpTag;
+  var tag = true;
+  var tag, term, translation;
+  while (tag !== null) {
+    tag = regExpTerm.exec(haystack);
+    if (tag !== null) {
+      regExpTag = new RegExp(/[A-Za-z0-9-_ ]+/g);
+      term = regExpTag.exec(tag);
+      translation = this.translateTerm(term);
+      haystack = haystack.replace(regExpTerm, translation);
+    }
+  }
+  return haystack;
 };
 
