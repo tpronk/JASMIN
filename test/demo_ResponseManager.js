@@ -107,8 +107,12 @@ setupDemo = function() {
         }
     ];
 
-    // Create a ResponseManager
-    responseManager = new jasmin.ResponseManager();
+    // Create a ResponseManager (with an override on the escape key)
+    responseManager = new jasmin.ResponseManager({
+       "type" : "keydown",
+       "id" : 27,
+       "callback" : function() { alert("Pressed ESC key"); }
+    });
     // Attach event handlers
     console.log("Attaching ResponseManager");
     responseManager.attach(buttonDefinitions);

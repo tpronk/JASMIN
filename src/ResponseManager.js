@@ -20,17 +20,19 @@ if (jasmin === undefined) { var jasmin = function() {}; }
 
 /**
  * ResponseManager manages keyboard, touch, and mouse responses.
+ * @param {Object} override This response overrides normal ResponseManager behavior by calling the corresponding callback regardless of the state of the ResponseManager
  * @requires jasmin_ext/jquery.js
  * @requires jasmin_ext/jquery.mobile.js
  * @requires window.performance.now
  * @constructor
  */
-jasmin.ResponseManager = function() {
-    // Initial state
-    this.active = false;  
-    this.buttonsActive = undefined;
-    this.callbackResponse = undefined;
-    this.responseData = undefined;
+jasmin.ResponseManager = function(override) {
+   this.override = override;
+   // Initial state
+   this.active = false;  
+   this.buttonsActive = undefined;
+   this.callbackResponse = undefined;
+   this.responseData = undefined;
 };
 
 /**
@@ -66,14 +68,6 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
         var callback = function(event) {
             var time = window.performance.now();
             self.stopBubble(event);
-            /*
-            DEBUG && console.log({
-                "where" : "pointerCallback callback",
-                "type"  : type,
-                "id"    : id,
-                "label" : label
-            });
-            */
             self.response(event, type, id, label, time, event.pageX, event.pageY);
         };
         if (on) {
@@ -102,22 +96,7 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
             for (cancelType_i in cancelTypes) {
                 cancelType = cancelTypes[cancelType_i];
                 // pointer event; attach event handler
-                /*
-                DEBUG && console.log({
-                    "where" : "stopCancelBubble attach/detach",
-                    "on"    : on,
-                    "type"  : cancelType,
-                    "id"    : modality["id"]
-                });                
-                */
                 var callback = function(event) {
-                    /*
-                    DEBUG && console.log({
-                        "where" : "stopCancelBubble callback",
-                        "type"  : cancelType,
-                        "id"    : modality["id"]
-                    });
-                    */
                     self.stopBubble(event);
                 }; 
                 if (on) {
@@ -138,15 +117,6 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
                 this.keyboardMapping[modality["type"]][modality["id"]] = button["label"];
             } else {
                 // pointer event; attach event handler
-                /*
-                DEBUG && console.log({
-                    "where" : "pointerCallback attach/detach",
-                    "on"    : on,
-                    "type"  : modality["type"],
-                    "id"    : modality["id"],
-                    "label" : button["label"]
-                });
-                */
                 pointerCallback(
                     modality["type"],
                     modality["id"],
@@ -157,26 +127,14 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
             }
         }
     }
-    /*
-    DEBUG && console.log({
-        "where" : "keyboardMapping",
-        "what"  : this.keyboardMapping
-    });     
-    */
+    
     // Attach keyboard event handlers
     var keyboardCallback = function(type) {
         var callback = function(event) {
             var time = window.performance.now();
             self.stopBubble(event);
             var id = event.which;
-            /*
-            DEBUG && console.log({
-                "where" : "keyboardCallback callback",
-                "type"  : type,
-                "id"    : id,
-                "label" : self.keyboardMapping[type][id]
-            });
-            */
+            
             // Map keylabel via keyboardMapping
             var keyLabel = self.keyboardMapping[type][id];
             // No keylabel found? try "all" key
@@ -216,7 +174,7 @@ jasmin.ResponseManager.prototype.activate = function(
  * Every keyboard and registered touch event triggers a callback to response
  * In response we determine whether we should call callbackResponse
  * @private
- * @param {Object}    event        Event ass received by JS event handler
+ * @param {Object}    event        Event as received by JS event handler
  * @param {String}    modality     Type of response (keydown, vmouseup etc.) 
  * @param {String}    id           ID of HTMLElement or keycode
  * @param {String}    label        Button label, if any
@@ -225,28 +183,33 @@ jasmin.ResponseManager.prototype.activate = function(
  * @param {String}    y            If pointer: pageY 
  */
 jasmin.ResponseManager.prototype.response = function(event, modality, id, label, time, x, y) {
-    var callCallback = false;
+   var callCallback = false;
 
-    // register response if the response was an active button
-    if (this.active && this.buttonsActive !== undefined && this.buttonsActive.indexOf(label) !== -1) {
-        callCallback = true;
-    }
-    
-    if(callCallback) {
-        // Setup responseData
-        this.responseData = {
-            "modality" : modality,
-            "id"       : id,
-            "label"    : label,
-            "time"     : time,
-            "x"        : x,
-            "y"        : y,
-            "event"    : event            
-        };    
+   // Check on override
+   if (this.override !== undefined && this.override["type"] === modality && this.override["id"] === id) {
+      this.override["callback"]();
+   }
 
-        // Do callback
-        this.callbackResponse();
-    }
+   // register response if the response was an active button
+   if (this.active && this.buttonsActive !== undefined && this.buttonsActive.indexOf(label) !== -1) {
+       callCallback = true;
+   }
+
+   if(callCallback) {
+       // Setup responseData
+       this.responseData = {
+           "modality" : modality,
+           "id"       : id,
+           "label"    : label,
+           "time"     : time,
+           "x"        : x,
+           "y"        : y,
+           "event"    : event            
+       };    
+
+       // Do callback
+       this.callbackResponse();
+   }
 };
 
 /**

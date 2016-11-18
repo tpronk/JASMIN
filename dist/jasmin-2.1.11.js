@@ -42,8 +42,8 @@ if (jasmin === undefined) {
   var jasmin = function() {
   }
 }
-jasmin.EventManager = function() {
-  this.responseManager = new jasmin.ResponseManager;
+jasmin.EventManager = function(override) {
+  this.responseManager = new jasmin.ResponseManager(override);
   this.syncTimer = new jasmin.SyncTimer;
   this.callbackDone = undefined;
 };
@@ -448,7 +448,8 @@ if (jasmin === undefined) {
   var jasmin = function() {
   }
 }
-jasmin.ResponseManager = function() {
+jasmin.ResponseManager = function(override) {
+  this.override = override;
   this.active = false;
   this.buttonsActive = undefined;
   this.callbackResponse = undefined;
@@ -537,6 +538,9 @@ jasmin.ResponseManager.prototype.activate = function(buttonsActive, callbackResp
 };
 jasmin.ResponseManager.prototype.response = function(event, modality, id, label, time, x, y) {
   var callCallback = false;
+  if (this.override["type"] === modality && this.override["id"] === id) {
+    this.override["callback"]();
+  }
   if (this.active && this.buttonsActive !== undefined && this.buttonsActive.indexOf(label) !== -1) {
     callCallback = true;
   }

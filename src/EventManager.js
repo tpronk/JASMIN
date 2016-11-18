@@ -28,11 +28,11 @@ if (jasmin === undefined) { var jasmin = function() {}; }
  * @requires jQuery mobile
  * @requires ResponseManager
  * @requires SyncTimer
- * @param {Object} buttonsAll buttons used 
+ * @param {Object} override Passed on to ResponseManager constructor: this response overrides normal ResponseManager behavior by calling the corresponding callback regardless of the state of the ResponseManager
  * @constructor
  */
-jasmin.EventManager = function() {
-    this.responseManager = new jasmin.ResponseManager();
+jasmin.EventManager = function(override) {
+    this.responseManager = new jasmin.ResponseManager(override);
     this.syncTimer       = new jasmin.SyncTimer();
     this.callbackDone    = undefined;
 };
