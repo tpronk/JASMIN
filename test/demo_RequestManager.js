@@ -40,7 +40,7 @@ fail = function( message )
 start = function()
 {
     // Construct RequestManager 
-    io = new jasmin.RequestManager( fail, report, report );
+    io = new jasmin.RequestManager(fail);
     demoJSON();
 }
 

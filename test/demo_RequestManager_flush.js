@@ -41,11 +41,11 @@ fail = function( message )
 start = function()
 {
     // Construct inactive AjaxManager 
-    io = new jasmin.RequestManager( fail, report, report, undefined, undefined, false );
+    io = new jasmin.RequestManager( fail, undefined, undefined, false );
     
     report( demoName, "Making 2 request; flushing in 2 seconds..." );
     io.request(
-        jasmin.REQUEST_MANAGER_TYPE_AJAX,
+        jasmin.RequestManager.TYPE_AJAX,
         {
             "url"      : "files/demo_RequestManager_json.json",
             "dataType" : "json"
@@ -56,7 +56,7 @@ start = function()
     );    
 
     io.request(
-        jasmin.REQUEST_MANAGER_TYPE_AJAX,
+        jasmin.RequestManager.TYPE_AJAX,
         {
             "url"      : "files/demo_RequestManager_script.js",
             "dataType" : "script"
