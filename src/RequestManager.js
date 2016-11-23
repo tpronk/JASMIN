@@ -112,8 +112,8 @@ jasmin.RequestManager.prototype.request = function (type, request, callback, tim
    this.stateCounter++;
 
    // Report
-   DEBUG & console.log("RequestManager.request, stateId " + counter);
-   DEBUG & console.log(request);
+   DEBUG && console.log("RequestManager.request, stateId " + counter);
+   DEBUG && console.log(request);
 
    // If active; send immediately
    if (this.active) {
