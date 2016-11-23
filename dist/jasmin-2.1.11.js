@@ -307,8 +307,8 @@ jasmin.RequestManager.prototype.request = function(type, request, callback, time
   var counter = this.stateCounter;
   this.states[counter] = {"type":type, "request":request, "callback":callback, "timeout":timeout, "retries":retries, "state":this.STATE_FIRST, "retryCounter":0, "handled":false};
   this.stateCounter++;
-  DEBUG & console.log("RequestManager.request, stateId " + counter);
-  DEBUG & console.log(request);
+  DEBUG && console.log("RequestManager.request, stateId " + counter);
+  DEBUG && console.log(request);
   if (this.active) {
     this.sendOpenRequests();
   }
@@ -538,7 +538,7 @@ jasmin.ResponseManager.prototype.activate = function(buttonsActive, callbackResp
 };
 jasmin.ResponseManager.prototype.response = function(event, modality, id, label, time, x, y) {
   var callCallback = false;
-  if (this.override["type"] === modality && this.override["id"] === id) {
+  if (this.override !== undefined && this.override["type"] === modality && this.override["id"] === id) {
     this.override["callback"]();
   }
   if (this.active && this.buttonsActive !== undefined && this.buttonsActive.indexOf(label) !== -1) {
