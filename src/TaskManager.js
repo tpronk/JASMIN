@@ -220,11 +220,9 @@ jasmin.TaskManager.prototype.blockNext = function() {
        this.state["block_correct"] / this.state["trial"] >= this.configBlock["min_correct"] &&
        (this.configBlock["max_attempts"] === undefined || this.state["block_attempt"] < this.configBlock["max_attempts"])
    ) {
-      console.log("retry block");
       this.state[ "block_attempt" ] = 0;
       this.state[ "block" ]++;
    } else {
-      console.log("next block");
       this.state[ "block_attempt" ]++;
    }
    this.state[ "block_correct" ] = 0;   
@@ -303,8 +301,9 @@ jasmin.TaskManager.prototype.trialEventStart = function( feedbackLog )
                     self.trialEventDone();
                 },
                 [],
-                this.event,
-                eventConfig["resetRT"]
+                eventConfig["resetRT"],
+                eventConfig["name"],
+                eventConfig["callbackEvent"]
             );
             break;
         // Set a timeout with a response
@@ -318,8 +317,9 @@ jasmin.TaskManager.prototype.trialEventStart = function( feedbackLog )
                     self.trialEventDone();
                 },
                 this.config[ "task_buttons" ][ buttons ],
-                this.event,
-                eventConfig["resetRT"]
+                eventConfig["resetRT"],
+                eventConfig["name"],
+                eventConfig["callbackEvent"]
             );            
             break;               
         // Wait for key up            

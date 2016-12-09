@@ -160,14 +160,17 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
  * @public
  * @param {Array}     buttonsActive     An associative array defining responses that stop the event (if any). See <a href="../source/jasmin_demos/demo_choose.html">these demos </a> for examples.
  * @param {Function}  callbackResponse  Callback called upon a response
+ * @param {Function}  callbackEvent     Function called upon each response event (a more finegrained way of processing responses without deactivating ResponseManager
  */
 jasmin.ResponseManager.prototype.activate = function(
-    buttonsActive,    
-    callbackResponse
+   buttonsActive,    
+   callbackResponse,
+   callbackEvent
 ) {
-    this.buttonsActive    = buttonsActive;
-    this.callbackResponse = callbackResponse;
-    this.active           = true;
+   this.buttonsActive    = buttonsActive;
+   this.callbackResponse = callbackResponse;
+   this.active           = true;
+   this.callbackEvent    = callbackEvent;
 };
 
 /**
@@ -185,11 +188,16 @@ jasmin.ResponseManager.prototype.activate = function(
 jasmin.ResponseManager.prototype.response = function(event, modality, id, label, time, x, y) {
    var callCallback = false;
 
+   // Check on callbackEvent
+   if (this.callbackEvent !== undefined) {
+      this.callbackEvent(event, modality, id, label, time, x, y);
+   }
+
    // Check on override
    if (this.override !== undefined && this.override["type"] === modality && this.override["id"] === id) {
       this.override["callback"]();
    }
-
+   
    // register response if the response was an active button
    if (this.active && this.buttonsActive !== undefined && this.buttonsActive.indexOf(label) !== -1) {
        callCallback = true;

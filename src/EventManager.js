@@ -70,8 +70,9 @@ jasmin.EventManager.prototype.stop = function() {
  * @param {Array}    buttonsActive    Array with buttons active this event
  * @param {bool}     resetRt          If true, sets start time of RT measurement on timeShown of this event, else use earlier start time. Default = true.
  * @param {String}   name             Name of this timeout for logging. Default = noname
+ * @param {Function} callbackEvent    Function called upon each response event (a more finegrained way of processing responses without deactivating ResponseManager
  */
-jasmin.EventManager.prototype.startEvent = function(timeout, callbackDraw, callbackDone, buttonsActive, resetRt, name) {
+jasmin.EventManager.prototype.startEvent = function(timeout, callbackDraw, callbackDone, buttonsActive, resetRt, name, callbackEvent) {
     // Clear logging vars
     this.clearLoggingVars();
 
@@ -82,6 +83,7 @@ jasmin.EventManager.prototype.startEvent = function(timeout, callbackDraw, callb
     this.buttonsActive   = buttonsActive;
     this.resetRt         = resetRt !== undefined? resetRt: true;
     this.name            = name !== undefined? name: "noname";
+    this.callbackEvent   = callbackEvent;
 
     var self = this;
     this.responseManager.activate(
@@ -89,7 +91,7 @@ jasmin.EventManager.prototype.startEvent = function(timeout, callbackDraw, callb
         function() {
             self.endEvent(jasmin.EventManager.ENDREASON_RESPONSE);
         },
-        this.name
+        this.callbackEvent
    );
 
     this.syncTimer.setTimeout(

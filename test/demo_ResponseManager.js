@@ -104,6 +104,30 @@ setupDemo = function() {
                 { "type" : "mouseup",  "id" : "all" },
                 { "type" : "touchend", "id" : "all" }
             ]
+        },
+        {
+            "label" : "left_over",
+            "modalities" : [
+                { "type" : "mouseover",  "id" : "#button_left" },
+           ]
+        },        
+        {
+            "label" : "right_over",
+            "modalities" : [
+                { "type" : "mouseover",  "id" : "#button_right" },
+           ]
+        },
+        {
+            "label" : "left_out",
+            "modalities" : [
+                { "type" : "mouseout",  "id" : "#button_left" },
+           ]
+        },        
+        {
+            "label" : "right_out",
+            "modalities" : [
+                { "type" : "mouseout",  "id" : "#button_right" },
+           ]
         }
     ];
 
@@ -120,12 +144,29 @@ setupDemo = function() {
     downStart();
 };
 
+// Callback for mouseover over buttons
+mouseOverHandler = function(event, modality, id, label, time, x, y) {
+   if (label === "left_over") {
+      $("#button_left").css({"background-color":"blue"});
+   }
+   if (label === "right_over") {
+      $("#button_right").css({"background-color":"blue"});
+   }
+   if (label === "left_out") {
+      $("#button_left").css({"background-color":"green"});
+   }
+   if (label === "right_out") {
+      $("#button_right").css({"background-color":"green"});
+   }   
+}
+
 // Register a 'down' response
 downStart = function() {
     console.log( "Starting an event that registers down response (via left/right key or the colored rectangles)" );
     responseManager.activate(
         [ "left_down", "right_down" ], // buttonsActive
-        downDone                       // callbackResponse
+        downDone/*,                      // callbackResponse
+        mouseOverHandler*/
     );    
 };
 

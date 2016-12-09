@@ -229,7 +229,8 @@ jasmin.RequestManager.prototype.statesToSend = function () {
 jasmin.RequestManager.prototype.ajaxRequest = function (stateId, transactionId) {
    // arguments to pass to jQuery.ajax
    var ajaxArgs = this.states[stateId]["request"];
-
+   ajaxArgs["cache"] = false;
+   
    // Report ajax
    DEBUG && console.log("RequestManager.ajaxRequest, stateId = " + stateId + ", transactionId = " + transactionId);
    DEBUG && console.log(ajaxArgs);
