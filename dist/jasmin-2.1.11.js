@@ -60,7 +60,7 @@ jasmin.EventManager.prototype.stop = function() {
   this.responseManager.detach();
   this.syncTimer.unsync();
 };
-jasmin.EventManager.prototype.startEvent = function(timeout, callbackDraw, callbackDone, buttonsActive, resetRt, name) {
+jasmin.EventManager.prototype.startEvent = function(timeout, callbackDraw, callbackDone, buttonsActive, resetRt, name, callbackEvent) {
   this.clearLoggingVars();
   this.timeout = timeout;
   this.callbackDraw = callbackDraw;
@@ -68,10 +68,11 @@ jasmin.EventManager.prototype.startEvent = function(timeout, callbackDraw, callb
   this.buttonsActive = buttonsActive;
   this.resetRt = resetRt !== undefined ? resetRt : true;
   this.name = name !== undefined ? name : "noname";
+  this.callbackEvent = callbackEvent;
   var self = this;
   this.responseManager.activate(buttonsActive, function() {
     self.endEvent(jasmin.EventManager.ENDREASON_RESPONSE);
-  }, this.name);
+  }, this.callbackEvent);
   this.syncTimer.setTimeout(timeout, function() {
     self.callbackDraw();
   }, function() {
@@ -376,6 +377,7 @@ jasmin.RequestManager.prototype.statesToSend = function() {
 };
 jasmin.RequestManager.prototype.ajaxRequest = function(stateId, transactionId) {
   var ajaxArgs = this.states[stateId]["request"];
+  ajaxArgs["cache"] = false;
   DEBUG && console.log("RequestManager.ajaxRequest, stateId = " + stateId + ", transactionId = " + transactionId);
   DEBUG && console.log(ajaxArgs);
   var self = this;
@@ -531,13 +533,17 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
     keyboardCallback(keyboardType);
   }
 };
-jasmin.ResponseManager.prototype.activate = function(buttonsActive, callbackResponse) {
+jasmin.ResponseManager.prototype.activate = function(buttonsActive, callbackResponse, callbackEvent) {
   this.buttonsActive = buttonsActive;
   this.callbackResponse = callbackResponse;
   this.active = true;
+  this.callbackEvent = callbackEvent;
 };
 jasmin.ResponseManager.prototype.response = function(event, modality, id, label, time, x, y) {
   var callCallback = false;
+  if (this.callbackEvent !== undefined) {
+    this.callbackEvent(event, modality, id, label, time, x, y);
+  }
   if (this.override !== undefined && this.override["type"] === modality && this.override["id"] === id) {
     this.override["callback"]();
   }
@@ -1489,11 +1495,9 @@ jasmin.TaskManager.prototype.blockIntroduce = function() {
 };
 jasmin.TaskManager.prototype.blockNext = function() {
   if (this.configBlock["min_correct"] !== undefined && this.state["block_correct"] / this.state["trial"] >= this.configBlock["min_correct"] && (this.configBlock["max_attempts"] === undefined || this.state["block_attempt"] < this.configBlock["max_attempts"])) {
-    console.log("retry block");
     this.state["block_attempt"] = 0;
     this.state["block"]++;
   } else {
-    console.log("next block");
     this.state["block_attempt"]++;
   }
   this.state["block_correct"] = 0;
@@ -1534,13 +1538,13 @@ jasmin.TaskManager.prototype.trialEventStart = function(feedbackLog) {
     case jasmin.TaskManager.EVENT_NORESPONSE:
       this.eventManager.startEvent(eventConfig["dur"], eventConfig["draw"], function() {
         self.trialEventDone();
-      }, [], this.event, eventConfig["resetRT"]);
+      }, [], eventConfig["resetRT"], eventConfig["name"], eventConfig["callbackEvent"]);
       break;
     case jasmin.TaskManager.EVENT_RESPONSE:
       var buttons = eventConfig["buttons"] !== undefined ? eventConfig["buttons"] : "down";
       this.eventManager.startEvent(eventConfig["dur"], eventConfig["draw"], function() {
         self.trialEventDone();
-      }, this.config["task_buttons"][buttons], this.event, eventConfig["resetRT"]);
+      }, this.config["task_buttons"][buttons], eventConfig["resetRT"], eventConfig["name"], eventConfig["callbackEvent"]);
       break;
     case jasmin.TaskManager.EVENT_RELEASE:
       this.checkReleasedSilent(function() {
