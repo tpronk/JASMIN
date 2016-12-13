@@ -50,7 +50,6 @@ jasmin.Statistics.rep = function( x, reps ) {
  * at most by 1 across items)
  * @param {Array}  items    Value to repeat
  * @param {int}    length   Length of desired sequence
- * @param {bool}   copy     If true, fill result with deep copies of items. If false, fill with refs
  * @public
  */
 jasmin.Statistics.fill = function (items, length) {
