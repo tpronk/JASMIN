@@ -68,7 +68,16 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
         var callback = function(event) {
             var time = window.performance.now();
             self.stopBubble(event);
-            self.response(event, type, id, label, time, event.pageX, event.pageY);
+            var pageX, pageY;
+            if (type === "touchstart" || type === "touchend" || type === "touchmove" || type === "touchcancel") {
+               var touch = event.originalEvent.touches[0] || event.originalEvent.changedTouches[0];
+               pageX = touch.pageX;
+               pageY = touch.pageY;
+            } else {
+               pageX = event.pageX;
+               pageY = event.pageY;
+            }
+            self.response(event, type, id, label, time, pageX, pageY);
         };
         if (on) {
             target.off(type);
