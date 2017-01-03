@@ -81,9 +81,15 @@ jasmin.TaskManager = function( task, config, onCompleted, translator, eventManag
             /**
              * @property {int} Number of trials in a block
              */                  
-            "block_trial_count" : 0
-            
-            
+            "block_trial_count" : 0,
+            /**
+             * @property {int} Number of trials in task
+             */                  
+            "task_trial_count" : 0,
+            /**
+             * @property {int} Current trial in task
+             */                  
+            "task_trial" : 0
         };
     }
     this.setState     = setState === undefined? function() {} : setState;
@@ -115,35 +121,41 @@ jasmin.TaskManager.EVENT_TRIAL_REPEAT = "trial_repeat"; // Repeat trial
  * @public
  */
 jasmin.TaskManager.prototype.start = function() {
-    // Setup task
-    this.configTask = this.config[ "task_vars" ];
-    this.task.taskSetup( this.configTask, this.canvas ); 
+   // Setup task
+   this.configTask = this.config[ "task_vars" ];
+   this.task.taskSetup( this.configTask, this.canvas ); 
 
-    /**
-     * @property {Slideshow} For block introduction slides
-     */  
-    var self = this;
-    this.slideshow = new jasmin.Slideshow(
-        $( this.config[ "slideshow" ][ "slide_id" ] ),
-        this.eventManager,
-        this.config[ "slideshow" ][ "buttons" ],
-        this.config[ "slideshow" ][ "button_delay" ],
-        function() {
-            self.task.slideshowButtonsHide();
-        }, 
-        function() {
-            self.task.slideshowButtonsShow();
-        },
-        this.translator
-    );
+   // Calculate total number of trials
+   for (var i in this.config["blocks"]) {
+      this.state["task_trial_count"] += this.config["blocks"][i]["trials"].length;
+   }
+   console.log(this.state);
+   
+   /**
+    * @property {Slideshow} For block introduction slides
+    */  
+   var self = this;
+   this.slideshow = new jasmin.Slideshow(
+      $( this.config[ "slideshow" ][ "slide_id" ] ),
+      this.eventManager,
+      this.config[ "slideshow" ][ "buttons" ],
+      this.config[ "slideshow" ][ "button_delay" ],
+      function() {
+          self.task.slideshowButtonsHide();
+      }, 
+      function() {
+          self.task.slideshowButtonsShow();
+      },
+      this.translator
+   );
 
-    var self = this;
-    this.eventManager.start(
-        this.config["button_definitions"],
-        function() {
-            self.blockSetup();
-        }
-    );
+   var self = this;
+   this.eventManager.start(
+      this.config["button_definitions"],
+      function() {
+          self.blockSetup();
+      }
+   );
 };
 
 /**
@@ -216,9 +228,11 @@ jasmin.TaskManager.prototype.blockIntroduce = function() {
  * @public
  */
 jasmin.TaskManager.prototype.blockNext = function() {
-   if (this.configBlock["min_correct"] !== undefined &&
-       this.state["block_correct"] / this.state["trial"] >= this.configBlock["min_correct"] &&
-       (this.configBlock["max_attempts"] === undefined || this.state["block_attempt"] < this.configBlock["max_attempts"])
+   if (this.configBlock["min_correct"] === undefined ||
+         (
+            this.state["block_correct"] / this.state["trial"] >= this.configBlock["min_correct"] &&
+            (this.configBlock["max_attempts"] === undefined || this.state["block_attempt"] < this.configBlock["max_attempts"])
+         )
    ) {
       this.state[ "block_attempt" ] = 0;
       this.state[ "block" ]++;
@@ -248,7 +262,7 @@ jasmin.TaskManager.prototype.trialStart = function()
         this.state[ "attempt" ] = 0;
         this.trial       = this.state[ "trial" ];
         this.configTrial = this.specsBlock[ "trials" ][ this.trial ];
-        this.task.trialSetup( this.configTrial );
+        this.task.trialSetup( this.configTrial, this.state["task_trial"], this.state["task_trial_count"] );
         // *** Go to event "start"
         this.eventNow = "start";
         this.trialEventStart();
@@ -368,6 +382,7 @@ jasmin.TaskManager.prototype.trialEventStart = function( feedbackLog )
         // Next trial
         case( jasmin.TaskManager.EVENT_TRIAL_NEXT ):
             this.state[ "trial" ]++;
+            this.state[ "task_trial" ]++;
             this.trialStart();
             break;
         // Repeat current trial
