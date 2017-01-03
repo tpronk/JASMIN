@@ -623,9 +623,13 @@ jasmin.ScalableCanvas.prototype.rescale = function(force) {
   if (targetWidth / targetHeight > this.aspectRatio) {
     this.scale = targetHeight;
     this.offsetLeft = (targetWidth - this.scale * this.aspectRatio) / 2;
+    this.canvasHeight = targetHeight;
+    this.canvasWidth = targetHeight * this.aspectRatio;
   } else {
     this.scale = targetWidth / this.aspectRatio;
     this.offsetTop = (targetHeight - this.scale) / 2;
+    this.canvasHeight = targetWidth / this.aspectRatio;
+    this.canvasWidth = targetWidth;
   }
   for (var i in this.sprites) {
     this.rescaleSprite(this.sprites[i]);
@@ -686,6 +690,9 @@ jasmin.ScalableCanvas.prototype.removeSprites = function() {
   for (var i in this.sprites) {
     this.sprites[i]["node"].remove();
   }
+};
+jasmin.ScalableCanvas.prototype.mapToCanvas = function(x, y) {
+  return{"x":(x - this.offsetLeft) / this.canvasWidth * this.aspectRatio, "y":(y - this.offsetTop) / this.canvasHeight};
 };
 if (jasmin === undefined) {
   var jasmin = function() {
@@ -1489,6 +1496,7 @@ jasmin.TaskManager.prototype.blockSetup = function() {
   if (this.specsBlock["randomize"]) {
     this.specsBlock["trials"] = jasmin.Statistics.fisherYates(this.specsBlock["trials"]);
   }
+  this.state["block_trial_count"] = this.specsBlock["trials"].length;
   this.task.blockSetup(this.configBlock);
   this.blockIntroduce();
 };
@@ -1525,7 +1533,7 @@ jasmin.TaskManager.prototype.trialStart = function() {
     this.state["attempt"] = 0;
     this.trial = this.state["trial"];
     this.configTrial = this.specsBlock["trials"][this.trial];
-    this.task.trialSetup(this.configTrial, this.state["task_trial"], this.state["task_trial_count"]);
+    this.task.trialSetup(this.configTrial, this.state);
     this.eventNow = "start";
     this.trialEventStart();
   }
