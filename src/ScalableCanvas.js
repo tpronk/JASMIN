@@ -120,12 +120,16 @@ jasmin.ScalableCanvas.prototype.rescale = function( force )
     if( targetWidth / targetHeight > this.aspectRatio )
     {
         // Screen is wider than aspect ratio; use height (divided by aspect)
-        this.scale          = targetHeight;
-        this.offsetLeft = ( targetWidth - ( this.scale * this.aspectRatio ) ) / 2;
+        this.scale       = targetHeight;
+        this.offsetLeft  = ( targetWidth - ( this.scale * this.aspectRatio ) ) / 2;
+        this.canvasHeight = targetHeight;
+        this.canvasWidth  = targetHeight * this.aspectRatio;
     } else {
         // Screen is wider than aspect ratio; use width
         this.scale = targetWidth / this.aspectRatio;
         this.offsetTop = ( targetHeight - ( this.scale ) ) / 2;
+        this.canvasHeight = targetWidth / this.aspectRatio;
+        this.canvasWidth  = targetWidth;
     }
     
     // For each node, update css
@@ -242,3 +246,19 @@ jasmin.ScalableCanvas.prototype.removeSprites = function() {
         this.sprites[ i ][ "node" ].remove();
     }
 };
+
+/**
+ * Map document x and y coordinates to canvas x and y coordinates
+ * @param {Number} x    x coordinate
+ * @param {Number} y    y coordinate
+ * @return {Object} x and y coordinates converted to canvas coordinates
+ * @public
+ */
+jasmin.ScalableCanvas.prototype.mapToCanvas = function (x, y) {
+   //console.log([y,this.offsetTop,this.lastHeight]);
+   return {
+      "x" : ((x - this.offsetLeft) / this.canvasWidth) * this.aspectRatio,
+      "y" : (y - this.offsetTop) / this.canvasHeight
+   };
+};
+
