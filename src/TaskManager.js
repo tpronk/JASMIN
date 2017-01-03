@@ -192,6 +192,9 @@ jasmin.TaskManager.prototype.blockSetup = function() {
         this.specsBlock[ "trials" ] = jasmin.Statistics.fisherYates( this.specsBlock[ "trials" ] );
     }
     
+    // No. of trials in block
+    this.state["block_trial_count"] = this.specsBlock[ "trials" ].length;
+    
     this.task.blockSetup( this.configBlock );
     this.blockIntroduce();
 };
@@ -262,7 +265,13 @@ jasmin.TaskManager.prototype.trialStart = function()
         this.state[ "attempt" ] = 0;
         this.trial       = this.state[ "trial" ];
         this.configTrial = this.specsBlock[ "trials" ][ this.trial ];
+<<<<<<< .mine
+        this.task.trialSetup( this.configTrial, this.state );
+||||||| .r182
+        this.task.trialSetup( this.configTrial );
+=======
         this.task.trialSetup( this.configTrial, this.state["task_trial"], this.state["task_trial_count"] );
+>>>>>>> .r184
         // *** Go to event "start"
         this.eventNow = "start";
         this.trialEventStart();
