@@ -1431,7 +1431,7 @@ jasmin.TaskManager = function(task, config, onCompleted, translator, eventManage
   this.logger = new jasmin.TableLogger(this.config["logging"]);
   this.state = state;
   if (!(this.state instanceof Object)) {
-    this.state = {"block":0, "trial":0, "done":false, "results":[], "block_attempt":0, "block_correct":0, "block_trial_count":0};
+    this.state = {"block":0, "trial":0, "done":false, "results":[], "block_attempt":0, "block_correct":0, "block_trial_count":0, "task_trial_count":0, "task_trial":0};
   }
   this.setState = setState === undefined ? function() {
   } : setState;
@@ -1454,6 +1454,10 @@ jasmin.TaskManager.EVENT_TRIAL_REPEAT = "trial_repeat";
 jasmin.TaskManager.prototype.start = function() {
   this.configTask = this.config["task_vars"];
   this.task.taskSetup(this.configTask, this.canvas);
+  for (var i in this.config["blocks"]) {
+    this.state["task_trial_count"] += this.config["blocks"][i]["trials"].length;
+  }
+  console.log(this.state);
   var self = this;
   this.slideshow = new jasmin.Slideshow($(this.config["slideshow"]["slide_id"]), this.eventManager, this.config["slideshow"]["buttons"], this.config["slideshow"]["button_delay"], function() {
     self.task.slideshowButtonsHide();
@@ -1503,7 +1507,7 @@ jasmin.TaskManager.prototype.blockIntroduce = function() {
   });
 };
 jasmin.TaskManager.prototype.blockNext = function() {
-  if (this.configBlock["min_correct"] !== undefined && this.state["block_correct"] / this.state["trial"] >= this.configBlock["min_correct"] && (this.configBlock["max_attempts"] === undefined || this.state["block_attempt"] < this.configBlock["max_attempts"])) {
+  if (this.configBlock["min_correct"] === undefined || this.state["block_correct"] / this.state["trial"] >= this.configBlock["min_correct"] && (this.configBlock["max_attempts"] === undefined || this.state["block_attempt"] < this.configBlock["max_attempts"])) {
     this.state["block_attempt"] = 0;
     this.state["block"]++;
   } else {
@@ -1521,7 +1525,7 @@ jasmin.TaskManager.prototype.trialStart = function() {
     this.state["attempt"] = 0;
     this.trial = this.state["trial"];
     this.configTrial = this.specsBlock["trials"][this.trial];
-    this.task.trialSetup(this.configTrial);
+    this.task.trialSetup(this.configTrial, this.state["task_trial"], this.state["task_trial_count"]);
     this.eventNow = "start";
     this.trialEventStart();
   }
@@ -1577,6 +1581,7 @@ jasmin.TaskManager.prototype.trialEventStart = function(feedbackLog) {
       break;
     case jasmin.TaskManager.EVENT_TRIAL_NEXT:
       this.state["trial"]++;
+      this.state["task_trial"]++;
       this.trialStart();
       break;
     case jasmin.TaskManager.EVENT_TRIAL_REPEAT:
