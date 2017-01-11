@@ -493,7 +493,7 @@ jasmin.Statistics.balancedSequence2 = function (items, count, proportionA, label
 
    // So long as there are more labels A to apply than items, give every item labelA once
    var i;
-   while (countA > items.length) {
+   while (countA >= items.length) {
       for (i in items) {
          addToResult(items[i], labelA);
       }
@@ -501,7 +501,7 @@ jasmin.Statistics.balancedSequence2 = function (items, count, proportionA, label
    }
 
    // So long as there are more labels B to apply than items, give every item labelB once
-   while (countB > items.length) {
+   while (countB >= items.length) {
       for (i in items) {
          addToResult(items[i], labelB);
       }       
