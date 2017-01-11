@@ -1240,6 +1240,66 @@ jasmin.Statistics.balancedSequence = function(items, reps, proportionA, labelA, 
   }
   return result;
 };
+jasmin.Statistics.balancedSequence2 = function(items, count, proportionA, labelA, labelB, itemKey, labelKey) {
+  itemKey = itemKey === undefined ? "item" : itemKey;
+  labelKey = labelKey === undefined ? "label" : labelKey;
+  var result = [];
+  var countA = Math.floor(count * proportionA);
+  var countB = count - countA;
+  var addToResult = function(item, label) {
+    var newElement = {};
+    newElement[itemKey] = item;
+    newElement[labelKey] = label;
+    result.push(newElement);
+  };
+  var i;
+  while (countA > items.length) {
+    for (i in items) {
+      addToResult(items[i], labelA);
+    }
+    countA -= items.length;
+  }
+  while (countB > items.length) {
+    for (i in items) {
+      addToResult(items[i], labelB);
+    }
+    countB -= items.length;
+  }
+  var remaining = jasmin.Statistics.fill(items, countA + countB);
+  var item1, item2, foundDuplicate = true;
+  while (countA > 0 && countB > 0 && foundDuplicate) {
+    remaining = jasmin.Statistics.fisherYates(remaining);
+    foundDuplicate = false;
+    for (item1 = 0;item1 < remaining.length && !foundDuplicate;!foundDuplicate && item1++) {
+      for (item2 = item1 + 1;item2 < remaining.length && !foundDuplicate;!foundDuplicate && item2++) {
+        if (remaining[item1] == remaining[item2]) {
+          foundDuplicate = true;
+          console.log(remaining);
+          console.log(item1, item2);
+        }
+      }
+    }
+    if (foundDuplicate) {
+      console.log(remaining);
+      console.log([item1, item2, remaining[item1], remaining[item2]]);
+      addToResult(remaining[item1], labelA);
+      addToResult(remaining[item2], labelB);
+      remaining.splice(item2, 1);
+      remaining.splice(item1, 1);
+      countA--;
+      countB--;
+    }
+  }
+  while (countA > 0) {
+    addToResult(remaining.shift(), labelA);
+    countA--;
+  }
+  while (countB > 0) {
+    addToResult(remaining.shift(), labelB);
+    countB--;
+  }
+  return result;
+};
 if (jasmin === undefined) {
   var jasmin = function() {
   }

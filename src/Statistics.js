@@ -462,3 +462,101 @@ jasmin.Statistics.balancedSequence = function (items, reps, proportionA, labelA,
     
     return (result);
 };
+
+/*
+ * Generates a sequence of items of length count. A proportion of elements in the sequence gets labelA, 
+ * while the remainder get labelB. These labels are distributed such that items are as much as possible
+ * evenly distributed over labelA and labelB. Anywhere this cannot be done, remaining items and labels 
+ * are distributed as randomly as possible.
+ * @param {array}  items         items to repeat in sequence
+ * @param {int}    count         length of sequence
+ * @param {float}  proportionA   proportion of labelA
+ * @param {string} labelA        label A
+ * @param {string} labelB        label B
+ * @param {string} itemKey       (optional) Key to use for item; "item" by default
+ * @param {string} labelKey      (optional) Key to use for label; "label" by default
+ * @returns {array} Sequence, in which each element is an associative array with a key "item" for the item and "label" for the label
+ */
+jasmin.Statistics.balancedSequence2 = function (items, count, proportionA, labelA, labelB, itemKey, labelKey) {
+   itemKey = itemKey === undefined? "item": itemKey;
+   labelKey = labelKey === undefined? "label": labelKey;
+
+   var result = [];
+   var countA = Math.floor(count * proportionA);
+   var countB = count - countA;
+
+   var addToResult = function (item, label) {
+      var newElement = {};
+      newElement[itemKey] = item;
+      newElement[labelKey] = label;
+      result.push(newElement);
+   };
+
+   // So long as there are more labels A to apply than items, give every item labelA once
+   var i;
+   while (countA > items.length) {
+      for (i in items) {
+         addToResult(items[i], labelA);
+      }
+      countA -= items.length;
+   }
+
+   // So long as there are more labels B to apply than items, give every item labelB once
+   while (countB > items.length) {
+      for (i in items) {
+         addToResult(items[i], labelB);
+      }       
+      countB -= items.length;
+   }
+   
+   // remaining is a sequence of items for remaining labels
+   var remaining = jasmin.Statistics.fill(items, countA + countB);
+   
+   // So long as there are duplicate items in remaining and both labelA and labelB left to assign,
+   // assign a labelA and labelB to a duplicate item
+   var item1, item2, foundDuplicate = true;
+   while (countA > 0 && countB > 0 && foundDuplicate) {
+      // Shuffle remaining
+      remaining = jasmin.Statistics.fisherYates(remaining);
+      
+      // Find item positions in remaining of the first item that occurs twice
+      foundDuplicate = false;
+      for (item1 = 0; item1 < remaining.length && !foundDuplicate; !foundDuplicate && item1++) {
+         for (item2 = item1 + 1; item2 < remaining.length && !foundDuplicate; !foundDuplicate && item2++) {
+            if (remaining[item1] == remaining[item2]) {
+               foundDuplicate = true;
+               console.log(remaining);
+               console.log(item1,item2);
+            }
+         }
+      }
+      
+      // Found a duplicate? Assign labelA and labelB
+      if (foundDuplicate) {
+         console.log(remaining);
+         console.log([
+            item1, item2,
+            remaining[item1], remaining[item2]
+         ]);
+         // Found item positions, assign labelA and labelB
+         addToResult(remaining[item1], labelA);
+         addToResult(remaining[item2], labelB);
+         remaining.splice(item2,1); // First remove item2; it has a higher index than item1, so removing it does not affect the position of the element at item1
+         remaining.splice(item1,1);
+         countA--;
+         countB--;
+      }
+   }
+
+   // No more duplicate items and/or both labelA and labelB left to assign, so assign the rest of the labels randomly over remaining items
+   while (countA > 0) {
+      addToResult(remaining.shift(), labelA);
+      countA--;
+   }
+   while (countB > 0) {
+      addToResult(remaining.shift(), labelB);
+      countB--;
+   }   
+
+   return (result);
+};

@@ -202,6 +202,17 @@ runStatistics = function() {
        "my_label"
    ));
 
+   // Improved balancedSequence; can generate sequences of any length
+   console.log(jasmin.Statistics.balancedSequence2(
+       ["x", "y", "z"],
+       5,
+       .5,
+       "a",
+       "b",
+       "my_item",
+       "my_label"
+   ));
+
    // Generate a sequence of length 9 in which each of the three items occurs 3 times
    console.log(jasmin.Statistics.fill(
       ["a","b","c"],
