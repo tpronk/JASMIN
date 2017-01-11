@@ -1227,7 +1227,6 @@ jasmin.Statistics.balancedSequence = function(items, reps, proportionA, labelA, 
         labels = jasmin.Statistics.rep(labelB, items.length);
       } else {
         labels = jasmin.Statistics.fisherYates(jasmin.Statistics.rep(labelA, countA).concat(jasmin.Statistics.rep(labelB, items.length - countA)));
-        console.log(labels);
       }
     }
     countA -= items.length;
@@ -1274,14 +1273,10 @@ jasmin.Statistics.balancedSequence2 = function(items, count, proportionA, labelA
       for (item2 = item1 + 1;item2 < remaining.length && !foundDuplicate;!foundDuplicate && item2++) {
         if (remaining[item1] == remaining[item2]) {
           foundDuplicate = true;
-          console.log(remaining);
-          console.log(item1, item2);
         }
       }
     }
     if (foundDuplicate) {
-      console.log(remaining);
-      console.log([item1, item2, remaining[item1], remaining[item2]]);
       addToResult(remaining[item1], labelA);
       addToResult(remaining[item2], labelB);
       remaining.splice(item2, 1);

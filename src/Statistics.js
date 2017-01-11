@@ -449,7 +449,6 @@ jasmin.Statistics.balancedSequence = function (items, reps, proportionA, labelA,
                     jasmin.Statistics.rep(labelB, items.length - countA)
                 )
             );
-            console.log(labels);
         }
         countA -= items.length;
         for (i in items) {
@@ -525,19 +524,12 @@ jasmin.Statistics.balancedSequence2 = function (items, count, proportionA, label
          for (item2 = item1 + 1; item2 < remaining.length && !foundDuplicate; !foundDuplicate && item2++) {
             if (remaining[item1] == remaining[item2]) {
                foundDuplicate = true;
-               console.log(remaining);
-               console.log(item1,item2);
             }
          }
       }
       
       // Found a duplicate? Assign labelA and labelB
       if (foundDuplicate) {
-         console.log(remaining);
-         console.log([
-            item1, item2,
-            remaining[item1], remaining[item2]
-         ]);
          // Found item positions, assign labelA and labelB
          addToResult(remaining[item1], labelA);
          addToResult(remaining[item2], labelB);
