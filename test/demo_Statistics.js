@@ -25,7 +25,8 @@ var demoName   = "demo_Statistics.js";
 // Called on page load
 load = function() {
     getScripts( [
-            pathSrc + "Statistics.js"
+            pathSrc + "Statistics.js",
+            pathExt + "jsep-0.3.1.js"
         ],
        runStatistics
     );
@@ -238,6 +239,13 @@ runStatistics = function() {
          [1, 2, 3],
          "letter",
          "number"
+      )
+   );
+   
+   // Randomize a nested expression
+   console.log(
+      jasmin.Statistics.randomizeExpression(
+         "rnd(seq(a_1,a_2),seq(b_1,rnd(b_2_a,b_2_b)),c)"
       )
    );
 };

@@ -552,3 +552,53 @@ jasmin.Statistics.balancedSequence2 = function (items, count, proportionA, label
 
    return (result);
 };
+
+
+
+/*
+ * Randomizes a set of elements based on an expression. In this expression the following functions are supported:
+ * - seq to keep a set of elements in the order specified
+ * - rnd to randomize a set of elements
+ * For example: rnd(seq(b_1,b_2),c) will randomize b_1, b_2, and c, such that b_1 is always followed by b_2. Hence,
+ * the two valid sequences that can be produced are: [b_1, b_2, c] and [c, b_1, b]
+ * @param {string}  expressions  expression describing the desired randomization
+ * @returns {array} Randomization 
+ */
+jasmin.Statistics.randomizeExpression = function (expression) { 
+   // Randomizes tree nodes depending on callee: none, "rand", or else (assumed seq)
+   var randomizeTree = function (subTree) {
+      // No callee? Just return name of this subTree
+      if (subTree["callee"] === undefined) {
+         return subTree["name"];
+      }
+      // There is a callee, collect flattenTree from arguments
+      var result = [], i;
+      for (i in subTree["arguments"]) {
+         result.push(randomizeTree(subTree["arguments"][i]));
+      };
+      // If callee is "rnd", shuffle result
+      if (subTree["callee"]["name"] === "rnd") {
+         result = jasmin.Statistics.fisherYates(result);
+      }
+      return result;
+   }
+   // Flatten tree into indexed array
+   var flattenTree = function (subTree) {
+      var result;
+      if (typeof subTree === "object") {
+         result = [];
+         for (var i in subTree) {
+            var part = flattenTree(subTree[i]);
+            result = result.concat(part);
+         }
+      } else {
+         result = subTree;
+      };
+      return result;
+   }
+
+   var tree = jsep(expression);
+   tree = randomizeTree(tree);
+   tree = flattenTree(tree);
+   return tree;
+};
