@@ -35,22 +35,24 @@ jasmin.ResponseManager = function(override) {
    this.responseData = undefined;
    
    // Gamepad handling
-   this.gamepadConnected = false;
    this.gamepadAxisLimits = [];
    
    var self = this;
    window.addEventListener("gamepadconnected", function(e) {
-      console.log("gamepadconnected");
-      self.gamepadConnected = true;
       self.gamepadAxes = JSON.parse(JSON.stringify(e.gamepad.axes));
-      requestAnimationFrame(function() { self.pollGamepad(); });
+      self.pollGamepadRequestID = requestAnimationFrame(function() {
+         self.pollGamepad();
+      });
    });
    window.addEventListener("gamepaddisconnected", function(e) {
-      console.log("gamepaddisconnected");
-      self.gamepad = undefined;
+      cancelAnimationFrame(self.pollGamepadRequestID);
    });   
 };
 
+/**
+ * Checks gamepad axes for changes. If anything changed, call evenCallback and check whether any of the axis limits were exceeded. 
+ * If so, call response
+ */
 jasmin.ResponseManager.prototype.pollGamepad = function () {
    this.gamepad = undefined;
    var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
@@ -60,9 +62,6 @@ jasmin.ResponseManager.prototype.pollGamepad = function () {
       }
    }
    if (this.gamepad !== undefined) {
-      //console.log(this.gamepad.axes);
-      //console.log(this.gamepadAxisLimits);
-      //console.log(this.gamepadAxes, this.gamepad.axes);
       var i, j;
       for (i = 0; i < this.gamepadAxes.length && i < this.gamepadAxisLimits.length; i++) {
          if (this.gamepadAxes[i] !== this.gamepad.axes[i]) {
@@ -79,10 +78,10 @@ jasmin.ResponseManager.prototype.pollGamepad = function () {
             }
             for (j = 0; j < this.gamepadAxisLimits[i].length; j++) {
                // If current axis i is in the min/max range gamepadAxisLimits[i][j], then call response
-               if ( (max >= min && this.gamepad.axes[i] >= this.gamepadAxisLimits[i][j]["min"] && this.gamepad.axes[i] <= this.gamepadAxisLimits[i][j]["max"]) ||
-                    (min >  max && this.gamepad.axes[i] >= this.gamepadAxisLimits[i][j]["min"] || this.gamepad.axes[i] <= this.gamepadAxisLimits[i][j]["max"])
+               if ((this.gamepadAxisLimits[i][j]["max"] >= this.gamepadAxisLimits[i][j]["min"] && this.gamepad.axes[i] >= this.gamepadAxisLimits[i][j]["min"] && this.gamepad.axes[i] <= this.gamepadAxisLimits[i][j]["max"]) ||
+                   (this.gamepadAxisLimits[i][j]["min"] >  this.gamepadAxisLimits[i][j]["max"] && (this.gamepad.axes[i] >= this.gamepadAxisLimits[i][j]["min"] || this.gamepad.axes[i] <= this.gamepadAxisLimits[i][j]["max"]))
                   
-                  ) {
+               ) {
                   this.response(
                      "axischange", 
                      "gamepadaxis", 
@@ -94,18 +93,8 @@ jasmin.ResponseManager.prototype.pollGamepad = function () {
                }
             }
          }
-         /*
-         //console.log(i);
-         if(this.gamepadAxes[i] !== this.gamepad.axes[i]) {
-            console.log([i,this.gamepad.axes[i]]);
-            this.gamepadAxes[i] = this.gamepad.axes[i];
-         }
-         */
       }
    }   
-   
-   // Compare axis states with previous poll
-   //console.log(this.gamepad);
    
    var self = this;
    requestAnimationFrame(function() { self.pollGamepad(); });

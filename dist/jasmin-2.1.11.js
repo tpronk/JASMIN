@@ -456,6 +456,46 @@ jasmin.ResponseManager = function(override) {
   this.buttonsActive = undefined;
   this.callbackResponse = undefined;
   this.responseData = undefined;
+  this.gamepadAxisLimits = [];
+  var self = this;
+  window.addEventListener("gamepadconnected", function(e) {
+    self.gamepadAxes = JSON.parse(JSON.stringify(e.gamepad.axes));
+    self.pollGamepadRequestID = requestAnimationFrame(function() {
+      self.pollGamepad();
+    });
+  });
+  window.addEventListener("gamepaddisconnected", function(e) {
+    cancelAnimationFrame(self.pollGamepadRequestID);
+  });
+};
+jasmin.ResponseManager.prototype.pollGamepad = function() {
+  this.gamepad = undefined;
+  var gamepads = navigator.getGamepads ? navigator.getGamepads() : navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : [];
+  for (var i = 0;i < gamepads.length && this.gamepad === undefined;i++) {
+    if (gamepads[i] !== null) {
+      this.gamepad = gamepads[i];
+    }
+  }
+  if (this.gamepad !== undefined) {
+    var i, j;
+    for (i = 0;i < this.gamepadAxes.length && i < this.gamepadAxisLimits.length;i++) {
+      if (this.gamepadAxes[i] !== this.gamepad.axes[i]) {
+        this.gamepadAxes[i] = this.gamepad.axes[i];
+        if (this.callbackEvent !== undefined) {
+          this.callbackEvent("axischange", "gamepadaxis", i, undefined, window.performance.now(), this.gamepadAxes[i]);
+        }
+        for (j = 0;j < this.gamepadAxisLimits[i].length;j++) {
+          if (this.gamepadAxisLimits[i][j]["max"] >= this.gamepadAxisLimits[i][j]["min"] && this.gamepad.axes[i] >= this.gamepadAxisLimits[i][j]["min"] && this.gamepad.axes[i] <= this.gamepadAxisLimits[i][j]["max"] || this.gamepadAxisLimits[i][j]["min"] > this.gamepadAxisLimits[i][j]["max"] && (this.gamepad.axes[i] >= this.gamepadAxisLimits[i][j]["min"] || this.gamepad.axes[i] <= this.gamepadAxisLimits[i][j]["max"])) {
+            this.response("axischange", "gamepadaxis", i, this.gamepadAxisLimits[i][j]["label"], window.performance.now(), this.gamepadAxes[i]);
+          }
+        }
+      }
+    }
+  }
+  var self = this;
+  requestAnimationFrame(function() {
+    self.pollGamepad();
+  });
 };
 jasmin.ResponseManager.prototype.attach = function(buttonDefinitions) {
   this.buttonDefinitions = buttonDefinitions;
@@ -509,6 +549,11 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
       }
     }
   };
+  this.gamepadAxisLimits = [];
+  for (var i = 0;i < 8;i++) {
+    this.gamepadAxisLimits[i] = [];
+  }
+  var button, button_i, modality, modality_i;
   for (button_i in this.buttonDefinitions) {
     button = this.buttonDefinitions[button_i];
     for (modality_i in button["modalities"]) {
@@ -516,8 +561,12 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
       if (modality["type"] === "keyup" || modality["type"] === "keydown") {
         this.keyboardMapping[modality["type"]][modality["id"]] = button["label"];
       } else {
-        pointerCallback(modality["type"], modality["id"], button["label"]);
-        stopCancelBubble(modality["id"]);
+        if (modality["type"] === "gamepadaxis") {
+          this.gamepadAxisLimits[modality["index"]].push({"min":modality["min"], "max":modality["max"], "label":button["label"]});
+        } else {
+          pointerCallback(modality["type"], modality["id"], button["label"]);
+          stopCancelBubble(modality["id"]);
+        }
       }
     }
   }
