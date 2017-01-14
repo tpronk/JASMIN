@@ -33,6 +33,79 @@ jasmin.ResponseManager = function(override) {
    this.buttonsActive = undefined;
    this.callbackResponse = undefined;
    this.responseData = undefined;
+   
+   // Gamepad handling
+   this.gamepadConnected = false;
+   this.gamepadAxisLimits = [];
+   
+   var self = this;
+   window.addEventListener("gamepadconnected", function(e) {
+      console.log("gamepadconnected");
+      self.gamepadConnected = true;
+      self.gamepadAxes = JSON.parse(JSON.stringify(e.gamepad.axes));
+      requestAnimationFrame(function() { self.pollGamepad(); });
+   });
+   window.addEventListener("gamepaddisconnected", function(e) {
+      console.log("gamepaddisconnected");
+      self.gamepad = undefined;
+   });   
+};
+
+jasmin.ResponseManager.prototype.pollGamepad = function () {
+   this.gamepad = undefined;
+   var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+   for (var i = 0; i < gamepads.length && this.gamepad === undefined; i++) {
+      if (gamepads[i] !== null) {
+         this.gamepad = gamepads[i];
+      }
+   }
+   if (this.gamepad !== undefined) {
+      //console.log(this.gamepad.axes);
+      //console.log(this.gamepadAxisLimits);
+      //console.log(this.gamepadAxes, this.gamepad.axes);
+      var i, j;
+      for (i = 0; i < this.gamepadAxes.length && i < this.gamepadAxisLimits.length; i++) {
+         if (this.gamepadAxes[i] !== this.gamepad.axes[i]) {
+            this.gamepadAxes[i] = this.gamepad.axes[i];
+            if (this.callbackEvent !== undefined) {
+               this.callbackEvent(
+                  "axischange", 
+                  "gamepadaxis", 
+                  i, 
+                  undefined, 
+                  window.performance.now(), 
+                  this.gamepadAxes[i]
+               );
+            }
+            for (j = 0; j < this.gamepadAxisLimits[i].length; j++) {
+               // If current axis i is in the min/max range gamepadAxisLimits[i][j], then call response
+               if (this.gamepad.axes[i] >= this.gamepadAxisLimits[i][j]["min"] && this.gamepad.axes[i] <= this.gamepadAxisLimits[i][j]["max"]) {
+                  this.response(
+                     "axischange", 
+                     "gamepadaxis", 
+                     i, 
+                     this.gamepadAxisLimits[i][j]["label"], 
+                     window.performance.now(), 
+                     this.gamepadAxes[i]                     
+                  );
+               }
+            }
+         }
+         /*
+         //console.log(i);
+         if(this.gamepadAxes[i] !== this.gamepad.axes[i]) {
+            console.log([i,this.gamepad.axes[i]]);
+            this.gamepadAxes[i] = this.gamepad.axes[i];
+         }
+         */
+      }
+   }   
+   
+   // Compare axis states with previous poll
+   //console.log(this.gamepad);
+   
+   var self = this;
+   requestAnimationFrame(function() { self.pollGamepad(); });
 };
 
 /**
@@ -117,15 +190,30 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
         }
     };
     
+    // 3 gamepad axes
+    this.gamepadAxisLimits = [];
+    for (var i = 0; i < 8; i++) {
+       this.gamepadAxisLimits[i] = [];
+    }
+    
+    var button, button_i, modality, modality_i;
     for (button_i in this.buttonDefinitions) {
         button = this.buttonDefinitions[button_i];
         for (modality_i in button["modalities"]) {
             modality = button["modalities"][modality_i];  
+            
+            // keyboard event; add to keyboardMapping
             if (modality["type"] === "keyup" || modality["type"] === "keydown") {
-                // keyboard event; add to mapping
-                this.keyboardMapping[modality["type"]][modality["id"]] = button["label"];
+               this.keyboardMapping[modality["type"]][modality["id"]] = button["label"];
+            // gamepad event
+            } else if (modality["type"] === "gamepadaxis") {
+               this.gamepadAxisLimits[modality["index"]].push({
+                  "min" : modality["min"],
+                  "max" : modality["max"],
+                  "label" : button["label"]
+               });
+            // pointer event; attach event handler               
             } else {
-                // pointer event; attach event handler
                 pointerCallback(
                     modality["type"],
                     modality["id"],

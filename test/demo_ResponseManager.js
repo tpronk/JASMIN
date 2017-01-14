@@ -67,6 +67,18 @@ setupDemo = function() {
     // all buttons managed by this ResponseManager instance
     var buttonDefinitions = [
         {
+           "label" : "axis_push",
+           "modalities" : [
+              { "type" : "gamepadaxis", "index" : 1, "min" : -1, "max" : -0.98 }
+           ]
+        },
+        {
+           "label" : "axis_center",
+           "modalities" : [
+              { "type" : "gamepadaxis", "index" : 1, "min" : -0.05, "max" : 0.05 }
+           ]
+        },        
+        {
             "label" : "left_down",
             "modalities" : [
                 { "type" : "mousedown",  "id" : "#button_left" },
@@ -157,16 +169,21 @@ mouseOverHandler = function(event, modality, id, label, time, x, y) {
    }
    if (label === "right_out") {
       $("#button_right").css({"background-color":"green"});
-   }   
-}
+   }
+   /*
+   if (event === "axischange") {
+      console.log ("gamepadaxis " + id, ", value ", + x);
+   }
+   */
+};
 
 // Register a 'down' response
 downStart = function() {
-    console.log( "Starting an event that registers down response (via left/right key or the colored rectangles)" );
+    console.log( "Starting an event that registers down response (via left/right key; clicking or touching the colored rectangles; or pushing a gamepad axis away from user)" );
     responseManager.activate(
-        [ "left_down", "right_down" ], // buttonsActive
-        downDone/*,                      // callbackResponse
-        mouseOverHandler*/
+        [ "left_down", "right_down", "axis_push" ], // buttonsActive
+        downDone,                      // callbackResponse
+        mouseOverHandler
     );    
 };
 
@@ -192,9 +209,9 @@ downDone = function( eventData ) {
 
 // Register an 'up' response
 upStart = function() {
-    console.log( "Starting an event that registers up response" );
+    console.log( "Starting an event that registers up response (via left/right key; clicking or touching the colored rectangles; or centering a gampad axis)" );
     responseManager.activate(
-        [ "left_up", "right_up", "all_up" ], // buttonsActive
+        [ "left_up", "right_up", "all_up", "axis_center" ], // buttonsActive
         upDone                     // callbackResponse
     );        
 };
