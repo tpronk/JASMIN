@@ -79,7 +79,10 @@ jasmin.ResponseManager.prototype.pollGamepad = function () {
             }
             for (j = 0; j < this.gamepadAxisLimits[i].length; j++) {
                // If current axis i is in the min/max range gamepadAxisLimits[i][j], then call response
-               if (this.gamepad.axes[i] >= this.gamepadAxisLimits[i][j]["min"] && this.gamepad.axes[i] <= this.gamepadAxisLimits[i][j]["max"]) {
+               if ( (max >= min && this.gamepad.axes[i] >= this.gamepadAxisLimits[i][j]["min"] && this.gamepad.axes[i] <= this.gamepadAxisLimits[i][j]["max"]) ||
+                    (min >  max && this.gamepad.axes[i] >= this.gamepadAxisLimits[i][j]["min"] || this.gamepad.axes[i] <= this.gamepadAxisLimits[i][j]["max"])
+                  
+                  ) {
                   this.response(
                      "axischange", 
                      "gamepadaxis", 
