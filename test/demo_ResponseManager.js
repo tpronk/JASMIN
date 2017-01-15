@@ -28,6 +28,7 @@ var demoName   = "demo_ResponseManager.js";
 load = function() {
     getScripts( [
             pathExt + "jquery.mobile-1.4.5.js",
+            pathExt + "gyronorm-3.0.2.js",
             pathSrc + "polyfills.js",
             pathSrc + "ResponseManager.js"
         ],
@@ -67,31 +68,25 @@ setupDemo = function() {
     // all buttons managed by this ResponseManager instance
     var buttonDefinitions = [
         {
-           "label" : "axis_push",
-           "modalities" : [
-              { "type" : "gamepadaxis", "index" : 1, "min" : -1, "max" : -0.98 }
-           ]
-        },
-        {
-           "label" : "axis_center",
-           "modalities" : [
-              { "type" : "gamepadaxis", "index" : 1, "min" : -0.05, "max" : 0.05 }
-           ]
-        },        
-        {
             "label" : "left_down",
             "modalities" : [
-                { "type" : "mousedown",  "id" : "#button_left" },
-                { "type" : "touchstart", "id" : "#button_left" },
-                { "type" : "keydown",    "id" : "37" }
-           ]
+                { "type" : "mousedown",   "id" : "#button_left" },
+                { "type" : "touchstart",  "id" : "#button_left" },
+                { "type" : "keydown",     "id" : "37" },
+                { "type" : "speech",      "id" : "left" },                
+                { "type" : "gamepadaxis", "id" : 0, "min" : -1, "max" : -0.98 },
+                { "type" : "gyroscope",   "id" : "dm", "id2" : "gx", "min" : -9.81, "max" : -3.13 }
+            ]
         },
         {
             "label" : "right_down",
             "modalities" : [
                 { "type" : "mousedown",  "id" : "#button_right" },
                 { "type" : "touchstart", "id" : "#button_right" },
-                { "type" : "keydown",    "id" : "39" }
+                { "type" : "keydown",    "id" : "39" },
+                { "type" : "speech",     "id" : "right" },        
+                { "type" : "gamepadaxis", "id" : 0, "min" : 0.98, "max" : 1 },
+                { "type" : "gyroscope",   "id" : "dm", "id2" : "gx", "min" : 3.13, "max" : 9.81 }
            ]
         },
         {
@@ -99,7 +94,7 @@ setupDemo = function() {
             "modalities" : [
                 { "type" : "mouseup",  "id" : "#button_left" },
                 { "type" : "touchend", "id" : "#button_left" },
-                { "type" : "keyup",    "id" : "37" }
+                { "type" : "keyup",    "id" : "37" },
            ]
         },
         {
@@ -113,8 +108,11 @@ setupDemo = function() {
         {
             "label" : "all_up",
             "modalities" : [
-                { "type" : "mouseup",  "id" : "all" },
-                { "type" : "touchend", "id" : "all" }
+                { "type" : "mouseup",     "id" : "all" },
+                { "type" : "touchend",    "id" : "all" },
+                { "type" : "speech",      "id" : "up" },
+                { "type" : "gamepadaxis", "id" : 0, "min" : -0.05, "max" : 0.05 },
+                { "type" : "gyroscope",   "id" : "dm", "id2" : "gx", "min" : -0.5, "max" : 0.5 }
             ]
         },
         {
@@ -179,9 +177,9 @@ mouseOverHandler = function(event, modality, id, label, time, x, y) {
 
 // Register a 'down' response
 downStart = function() {
-    console.log( "Starting an event that registers down response (via left/right key; clicking or touching the colored rectangles; or pushing a gamepad axis away from user)" );
+    console.log( "Starting an event that registers down response (via left/right key; clicking or touching the colored rectangles; pushing a gamepad axis away from user; or saying 'left')" );
     responseManager.activate(
-        [ "left_down", "right_down", "axis_push" ], // buttonsActive
+        [ "left_down", "right_down", "axis_push", "left_speech" ], // buttonsActive
         downDone,                      // callbackResponse
         mouseOverHandler
     );    
