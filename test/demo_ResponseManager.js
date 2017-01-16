@@ -177,7 +177,7 @@ mouseOverHandler = function(event, modality, id, label, time, x, y) {
 
 // Register a 'down' response
 downStart = function() {
-    console.log( "Starting an event that registers down response (via left/right key; clicking or touching the colored rectangles; pushing a gamepad axis away from user; or saying 'left')" );
+    console.log( "Starting an event that registers down response (via left/right key; clicking or touching the colored rectangles; pushing a gamepad joystick to the left/right; rotating your handheld device counter-clockwise/clockwise; or saying 'left'/'right')" );
     responseManager.activate(
         [ "left_down", "right_down", "axis_push", "left_speech" ], // buttonsActive
         downDone,                      // callbackResponse
@@ -207,7 +207,7 @@ downDone = function( eventData ) {
 
 // Register an 'up' response
 upStart = function() {
-    console.log( "Starting an event that registers up response (via left/right key; clicking or touching the colored rectangles; or centering a gampad axis)" );
+    console.log( "Starting an event that registers up response (via left/right key; clicking or touching the colored rectangles; or centering a gamepad joystick; rotating your handheld device to landscape; or saying 'up')" );
     responseManager.activate(
         [ "left_up", "right_up", "all_up", "axis_center" ], // buttonsActive
         upDone                     // callbackResponse
