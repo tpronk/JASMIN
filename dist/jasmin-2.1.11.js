@@ -456,17 +456,39 @@ jasmin.ResponseManager = function(override) {
   this.buttonsActive = undefined;
   this.callbackResponse = undefined;
   this.responseData = undefined;
+  this.gamepadEnabled = false;
+  this.gamepadAxes = [];
   this.gamepadAxisLimits = [];
+  this.gyroscopeEnabled = false;
+  this.gyroscopeAxisLimits = [];
+  this.speechAvailable = false;
+  this.speechCommands = false;
+};
+jasmin.ResponseManager.prototype.polling = function() {
+  if (this.gamepadEnabled) {
+    this.pollGamepad();
+  }
+  if (this.gyroscopeEnabled) {
+    this.pollGamepad();
+  }
   var self = this;
-  window.addEventListener("gamepadconnected", function(e) {
-    self.gamepadAxes = JSON.parse(JSON.stringify(e.gamepad.axes));
-    self.pollGamepadRequestID = requestAnimationFrame(function() {
-      self.pollGamepad();
-    });
+  this.pollingRequest = requestAnimationFrame(function() {
+    self.polling();
   });
-  window.addEventListener("gamepaddisconnected", function(e) {
-    cancelAnimationFrame(self.pollGamepadRequestID);
-  });
+};
+jasmin.ResponseManager.prototype.pollGyroscope = function(data, available) {
+  var availabilityMap = {"do":{"alpha":"deviceOrientationAvailable", "beta":"deviceOrientationAvailable", "gamma":"deviceOrientationAvailable"}, "dm":{"x":"accelerationAvailable", "y":"accelerationAvailable", "z":"accelerationAvailable", "gx":"accelerationIncludingGravityAvailable", "gy":"accelerationIncludingGravityAvailable", "gz":"accelerationIncludingGravityAvailable", "alpha":"rotationRate", "beta":"rotationRate", "gamma":"rotationRate"}};
+  for (var i = 0;i < this.gyroscopeAxisLimits.length;i++) {
+    var limit = this.gyroscopeAxisLimits[i];
+    var isAvailable = available[availabilityMap[limit["id"]][limit["id2"]]];
+    var value;
+    if (isAvailable) {
+      value = data[limit["id"]][limit["id2"]];
+      if (limit["max"] >= limit["min"] && (value >= limit["min"] && value <= limit["max"]) || limit["min"] > limit["max"] && (value >= limit["min"] || value <= limit["max"])) {
+        this.response("gyroscopechange", "gyroscope", i, limit["label"], window.performance.now(), value);
+      }
+    }
+  }
 };
 jasmin.ResponseManager.prototype.pollGamepad = function() {
   this.gamepad = undefined;
@@ -481,7 +503,7 @@ jasmin.ResponseManager.prototype.pollGamepad = function() {
     for (i = 0;i < this.gamepadAxes.length && i < this.gamepadAxisLimits.length;i++) {
       if (this.gamepadAxes[i] !== this.gamepad.axes[i]) {
         this.gamepadAxes[i] = this.gamepad.axes[i];
-        if (this.callbackEvent !== undefined) {
+        if (this.active && this.callbackEvent !== undefined) {
           this.callbackEvent("axischange", "gamepadaxis", i, undefined, window.performance.now(), this.gamepadAxes[i]);
         }
         for (j = 0;j < this.gamepadAxisLimits[i].length;j++) {
@@ -492,10 +514,6 @@ jasmin.ResponseManager.prototype.pollGamepad = function() {
       }
     }
   }
-  var self = this;
-  requestAnimationFrame(function() {
-    self.pollGamepad();
-  });
 };
 jasmin.ResponseManager.prototype.attach = function(buttonDefinitions) {
   this.buttonDefinitions = buttonDefinitions;
@@ -503,6 +521,7 @@ jasmin.ResponseManager.prototype.attach = function(buttonDefinitions) {
 };
 jasmin.ResponseManager.prototype.detach = function() {
   this.bindEvents(false);
+  cancelAnimationFrame(this.pollingRequest);
 };
 jasmin.ResponseManager.prototype.bindEvents = function(on) {
   var self = this;
@@ -549,10 +568,16 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
       }
     }
   };
+  this.speechEnabled = false;
+  this.speechCommands = {};
+  this.gamepadEnabled = false;
   this.gamepadAxisLimits = [];
   for (var i = 0;i < 8;i++) {
     this.gamepadAxisLimits[i] = [];
+    this.gamepadAxes[i] = 0;
   }
+  this.gyroscopeEnabled = false;
+  this.gyroscopeAxisLimits = [];
   var button, button_i, modality, modality_i;
   for (button_i in this.buttonDefinitions) {
     button = this.buttonDefinitions[button_i];
@@ -561,14 +586,40 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
       if (modality["type"] === "keyup" || modality["type"] === "keydown") {
         this.keyboardMapping[modality["type"]][modality["id"]] = button["label"];
       } else {
-        if (modality["type"] === "gamepadaxis") {
-          this.gamepadAxisLimits[modality["index"]].push({"min":modality["min"], "max":modality["max"], "label":button["label"]});
+        if (modality["type"] === "speech") {
+          this.speechEnabled = true;
+          this.speechCommands[modality["id"]] = button["label"];
         } else {
-          pointerCallback(modality["type"], modality["id"], button["label"]);
-          stopCancelBubble(modality["id"]);
+          if (modality["type"] === "gamepadaxis") {
+            this.gamepadEnabled = true;
+            this.gamepadAxisLimits[modality["id"]].push({"min":modality["min"], "max":modality["max"], "label":button["label"]});
+          } else {
+            if (modality["type"] === "gyroscope") {
+              this.gyroscopeEnabled = true;
+              if (this.gyroscopeAxisLimits[modality["id"]] === undefined) {
+                this.gyroscopeAxisLimits[modality["id"]] = [];
+              }
+              this.gyroscopeAxisLimits.push({"id":modality["id"], "id2":modality["id2"], "min":modality["min"], "max":modality["max"], "label":button["label"]});
+            } else {
+              pointerCallback(modality["type"], modality["id"], button["label"]);
+              stopCancelBubble(modality["id"]);
+            }
+          }
         }
       }
     }
+  }
+  var self = this;
+  if (this.gyroscopeEnabled) {
+    this.gn = new GyroNorm;
+    this.gn.init().then(function() {
+      self.gn.start(function(data) {
+        self.pollGyroscope(data, self.gn.isAvailable());
+      });
+    });
+  }
+  if (this.speechEnabled) {
+    this.setupSpeechRecognition(on);
   }
   var keyboardCallback = function(type) {
     var callback = function(event) {
@@ -590,6 +641,40 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
     keyboardType = keyboardTypes[keyboardType_i];
     keyboardCallback(keyboardType);
   }
+  var self = this;
+  this.pollingRequest = requestAnimationFrame(function() {
+    self.polling();
+  });
+};
+jasmin.ResponseManager.prototype.setupSpeechRecognition = function(on) {
+  var self = this;
+  if (!on && self.speechRecognition !== undefined) {
+    self.speechRecognition.stop();
+  }
+  var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+  var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList;
+  var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
+  self.speechRecognition = new SpeechRecognition;
+  self.speechRecognition.continuous = false;
+  self.speechRecognition.lang = "en-US";
+  self.speechRecognition.interimResults = false;
+  self.speechRecognition.maxAlternatives = 1;
+  self.speechRecognition.onresult = function(event) {
+    var last = event.results.length - 1;
+    var word = event.results[last][0].transcript;
+    if (self.speechCommands[word] !== undefined) {
+      self.response(event, "speech", undefined, self.speechCommands[word], self.soundStartTime);
+    }
+  };
+  self.speechRecognition.onsoundstart = function(event) {
+    self.soundStartTime = window.performance.now();
+  };
+  self.speechRecognition.onsoundend = function(event) {
+  };
+  self.speechRecognition.onend = function(event) {
+    self.speechRecognition.start();
+  };
+  self.speechRecognition.start();
 };
 jasmin.ResponseManager.prototype.activate = function(buttonsActive, callbackResponse, callbackEvent) {
   this.buttonsActive = buttonsActive;
@@ -599,7 +684,7 @@ jasmin.ResponseManager.prototype.activate = function(buttonsActive, callbackResp
 };
 jasmin.ResponseManager.prototype.response = function(event, modality, id, label, time, x, y) {
   var callCallback = false;
-  if (this.callbackEvent !== undefined) {
+  if (this.active && this.callbackEvent !== undefined) {
     this.callbackEvent(event, modality, id, label, time, x, y);
   }
   if (this.override !== undefined && this.override["type"] === modality && this.override["id"] === id) {

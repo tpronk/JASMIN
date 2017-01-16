@@ -72,7 +72,7 @@ jasmin.ResponseManager.prototype.pollGyroscope = function (data, available) {
       "do" : {
          "alpha" : "deviceOrientationAvailable",
          "beta"  : "deviceOrientationAvailable",
-         "gamma" : "deviceOrientationAvailable",
+         "gamma" : "deviceOrientationAvailable"
       },
       "dm"    : {
          "x"     : "accelerationAvailable",
@@ -83,7 +83,7 @@ jasmin.ResponseManager.prototype.pollGyroscope = function (data, available) {
          "gz"    : "accelerationIncludingGravityAvailable",
          "alpha" : "rotationRate",
          "beta"  : "rotationRate",
-         "gamma" : "rotationRate",
+         "gamma" : "rotationRate"
       }
    };
    for (var i = 0; i < this.gyroscopeAxisLimits.length; i++) {
@@ -304,9 +304,9 @@ jasmin.ResponseManager.prototype.bindEvents = function(on) {
 
    // Start gyroscope
    var self = this;
-   self.gn = new GyroNorm();
    if (this.gyroscopeEnabled) {
-      self.gn.init().then(function () {
+      this.gn = new GyroNorm();
+      this.gn.init().then(function () {
          self.gn.start(function (data) {
             self.pollGyroscope(data, self.gn.isAvailable());
          });
