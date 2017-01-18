@@ -656,10 +656,11 @@ jasmin.ResponseManager.prototype.setupSpeechRecognition = function(on) {
   var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
   self.speechRecognition = new SpeechRecognition;
   self.speechRecognition.continuous = false;
-  self.speechRecognition.lang = "en-US";
+  self.speechRecognition.lang = "nl";
   self.speechRecognition.interimResults = false;
   self.speechRecognition.maxAlternatives = 1;
   self.speechRecognition.onresult = function(event) {
+    console.log(event);
     var last = event.results.length - 1;
     var word = event.results[last][0].transcript;
     if (self.speechCommands[word] !== undefined) {
@@ -1386,13 +1387,13 @@ jasmin.Statistics.balancedSequence2 = function(items, count, proportionA, labelA
     result.push(newElement);
   };
   var i;
-  while (countA > items.length) {
+  while (countA >= items.length) {
     for (i in items) {
       addToResult(items[i], labelA);
     }
     countA -= items.length;
   }
-  while (countB > items.length) {
+  while (countB >= items.length) {
     for (i in items) {
       addToResult(items[i], labelB);
     }
@@ -1428,6 +1429,38 @@ jasmin.Statistics.balancedSequence2 = function(items, count, proportionA, labelA
     countB--;
   }
   return result;
+};
+jasmin.Statistics.randomizeExpression = function(expression) {
+  var randomizeTree = function(subTree) {
+    if (subTree["callee"] === undefined) {
+      return subTree["name"];
+    }
+    var result = [], i;
+    for (i in subTree["arguments"]) {
+      result.push(randomizeTree(subTree["arguments"][i]));
+    }
+    if (subTree["callee"]["name"] === "rnd") {
+      result = jasmin.Statistics.fisherYates(result);
+    }
+    return result;
+  };
+  var flattenTree = function(subTree) {
+    var result;
+    if (typeof subTree === "object") {
+      result = [];
+      for (var i in subTree) {
+        var part = flattenTree(subTree[i]);
+        result = result.concat(part);
+      }
+    } else {
+      result = subTree;
+    }
+    return result;
+  };
+  var tree = jsep(expression);
+  tree = randomizeTree(tree);
+  tree = flattenTree(tree);
+  return tree;
 };
 if (jasmin === undefined) {
   var jasmin = function() {
