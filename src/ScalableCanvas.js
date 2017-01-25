@@ -76,10 +76,12 @@ jasmin.ScalableCanvas.prototype.addSprite = function( key, node, scale, children
 
 /**
  * Add a set of sprites to the canvas via addSprite
- * @param {Object}     sprites           Associative array structured { key: { "sprite": sprite, "scalable": scalable } },
+ * @param {Object}   sprites   Associative array structured { key: { "sprite": sprite, "scale": scalable } }
+ * @param {bool}     hidden    Default: true, if true sprites are hidden by default
  */
-jasmin.ScalableCanvas.prototype.addSprites = function( sprites )
+jasmin.ScalableCanvas.prototype.addSprites = function( sprites, hidden )
 {
+   hidden = hidden === undefined? true: hidden;
     // add sprites to canvas
     for( var i in sprites )
     {
