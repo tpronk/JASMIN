@@ -283,7 +283,7 @@ jasmin.TaskManager.prototype.trialEventStart = function( feedbackLog )
     var eventLog = this.eventManager.getEventLog();
     
     // Run a trial event
-    var eventConfig = this.task.trialEvent( this.eventNow, eventLog, feedbackLog );
+    var eventConfig = this.task.trialEvent( this.eventNow, eventLog, feedbackLog, this.state );
     this.eventNext = eventConfig[ "next" ];
     
     // Log trial?
