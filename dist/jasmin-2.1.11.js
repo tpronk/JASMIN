@@ -656,11 +656,10 @@ jasmin.ResponseManager.prototype.setupSpeechRecognition = function(on) {
   var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
   self.speechRecognition = new SpeechRecognition;
   self.speechRecognition.continuous = false;
-  self.speechRecognition.lang = "nl";
+  self.speechRecognition.lang = "en-US";
   self.speechRecognition.interimResults = false;
   self.speechRecognition.maxAlternatives = 1;
   self.speechRecognition.onresult = function(event) {
-    console.log(event);
     var last = event.results.length - 1;
     var word = event.results[last][0].transcript;
     if (self.speechCommands[word] !== undefined) {
@@ -734,8 +733,12 @@ jasmin.ScalableCanvas.prototype.addSprite = function(key, node, scale, children)
   this.target.append(node);
   this.sprites[key] = {"node":node, "scale":scale, "children":children};
 };
-jasmin.ScalableCanvas.prototype.addSprites = function(sprites) {
+jasmin.ScalableCanvas.prototype.addSprites = function(sprites, hidden) {
+  hidden = hidden === undefined ? true : hidden;
   for (var i in sprites) {
+    if (hidden) {
+      sprites[i]["node"].hide();
+    }
     this.addSprite(i, sprites[i]["node"], sprites[i]["scale"], sprites[i]["children"]);
   }
 };
@@ -1762,7 +1765,7 @@ jasmin.TaskManager.prototype.trialStart = function() {
 };
 jasmin.TaskManager.prototype.trialEventStart = function(feedbackLog) {
   var eventLog = this.eventManager.getEventLog();
-  var eventConfig = this.task.trialEvent(this.eventNow, eventLog, feedbackLog);
+  var eventConfig = this.task.trialEvent(this.eventNow, eventLog, feedbackLog, this.state);
   this.eventNext = eventConfig["next"];
   if (eventConfig["log"] !== undefined) {
     var logRow = this.collectLogs(eventConfig["log"]);
