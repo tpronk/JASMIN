@@ -82,16 +82,18 @@ jasmin.ScalableCanvas.prototype.addSprite = function( key, node, scale, children
 jasmin.ScalableCanvas.prototype.addSprites = function( sprites, hidden )
 {
    hidden = hidden === undefined? true: hidden;
-    // add sprites to canvas
-    for( var i in sprites )
-    {
-        this.addSprite( 
-            i,
-            sprites[ i ][ "node"  ],
-            sprites[ i ][ "scale" ],
-            sprites[ i ][ "children" ]
-        );
-    }    
+   // add sprites to canvas
+   for(var i in sprites) {
+      if (hidden) {
+         sprites[i]["node"].hide();
+      }
+      this.addSprite( 
+         i,
+         sprites[ i ][ "node"  ],
+         sprites[ i ][ "scale" ],
+         sprites[ i ][ "children" ]
+      );
+   }    
 };
 
 // Check rescale, and do if required (or force == true)
