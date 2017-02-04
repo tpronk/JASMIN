@@ -231,7 +231,7 @@ jasmin.TaskManager.prototype.blockIntroduce = function() {
  * @public
  */
 jasmin.TaskManager.prototype.blockNext = function() {
-   if (this.configBlock["min_correct"] === undefined ||
+   if (this.configBlock["min_correct"] === undefined || this.state["trial"] === 0 ||
          (
             this.state["block_correct"] / this.state["trial"] >= this.configBlock["min_correct"] &&
             (this.configBlock["max_attempts"] === undefined || this.state["block_attempt"] < this.configBlock["max_attempts"])
