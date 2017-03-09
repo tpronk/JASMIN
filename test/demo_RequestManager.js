@@ -59,7 +59,7 @@ demoJSON = function() {
 
 demoJS = function( reply )
 {
-    report( demoName, "received: " + JSON.stringify( reply ) );
+    report( demoName, "received JSON: " + JSON.stringify( reply ) );
     report( demoName, "Downloading JS from demo_RequestManager_script.js" );
     
     io.request(
@@ -74,23 +74,36 @@ demoJS = function( reply )
     
 demoImg = function( reply )
 {
-    report( demoName, "received: " + JSON.stringify( reply ) );
+    report( demoName, "received JS: " + JSON.stringify( reply ) );
     report( demoName, "Downloading image from demo_RequestManager_img.jpg" );
     
     io.request(
         jasmin.RequestManager.TYPE_IMG,
         "files/demo_RequestManager_img.jpg",
-        demoCSS
+        demoAudio
     );    
 }
-    
-demoCSS = function( reply )
+
+demoAudio = function( reply )
 {
     report( demoName, "received image" );
     $( "#graphics_here" ).append( reply.css( {
         "width"  : "200px",
         "height" : "200px"
     } ) );
+    
+    report( demoName, "Downloading audio from demo_RequestManager_audio.mp3" );    
+    io.request(
+        jasmin.RequestManager.TYPE_AUDIO,
+        "files/demo_RequestManager_audio.mp3",
+        demoCSS
+    );    
+}
+    
+demoCSS = function( reply )
+{
+    report( demoName, "received audio" );
+    reply.play();
     
     report( demoName, "Downloading CSS from demo_RequestManager_css.css" );    
     io.request(
@@ -108,7 +121,7 @@ demoWOFF = function( reply ) {
     $('<link rel="stylesheet" type="text/css" href="files/demo_RequestManager_css.css" />' ).appendTo( "head" );
     $("#text_here").append("<span class='red'>CSS loaded; this text should be red</span><br />");
     
-    report( demoName, "Downloading font from SourceSansPro-Regular.woff" );    
+    report( demoName, "Downloading font from demo_RequestManager_font.woff (SourceSansPro-Regular)" );    
     io.request(
         jasmin.RequestManager.TYPE_AJAX,
         {
@@ -124,7 +137,7 @@ demoDone = function( reply ) {
     report( demoName, "received font" );
     style = 
           '<style type="text/css">@font-face {'
-        + 'src : url("'    + "files/SourceSansPro-Regular.woff" + '");'
+        + 'src : url("'    + "files/demo_RequestManager_font.woff" + '");'
         + 'font-family : ' + "SourceSansPro" + ';'
         + 'font-weight : ' + "normal" + ';'
         + 'font-style  : ' + "normal" + ';'

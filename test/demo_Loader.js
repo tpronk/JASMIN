@@ -42,8 +42,8 @@ start = function()
 {
     report( demoName, "<span class='red'>Loading includes and data...</span>" );    
     
-    io = new jasmin.RequestManager( fail, report, report );
-    loader = new jasmin.Loader( io );
+    io = new jasmin.RequestManager(fail);
+    loader = new jasmin.Loader(io);
 
     // Specify all data you want to load here; special case for img, all else is passed to jQuery.ajax as dataType
     // Note that includes is an associative array
@@ -52,7 +52,8 @@ start = function()
         "my_js"      : [ "script", "files/demo_RequestManager_script.js" ],
         "my_json"    : [ "json",   "files/demo_RequestManager_json.json" ],
         "my_picture" : [ "img",    "files/demo_RequestManager_img.jpg"   ],
-        "my_font"    : [ "font",   "files/SourceSansPro-Regular.woff", {
+        "my_audio"   : [ "audio",  "files/demo_RequestManager_audio.mp3" ],        
+        "my_font"    : [ "font",   "files/demo_RequestManager_font.woff", {
             "font-family" : "SourceSansPro", 
             "font-weight" : "normal", 
             "font-style" : "normal",
@@ -74,5 +75,6 @@ allLoaded = function( replies ) {
         "width"  : "200px",
         "height" : "200px"
     } ) );
-    $("#text_here").append("<span class='red' style='font-family:SourceSansPro'>This text should be red and in SourceSansPro</span><br />");    
+    replies["my_audio"].play();
+    $("#text_here").append("<span class='red' style='font-family:SourceSansPro'>This text should be red and in SourceSansPro</span><br />");  
 };

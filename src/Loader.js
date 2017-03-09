@@ -83,6 +83,10 @@ jasmin.Loader.prototype.load = function( requests, allLoaded, progressCallback )
                     requestType = jasmin.RequestManager.TYPE_IMG;
                     request = url;
                     break;
+                case "audio":
+                    requestType = jasmin.RequestManager.TYPE_AUDIO;
+                    request = url;
+                    break;                    
                 default:
                     requestType = jasmin.RequestManager.TYPE_AJAX;
                     if( request === undefined ) {

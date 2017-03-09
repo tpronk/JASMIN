@@ -84,6 +84,12 @@ jasmin.RequestManager.TYPE_AJAX = "ajax";
 jasmin.RequestManager.TYPE_IMG = "img";
 
 /**
+ * Constant for audio type requests
+ * @constant
+ */
+jasmin.RequestManager.TYPE_AUDIO = "audio";
+
+/**
  * Make a single request
  * @param {const}    type         jasmin.RequestManager.TYPE_AJAX (request is passed on to jQuery.ajax or jasmin.RequestManager.TYPE_IMG (request is url of img)
  * @param {Object}   request      The request (what do say to which url)
@@ -148,6 +154,9 @@ jasmin.RequestManager.prototype.sendOpenRequests = function () {
                break;
             case jasmin.RequestManager.TYPE_IMG:
                this.imgRequest(stateId, transactionId);
+               break;
+            case jasmin.RequestManager.TYPE_AUDIO:
+               this.audioRequest(stateId, transactionId);
                break;
          }
 
@@ -277,6 +286,30 @@ jasmin.RequestManager.prototype.imgRequest = function (stateId, transactionId) {
    }).error(function () {
        self.error("img error, stateId " + stateId + ", transactionId " + transactionId + ", url " + url);
    });
+};
+
+// Downloading an audio
+jasmin.RequestManager.prototype.audioRequest = function (stateId, transactionId) {
+   var url = this.states[stateId]["request"];
+
+   // Report ajax
+   DEBUG && console.log("RequestManager.audioRequest, stateId = " + stateId + ", transactionId = " + transactionId + ", url = " + url);
+
+   var self = this;
+   var audio = document.createElement("audio");
+   this.states[stateId]["reply"] = audio;
+   self.states[stateId]["onerror"] = function () {
+      self.error("audio error, stateId " + stateId + ", transactionId " + transactionId + ", url " + url);
+   };
+   self.states[stateId]["oncanplaythrough"] = function () {
+      audio.removeEventListener("error", self.states[stateId]["onerror"]);
+      audio.removeEventListener("canplaythrough", self.states[stateId]["oncanplaythrough"]);
+      self.success(stateId, self.states[stateId]["reply"]);
+   };
+   audio.addEventListener("error", self.states[stateId]["onerror"]);
+   audio.addEventListener("canplaythrough", self.states[stateId]["oncanplaythrough"]);
+   audio.preload = "auto";
+   audio.src = url;
 };
 
 /**
