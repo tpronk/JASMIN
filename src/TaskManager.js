@@ -362,21 +362,27 @@ jasmin.TaskManager.prototype.trialEventStart = function( feedbackLog )
         case( jasmin.TaskManager.EVENT_INVALID ):
             self.showFeedbackSlide( 
                 this.translator.translate( self.config[ "feedback" ][ "invalid" ] ),
-                eventConfig[ "draw" ]
+                eventConfig[ "draw" ],
+                true,
+                eventConfig["released"]
             );            
             break;                
         // Show "incorrect" feedback
         case( jasmin.TaskManager.EVENT_INCORRECT ):
             self.showFeedbackSlide( 
                 this.translator.translate( self.config[ "feedback" ][ "incorrect" ] ),
-                eventConfig[ "draw" ]
+                eventConfig[ "draw" ],
+                true,
+                eventConfig["released"]
             );            
             break;            
         // Show "correct" feedback
         case( jasmin.TaskManager.EVENT_CORRECT ):
             self.showFeedbackSlide( 
                 this.translator.translate( self.config[ "feedback" ][ "correct" ] ),
-                eventConfig[ "draw" ]
+                eventConfig[ "draw" ],
+                true,
+                eventConfig["released"]
             );
             break;      
         // Immediately go to next event
@@ -464,7 +470,7 @@ jasmin.TaskManager.prototype.checkReleasedMessage = function( eventLog, afterRel
  * Show a feedback text, wait or key up
  * @public1
  */
-jasmin.TaskManager.prototype.showFeedbackSlide = function( message, draw, waitForUp ) {
+jasmin.TaskManager.prototype.showFeedbackSlide = function( message, draw, waitForUp, released ) {
     // Provided draw and display of feedback slide
     var self = this;    
     var drawCallback = function() {
@@ -490,9 +496,8 @@ jasmin.TaskManager.prototype.showFeedbackSlide = function( message, draw, waitFo
                     eventLog,
                     function() {
                         self.shownFeedbackSlide(drawCallback);
-                    },
-                    function() {
-                        self.task.slideshowHide();
+                        released();
+                        //self.task.slideshowHide();
                     }
                 );            
             },
