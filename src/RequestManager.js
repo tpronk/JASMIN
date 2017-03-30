@@ -40,8 +40,8 @@ jasmin.RequestManager = function (
    checkInterval
 ) {
    this.fail          = fail === undefined? function () {}: fail; 
-   this.timeout       = timeout === undefined? 4000: timeout;
-   this.retries       = retries === undefined? 8: retries;
+   this.timeout       = timeout === undefined? 16000: timeout;
+   this.retries       = retries === undefined? 16: retries;
    this.active        = active  === undefined? true: active;
    this.checkInterval = checkInterval === undefined? 300: checkInterval;
 
@@ -197,6 +197,13 @@ jasmin.RequestManager.prototype.statesToSend = function () {
             // If timed out, then failed, add to list
             if (time - this.states[i]["attemptTime"] > timeout) {
                DEBUG && console.log("RequestManager.statesToSend, stateId " + i + " open and timed out");
+               // Add to errorLog
+               this.error(
+                  "ajax timed out, stateId " + i + 
+                  ", request " + JSON.stringify(this.states[i]["request"])
+               );
+
+
                // Timed out -> state to failed
                this.states[i]["state"] = this.STATE_FAILED;
             }
