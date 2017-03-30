@@ -1828,13 +1828,13 @@ jasmin.TaskManager.prototype.trialEventStart = function(feedbackLog) {
       self.showFeedbackSlide(this.translator.translate(self.config["feedback"]["tooslow"]), eventConfig["draw"], false);
       break;
     case jasmin.TaskManager.EVENT_INVALID:
-      self.showFeedbackSlide(this.translator.translate(self.config["feedback"]["invalid"]), eventConfig["draw"]);
+      self.showFeedbackSlide(this.translator.translate(self.config["feedback"]["invalid"]), eventConfig["draw"], true, eventConfig["released"]);
       break;
     case jasmin.TaskManager.EVENT_INCORRECT:
-      self.showFeedbackSlide(this.translator.translate(self.config["feedback"]["incorrect"]), eventConfig["draw"]);
+      self.showFeedbackSlide(this.translator.translate(self.config["feedback"]["incorrect"]), eventConfig["draw"], true, eventConfig["released"]);
       break;
     case jasmin.TaskManager.EVENT_CORRECT:
-      self.showFeedbackSlide(this.translator.translate(self.config["feedback"]["correct"]), eventConfig["draw"]);
+      self.showFeedbackSlide(this.translator.translate(self.config["feedback"]["correct"]), eventConfig["draw"], true, eventConfig["released"]);
       break;
     case jasmin.TaskManager.EVENT_NEXT:
       self.trialEventDone();
@@ -1877,7 +1877,7 @@ jasmin.TaskManager.prototype.checkReleasedMessage = function(eventLog, afterRele
     afterRelease();
   }
 };
-jasmin.TaskManager.prototype.showFeedbackSlide = function(message, draw, waitForUp) {
+jasmin.TaskManager.prototype.showFeedbackSlide = function(message, draw, waitForUp, released) {
   var self = this;
   var drawCallback = function() {
     draw();
@@ -1891,8 +1891,7 @@ jasmin.TaskManager.prototype.showFeedbackSlide = function(message, draw, waitFor
     this.eventManager.startEvent(1E3, drawCallback, function(eventLog) {
       self.checkReleasedMessage(eventLog, function() {
         self.shownFeedbackSlide(drawCallback);
-      }, function() {
-        self.task.slideshowHide();
+        released();
       });
     }, this.config["task_buttons"]["up"], "feedback");
   }
