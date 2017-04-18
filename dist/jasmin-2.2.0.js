@@ -285,8 +285,8 @@ if (jasmin === undefined) {
 jasmin.RequestManager = function(fail, timeout, retries, active, checkInterval) {
   this.fail = fail === undefined ? function() {
   } : fail;
-  this.timeout = timeout === undefined ? 4E3 : timeout;
-  this.retries = retries === undefined ? 8 : retries;
+  this.timeout = timeout === undefined ? 16E3 : timeout;
+  this.retries = retries === undefined ? 16 : retries;
   this.active = active === undefined ? true : active;
   this.checkInterval = checkInterval === undefined ? 300 : checkInterval;
   this.flushing = false;
@@ -362,6 +362,7 @@ jasmin.RequestManager.prototype.statesToSend = function() {
         timeout = this.states[i]["timeout"] === undefined ? this.timeout : this.states[i]["timeout"];
         if (time - this.states[i]["attemptTime"] > timeout) {
           DEBUG && console.log("RequestManager.statesToSend, stateId " + i + " open and timed out");
+          this.error("ajax timed out, stateId " + i + ", request " + JSON.stringify(this.states[i]["request"]));
           this.states[i]["state"] = this.STATE_FAILED;
         }
         break;
@@ -468,10 +469,12 @@ jasmin.RequestManager.prototype.flush = function(flushCallback) {
   this.flushCallback = flushCallback;
   if ($.isEmptyObject(this.states)) {
     if (this.flushCallback !== undefined) {
+      this.flushing = false;
       this.flushCallback();
     }
+  } else {
+    this.check();
   }
-  this.check();
 };
 if (jasmin === undefined) {
   var jasmin = function() {
