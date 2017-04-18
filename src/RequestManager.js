@@ -377,12 +377,13 @@ jasmin.RequestManager.prototype.check = function () {
  */
 jasmin.RequestManager.prototype.flush = function (flushCallback) {
    this.flushing      = true;
-	this.flushCallback = flushCallback;
+   this.flushCallback = flushCallback;
    if ($.isEmptyObject(this.states)) {
       if (this.flushCallback !== undefined) {
-         this.flushCallback();
+        this.flushing = false;
+        this.flushCallback();
       }
+   } else {
+     this.check();
    }
-
-   this.check();
 };
