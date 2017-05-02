@@ -184,8 +184,10 @@ jasmin.ScreenManager = function( watchTimeout ) {
     // watchTimeout; how much time between successive events before we log "end"?
     var self = this;
     setTimeout( 
-        self.updateWatch(),
-        this.watchTimeout
+      function() {
+        self.updateWatch();
+      },
+      this.watchTimeout
     );
         
     //$( "#output" ).append( "start " + JSON.stringify( log ) + "\n" );

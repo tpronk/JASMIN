@@ -927,7 +927,9 @@ jasmin.ScreenManager = function(watchTimeout) {
   this.watching = {};
   this.logger.log({"name":"init", "phase":"start", "time":1E3 * window.performance.now() / 1E3, "value":{"screen.width":screen.width, "screen.height":screen.height, "avail.width":screen.availWidth, "avail.height":screen.availHeight, "window.width":$(window).width(), "window.height":$(window).height()}});
   var self = this;
-  setTimeout(self.updateWatch(), this.watchTimeout);
+  setTimeout(function() {
+    self.updateWatch();
+  }, this.watchTimeout);
 };
 jasmin.ScreenManager.prototype.changed = function(name, logThis, event) {
   this.watch(name, logThis(event));
