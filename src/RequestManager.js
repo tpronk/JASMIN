@@ -297,8 +297,9 @@ jasmin.RequestManager.prototype.imgRequest = function (stateId, transactionId) {
 
 // Downloading an audio
 jasmin.RequestManager.prototype.audioRequest = function (stateId, transactionId) {
-   var url = this.states[stateId]["request"];
-
+   var sources = this.states[stateId]["request"];
+   console.log(url);
+   
    // Report ajax
    DEBUG && console.log("RequestManager.audioRequest, stateId = " + stateId + ", transactionId = " + transactionId + ", url = " + url);
 
@@ -306,7 +307,7 @@ jasmin.RequestManager.prototype.audioRequest = function (stateId, transactionId)
    var audio = document.createElement("audio");
    this.states[stateId]["reply"] = audio;
    self.states[stateId]["onerror"] = function () {
-      self.error("audio error, stateId " + stateId + ", transactionId " + transactionId + ", url " + url);
+      self.error("audio error, stateId " + stateId + ", transactionId " + transactionId + ", url " + sources);
    };
    self.states[stateId]["oncanplaythrough"] = function () {
       audio.removeEventListener("error", self.states[stateId]["onerror"]);
@@ -316,7 +317,15 @@ jasmin.RequestManager.prototype.audioRequest = function (stateId, transactionId)
    audio.addEventListener("error", self.states[stateId]["onerror"]);
    audio.addEventListener("canplaythrough", self.states[stateId]["oncanplaythrough"]);
    audio.preload = "auto";
-   audio.src = url;
+  
+   var source
+   for (source_i in sources) {
+     source = document.createElement("source");
+     source.setAttribute("type", source_i);
+     source.setAttribute("src", sources[source_i]);
+     audio.appendChild(source);
+   }
+   // audio.src = url;
 };
 
 /**

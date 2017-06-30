@@ -94,8 +94,10 @@ demoAudio = function( reply )
     
     report( demoName, "Downloading audio from demo_RequestManager_audio.mp3" );    
     io.request(
-        jasmin.RequestManager.TYPE_AUDIO,
-        "files/demo_RequestManager_audio.mp3",
+      jasmin.RequestManager.TYPE_AUDIO,
+      {
+        "audio/mpeg" : "files/demo_RequestManager_audio.mp3"
+      },
         demoCSS
     );    
 }
@@ -103,7 +105,12 @@ demoAudio = function( reply )
 demoCSS = function( reply )
 {
     report( demoName, "received audio" );
-    reply.play();
+    $("#text_here").append(
+      $("<a>").html("Audio loaded; click here to play sound").on("click", function() {
+        reply.play();
+      })
+    );
+    //reply.play();
     
     report( demoName, "Downloading CSS from demo_RequestManager_css.css" );    
     io.request(
@@ -119,13 +126,13 @@ demoCSS = function( reply )
 demoWOFF = function( reply ) {
     report( demoName, "received CSS" );
     $('<link rel="stylesheet" type="text/css" href="files/demo_RequestManager_css.css" />' ).appendTo( "head" );
-    $("#text_here").append("<span class='red'>CSS loaded; this text should be red</span><br />");
+    $("#text_here").append("<br><br><span class='red'>CSS loaded; this text should be red</span>");
     
     report( demoName, "Downloading font from demo_RequestManager_font.woff (SourceSansPro-Regular)" );    
     io.request(
         jasmin.RequestManager.TYPE_AJAX,
         {
-            "url"      : "files/SourceSansPro-Regular.woff",
+            "url"      : "files/demo_RequestManager_font.woff",
             "dataType" : "binary",
             "processData" : false
         },
@@ -143,7 +150,7 @@ demoDone = function( reply ) {
         + 'font-style  : ' + "normal" + ';'
         + '}';
     $( "head" ).prepend( style );    
-    $("#text_here").append("<span style='font-family:SourceSansPro'>Font loaded; this text should be in SourceSansPro</span><br />");
+    $("#text_here").append("<br><br><span style='font-family:SourceSansPro'>Font loaded; this text should be in SourceSansPro</span><br />");
 };
 
 
