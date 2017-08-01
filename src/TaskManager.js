@@ -101,6 +101,7 @@ jasmin.TaskManager.RESPONSE_CORRECT   = 1; // Correct response
 jasmin.TaskManager.RESPONSE_INCORRECT = 2; // Incorrect response
 jasmin.TaskManager.RESPONSE_TIMEOUT   = 3; // Too late response
 jasmin.TaskManager.RESPONSE_INVALID   = 4; // Invalid key response
+jasmin.TaskManager.RESPONSE_VALID     = 5; // Valid response
 
 // Task Trial Event types
 jasmin.TaskManager.EVENT_RESPONSE     = "response"; // Set a timeout with a reponse
