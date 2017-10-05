@@ -21,7 +21,7 @@
 var demoName = "demo_ResponseManager_swipe.js";
 var canvas, sprites;
 var startCoordinates;
-var dragThresholdX = 0.2;
+var dragThresholdX = 0.4;
 var dragging = false;
 var thresholdExceeded = false;
 var initialCoordinates = {"left" : 0.78, "top": 0.48};
@@ -31,7 +31,6 @@ load = function () {
   getScripts(
     [
       pathExt + "jquery.mobile-1.4.5.js",
-      pathExt + "TweenMax-1.19.10.js",
       pathSrc + "polyfills.js",
       pathSrc + "ResponseManager.js",
       pathSrc + "ScalableCanvas.js"
@@ -42,15 +41,15 @@ load = function () {
 
 // Initialise pointer fields and create eventManager
 setupDemo = function () {
-  var spritesJSON = {
+  sprites = {
     "background": {
-      "type": "<div>",
-      "attr": {},
-      "css": {
+      "node":
+        $("<div>").css({
         "z-index": 1,
         "background-color": "#000000",
+        "opacity": 1,
         "position": "absolute"
-      },
+      }),
       "scale": {
         "width": 1.6,
         "height": 1,
@@ -58,71 +57,24 @@ setupDemo = function () {
         "top": 0
       }
     },
-    "cursor": {
-      "type": "<div>",
-      "attr": {
-        "id": "cursor"
-      },
-      "css": {
-        "z-index": 10,
-        "background-color": "blue",
+    "stimulus": {
+      "node":
+        $("<div>").attr({
+          "id": "stimulus"
+        }).css({
+        "z-index": 2,
+        "background-color": "grey",
         "position": "absolute"
-      },
+      }).css({
+        "vertical-align": "middle",
+        "text-align": "center",
+        "display": "table-cell"
+      }),
       "scale": {
         "width": .04,
         "height": .04,
         "left": .78,
         "top": .48
-      }
-    },
-    "threshold": {
-      "type": "<div>",
-      "attr": {},
-      "css": {
-        "z-index": 2,
-        "background-color": "grey",
-        "position": "absolute"
-      },
-      "scale": {
-        "width": 2 * dragThresholdX,
-        "height": 1,
-        "left": 0.8 - dragThresholdX,
-        "top": 0
-      }
-    },
-    "stimulus_container": {
-      "type": "<div>",
-      "attr": {},
-      "css": {
-        "z-index": 1,
-        "background-color": "transparent",
-        "position": "absolute",
-        "overflow": "hidden"
-      },
-      "scale": {
-        "width": 1.6,
-        "height": 1,
-        "left": 0,
-        "top": 0
-      },
-      "children": {
-        "stimulus": {
-          "type": "<div>",
-          "attr": {
-            "id": "stimulus"
-          },
-          "css": {
-            "z-index": 3,
-            "background-color": "yellow",
-            "position": "relative"
-          },
-          "scale": {
-            "width": .8,
-            "height": .8,
-            "left": .4,
-            "top": .1
-          }
-        }
       }
     }
   };
@@ -135,13 +87,6 @@ setupDemo = function () {
       "height" : "100%",
       "margin" : "0px"        
   });
-  $("html").css({
-    "overflow" : "hidden"
-  });
-  $(document.body).css({
-    "overflow" : "hidden"
-  });
-  
   $(document.body).css({
     "width"  : "100%",
     "height" : "100%",
@@ -151,23 +96,18 @@ setupDemo = function () {
     $(document.body),
     1.6                
   );
-console.log("UUU");
-  sprites = canvas.spritesFromJSON(spritesJSON);
-  console.log("XXXXX");
   canvas.addSprites(sprites);
   canvas.start();
   sprites["background"]["node"].show();
-  sprites["cursor"]["node"].show();
-  sprites["threshold"]["node"].show();
-  sprites["stimulus_container"]["node"].show();
+  sprites["stimulus"]["node"].show();
 
   // all buttons managed by this ResponseManager instance
   var buttonDefinitions = [
     {
       "label": "down",
       "modalities": [
-        {"type": "mousedown", "id": "all"},
-        {"type": "touchstart", "id": "all"}
+        {"type": "mousedown", "id": "#stimulus"},
+        {"type": "touchstart", "id": "#stimulus"}
       ]
     },
     {
@@ -180,13 +120,13 @@ console.log("UUU");
     {
       "label": "over",
       "modalities": [
-        {"type": "mouseover", "id": "#cursor"}
+        {"type": "mouseover", "id": "#stimulus"}
       ]
     },
     {
       "label": "out",
       "modalities": [
-        {"type": "mouseout", "id": "#cursor"}
+        {"type": "mouseout", "id": "#stimulus"}
       ]
     }
   ];
@@ -210,6 +150,12 @@ console.log("UUU");
 
 // Callback for mouseover over buttons
 mouseOverHandler = function (event, modality, id, label, time, x, y) {
+  if (label === "over") {
+    $("#stimulus").css({"background-color": "blue"});
+  }
+  if (!dragging && label === "out") {
+    $("#stimulus").css({"background-color": "grey"});
+  }
 };
 
 // Register a 'down' response
@@ -237,38 +183,26 @@ $(document).bind("touchmove", function (e) {
 
 dragAnimation = function () {
   if (dragging) {
-    // Reposition cursor
+    // Reposition stimulus
     var canvasCoordinates = canvas.mapToCanvas(mouseX - dragX, mouseY - dragY);
-    sprites["cursor"]["scale"]["left"] = canvasCoordinates["x"];
-    sprites["cursor"]["scale"]["top"] = canvasCoordinates["y"];
-    canvas.rescaleSprite(sprites["cursor"]);
-    // Determine drag distance in canvas metrics and whether threshold is exceeded
+    sprites["stimulus"]["scale"]["left"] = canvasCoordinates["x"];
+    sprites["stimulus"]["scale"]["top"] = canvasCoordinates["y"];
+    canvas.rescaleSprite(sprites["stimulus"]);
+    // Determine drag distance in canvas metrics
     canvasCoordinates = canvas.mapToCanvas(mouseX, mouseY);
     var deltaX = canvasCoordinates["x"] - startCoordinates["x"];
     var deltaY = canvasCoordinates["y"] - startCoordinates["y"];
     var response = "none";
-    if (deltaX < -1 * dragThresholdX) {
+    if (deltaX < -0.4) {
       response = "left";
-    } else if (deltaX > dragThresholdX) {
+    } else if (deltaX > 0.4) {
       response = "right";      
     }
     thresholdExceeded = response != "none";
     if (thresholdExceeded) {
-      $("#cursor").css({"background-color": "red"})
+      $("#stimulus").css({"background-color": "green"})
       console.log(response);
-    } else {
-      $("#cursor").css({"background-color": "green"})
     }
-    // Animate stimulus
-    var stimulus = sprites["stimulus_container"]["children"]["stimulus"];
-    stimulus["scale"]["left"] = 0.4 + 0.8 * (deltaX / dragThresholdX);
-    stimulus["node"].css({
-      "opacity": 1 - Math.abs(deltaX / dragThresholdX),
-      "-webkit-transform": "rotate(" + 45 * (deltaX / dragThresholdX) + "deg)", // Chrome, Safari, Opera
-      "transform": "rotate(" + 45 * (deltaX / dragThresholdX) + "deg)"
-    });
-
-    canvas.rescaleSprite(stimulus);
   }
   window.requestAnimationFrame(
     function () {
@@ -283,31 +217,19 @@ changeDragState = function (eventData) {
   console.log(responseLog);
   // On down, determine grabbing point and start dragAnimation
   if (responseLog["label"] === "down") {
-    $("#cursor").css({"background-color": "green"});
-    dragX = responseLog["x"] - $("#cursor").offset()["left"];
-    dragY = responseLog["y"] - $("#cursor").offset()["top"];
+    dragX = responseLog["x"] - $("#stimulus").offset()["left"];
+    dragY = responseLog["y"] - $("#stimulus").offset()["top"];
     mouseX = responseLog["x"];
     mouseY = responseLog["y"];
     startCoordinates = canvas.mapToCanvas(mouseX, mouseY);
     dragging = true;
     // On up, stop dragging  
   } else {
-    $("#cursor").css({"background-color": "blue"});
     tresholdExceeded = false;
     dragging = false;
-    // Reset cursor
-    sprites["cursor"]["scale"]["left"] = initialCoordinates["left"];
-    sprites["cursor"]["scale"]["top"] = initialCoordinates["top"];
-    canvas.rescaleSprite(sprites["cursor"]);
-    // Reset stimulus
-    var stimulus = sprites["stimulus_container"]["children"]["stimulus"];
-    stimulus["scale"]["left"] = 0.4;
-    canvas.rescaleSprite(stimulus);
-    stimulus["node"].css({
-      "opacity": 1,
-      "-webkit-transform": "rotate(0deg)", // Chrome, Safari, Opera
-      "transform": "rotate(0deg)"
-    });
+    sprites["stimulus"]["scale"]["left"] = initialCoordinates["left"];
+    sprites["stimulus"]["scale"]["top"] = initialCoordinates["top"];
+    canvas.rescaleSprite(sprites["stimulus"]);
   }
 };
 
@@ -320,10 +242,8 @@ upStart = function () {
     );
 };
 
-// 'up' response made. NEVER CALLED???
+// 'down' response made
 upDone = function (eventData) {
-  console.log("upDone");
-  
   // Deactivate; stop registering responses
   responseManager.deactivate();
   // Report response data
@@ -331,8 +251,10 @@ upDone = function (eventData) {
   var responseLog = responseManager.getResponseLog();
   console.log(responseLog);
 
-  // Make buttons blueagain
-  $("#cursor").css({"background-color": "blue"});
+  // Make buttons green again
+  $("#stimulus").css({"background-color": "green"});
+  $("#stimulus_right").css({"background-color": "green"});
+
   downStart();
   // Detach event handlers
   // console.log("Detaching ResponseManager");    
