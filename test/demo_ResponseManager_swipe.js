@@ -13,7 +13,7 @@
 // limitations under the License. 
 
 // ****************
-// *** demo_ResponseManager_pointer
+// *** demo_ResponseManager_swipe
 //
 // Demonstrates how the ResponseManager can be used for dragging and dropping
 
