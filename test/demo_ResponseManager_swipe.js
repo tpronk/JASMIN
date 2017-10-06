@@ -74,7 +74,8 @@ setupDemo = function () {
       "css": {
         "z-index": 10,
         "background-color": "blue",
-        "position": "absolute"
+        "position": "absolute",
+        "opacity" : 0
       },
       "scale": {
         "width": .04,
