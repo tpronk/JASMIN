@@ -21,10 +21,18 @@
 var demoName = "demo_ResponseManager_swipe.js";
 var canvas, sprites;
 var startCoordinates;
-var dragThresholdX = 0.2;
 var dragging = false;
 var thresholdExceeded = false;
 var initialCoordinates = {"left" : 0.78, "top": 0.48};
+var swipeSettings = {
+  "dragThresholdResponse" : 0.3,
+  "dragThresholdFadeout" : 0.5,
+  "stimCenter" : 0.4,
+  "stimDrag": 0.5,
+  "stimRotate" : 22.5,
+  "centerDuration" : 0.2
+}
+
 
 // Called on page load
 load = function () {
@@ -79,14 +87,14 @@ setupDemo = function () {
       "type": "<div>",
       "attr": {},
       "css": {
-        "z-index": 2,
+        "z-index": 1,
         "background-color": "grey",
         "position": "absolute"
       },
       "scale": {
-        "width": 2 * dragThresholdX,
+        "width": 2 * swipeSettings["dragThresholdResponse"],
         "height": 1,
-        "left": 0.8 - dragThresholdX,
+        "left": 0.8 - swipeSettings["dragThresholdResponse"],
         "top": 0
       }
     },
@@ -94,7 +102,7 @@ setupDemo = function () {
       "type": "<div>",
       "attr": {},
       "css": {
-        "z-index": 1,
+        "z-index": 2,
         "background-color": "transparent",
         "position": "absolute",
         "overflow": "hidden"
@@ -121,6 +129,24 @@ setupDemo = function () {
             "height": .8,
             "left": .4,
             "top": .1
+          }
+        },
+        "overlay": {
+          "type": "<div>",
+          "attr": {
+            "id": "stimulus"
+          },
+          "css": {
+            "z-index": 4,
+            "background-color": "red",
+            "position": "relative",
+            "opacity": 0
+          },
+          "scale": {
+            "width": .8,
+            "height": .8,
+            "left": .4,
+            "top": .1 - .8
           }
         }
       }
@@ -247,28 +273,49 @@ dragAnimation = function () {
     var deltaX = canvasCoordinates["x"] - startCoordinates["x"];
     var deltaY = canvasCoordinates["y"] - startCoordinates["y"];
     var response = "none";
-    if (deltaX < -1 * dragThresholdX) {
+    if (deltaX < -1 * swipeSettings["dragThresholdResponse"]) {
       response = "left";
-    } else if (deltaX > dragThresholdX) {
+    } else if (deltaX > swipeSettings["dragThresholdResponse"]) {
       response = "right";      
     }
+    var stimulus = sprites["stimulus_container"]["children"]["stimulus"];  
+    var overlay = sprites["stimulus_container"]["children"]["overlay"]
     thresholdExceeded = response != "none";
     if (thresholdExceeded) {
-      $("#cursor").css({"background-color": "red"})
+      $("#cursor").css({"background-color": "white"}); 
+      // Left - fadeout, right - make red
+      if (response == "left") {
+        stimulus["node"].css({
+          "opacity": 1 - (Math.abs(deltaX) - swipeSettings["dragThresholdResponse"]) / (swipeSettings["dragThresholdFadeout"] - swipeSettings["dragThresholdResponse"])
+        });
+      } else {
+        overlay["node"].css({
+          "opacity": (Math.abs(deltaX) - swipeSettings["dragThresholdResponse"]) / (swipeSettings["dragThresholdFadeout"] - swipeSettings["dragThresholdResponse"])
+        });
+      }
       console.log(response);
     } else {
       $("#cursor").css({"background-color": "green"})
     }
     // Animate stimulus
-    var stimulus = sprites["stimulus_container"]["children"]["stimulus"];
-    stimulus["scale"]["left"] = 0.4 + 0.8 * (deltaX / dragThresholdX);
-    stimulus["node"].css({
-      "opacity": 1 - Math.abs(deltaX / dragThresholdX),
-      "-webkit-transform": "rotate(" + 45 * (deltaX / dragThresholdX) + "deg)", // Chrome, Safari, Opera
-      "transform": "rotate(" + 45 * (deltaX / dragThresholdX) + "deg)"
-    });
+    stimulus["scale"]["left"] = swipeSettings["stimCenter"] + swipeSettings["stimDrag"] * (deltaX / swipeSettings["dragThresholdResponse"]);
+    overlay["scale"]["left"] = swipeSettings["stimCenter"] + swipeSettings["stimDrag"] * (deltaX / swipeSettings["dragThresholdResponse"]);
+    TweenMax.to(
+      [stimulus["node"],overlay["node"]],
+      0,
+      {
+        "rotation": swipeSettings["stimRotate"] * (deltaX / swipeSettings["dragThresholdResponse"])
+        //"rotation": 20
+      }
+    );    
+//    console.log(swipeSettings["stimRotate"] * (deltaX / swipeSettings["dragThresholdResponse"]));
+//    stimulus["node"].css({
+//      "-webkit-transform": "rotate(" +  + "deg)", // Chrome, Safari, Opera
+//      "transform": "rotate(" + swipeSettings["stimRotate"] * (deltaX / swipeSettings["dragThresholdResponse"]) + "deg)"
+//    });
 
     canvas.rescaleSprite(stimulus);
+    canvas.rescaleSprite(overlay);
   }
   window.requestAnimationFrame(
     function () {
@@ -300,14 +347,52 @@ changeDragState = function (eventData) {
     sprites["cursor"]["scale"]["top"] = initialCoordinates["top"];
     canvas.rescaleSprite(sprites["cursor"]);
     // Reset stimulus
-    var stimulus = sprites["stimulus_container"]["children"]["stimulus"];
-    stimulus["scale"]["left"] = 0.4;
-    canvas.rescaleSprite(stimulus);
-    stimulus["node"].css({
-      "opacity": 1,
-      "-webkit-transform": "rotate(0deg)", // Chrome, Safari, Opera
-      "transform": "rotate(0deg)"
-    });
+    TweenMax.to(
+      [
+        sprites["stimulus_container"]["children"]["stimulus"]["node"]
+      ],
+      swipeSettings["centerDuration"],
+      {"css": {
+        "opacity": 1,
+        "rotation": 0,
+        "left" : canvas.mapFromCanvas(swipeSettings["stimCenter"], 0, false)["x"]
+      }}
+    );
+    TweenMax.to(
+      [
+        sprites["stimulus_container"]["children"]["overlay"]["node"]
+      ],
+      swipeSettings["centerDuration"],
+      {"css": {
+        "opacity": 0,
+        "rotation": 0,
+        "left" : canvas.mapFromCanvas(swipeSettings["stimCenter"], 0, false)["x"]
+      }}
+    );
+    TweenMax.delayedCall(
+      swipeSettings["centerDuration"],
+      function() {
+        var stimulus = sprites["stimulus_container"]["children"]["stimulus"];
+        var overlay = sprites["stimulus_container"]["children"]["overlay"];
+        stimulus["scale"]["left"] = swipeSettings["stimCenter"];
+        overlay["scale"]["left"] = swipeSettings["stimCenter"];
+        canvas.rescaleSprite(stimulus);
+        canvas.rescaleSprite(overlay);
+        stimulus["node"].css({
+          "opacity": 1,
+          "-webkit-transform": "rotate(0deg)", // Chrome, Safari, Opera
+          "transform": "rotate(0deg)"
+        });
+        overlay["node"].css({
+          "opacity": 0,
+          "-webkit-transform": "rotate(0deg)", // Chrome, Safari, Opera
+          "transform": "rotate(0deg)"
+        });
+      }
+    );
+    
+    /*
+    */
   }
 };
 

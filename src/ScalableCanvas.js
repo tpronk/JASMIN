@@ -266,3 +266,23 @@ jasmin.ScalableCanvas.prototype.mapToCanvas = function (x, y) {
    };
 };
 
+/**
+ * Map canvas x and to document x and y 
+ * @param {Number} x    x coordinate
+ * @param {Number} y    y coordinate
+ * @return {Object} x and y coordinates converted to document coordinates
+ * @public
+ */
+jasmin.ScalableCanvas.prototype.mapFromCanvas = function (x, y, absolute) {
+  var offsetLeft = 0, offsetTop = 0;
+  if (absolute === undefined || absolute) {
+    offsetLeft = this.offsetLeft;
+    offsetTop = this.offsetTop;
+  }
+  //console.log([y,this.offsetTop,this.lastHeight]);
+  return {
+    "x" : (x  * this.canvasWidth) / this.aspectRatio + offsetLeft,
+    "y" : (y  * this.canvasWidcanvasHeight) + offsetTop
+ };
+};
+
