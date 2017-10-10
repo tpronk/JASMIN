@@ -1,4 +1,4 @@
-// Copyright 2014, Thomas Pronk
+0// Copyright 2014, Thomas Pronk
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -289,7 +289,13 @@ dragAnimation = function () {
         stimulus["node"].css({
           "opacity": 1 - (Math.abs(deltaX) - swipeSettings["dragThresholdResponse"]) / (swipeSettings["dragThresholdFadeout"] - swipeSettings["dragThresholdResponse"])
         });
+        overlay["node"].css({
+          "opacity": 0
+        });
       } else {
+        stimulus["node"].css({
+          "opacity": 1
+        });        
         overlay["node"].css({
           "opacity": (Math.abs(deltaX) - swipeSettings["dragThresholdResponse"]) / (swipeSettings["dragThresholdFadeout"] - swipeSettings["dragThresholdResponse"])
         });
@@ -297,6 +303,12 @@ dragAnimation = function () {
       console.log(response);
     } else {
       $("#cursor").css({"background-color": "green"})
+      stimulus["node"].css({
+        "opacity": 1
+      });
+      overlay["node"].css({
+        "opacity": 0
+      });
     }
     // Animate stimulus
     stimulus["scale"]["left"] = swipeSettings["stimCenter"] + swipeSettings["stimDrag"] * (deltaX / swipeSettings["dragThresholdResponse"]);
