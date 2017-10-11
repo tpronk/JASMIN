@@ -38,6 +38,7 @@ load = function() {
 // Run the actual demo's
 start = function() {
     $("#graphics_here").height("30px");
+    $("#text_here").html("window.devicePixelRatio: " + window.devicePixelRatio);
     // Requirements; show message if any of these is not satisfied. If they are, start task
     var requirements = [
         // fullscreen

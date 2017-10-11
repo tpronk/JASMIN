@@ -177,10 +177,10 @@ jasmin.ScreenManager = function( watchTimeout ) {
             "avail.width"    : screen.availWidth,
             "avail.height"   : screen.availHeight,
             "window.width"   : $( window ).width(),
-            "window.height"  : $( window ).height()
+            "window.height"  : $( window ).height(),
+            "devicePixelRatio" : window.devicePixelRatio
         }
     } );
-    
     // watchTimeout; how much time between successive events before we log "end"?
     var self = this;
     setTimeout( 
