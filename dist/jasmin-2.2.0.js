@@ -419,13 +419,14 @@ jasmin.RequestManager.prototype.imgRequest = function(stateId, transactionId) {
   });
 };
 jasmin.RequestManager.prototype.audioRequest = function(stateId, transactionId) {
-  var url = this.states[stateId]["request"];
+  var sources = this.states[stateId]["request"];
+  console.log(url);
   DEBUG && console.log("RequestManager.audioRequest, stateId = " + stateId + ", transactionId = " + transactionId + ", url = " + url);
   var self = this;
   var audio = document.createElement("audio");
   this.states[stateId]["reply"] = audio;
   self.states[stateId]["onerror"] = function() {
-    self.error("audio error, stateId " + stateId + ", transactionId " + transactionId + ", url " + url);
+    self.error("audio error, stateId " + stateId + ", transactionId " + transactionId + ", url " + sources);
   };
   self.states[stateId]["oncanplaythrough"] = function() {
     audio.removeEventListener("error", self.states[stateId]["onerror"]);
@@ -435,7 +436,13 @@ jasmin.RequestManager.prototype.audioRequest = function(stateId, transactionId) 
   audio.addEventListener("error", self.states[stateId]["onerror"]);
   audio.addEventListener("canplaythrough", self.states[stateId]["oncanplaythrough"]);
   audio.preload = "auto";
-  audio.src = url;
+  var source;
+  for (source_i in sources) {
+    source = document.createElement("source");
+    source.setAttribute("type", source_i);
+    source.setAttribute("src", sources[source_i]);
+    audio.appendChild(source);
+  }
 };
 jasmin.RequestManager.prototype.success = function(stateId, reply) {
   if (this.states[stateId] !== undefined && !this.states[stateId]["handled"]) {
@@ -861,6 +868,14 @@ jasmin.ScalableCanvas.prototype.removeSprites = function() {
 };
 jasmin.ScalableCanvas.prototype.mapToCanvas = function(x, y) {
   return{"x":(x - this.offsetLeft) / this.canvasWidth * this.aspectRatio, "y":(y - this.offsetTop) / this.canvasHeight};
+};
+jasmin.ScalableCanvas.prototype.mapFromCanvas = function(x, y, absolute) {
+  var offsetLeft = 0, offsetTop = 0;
+  if (absolute === undefined || absolute) {
+    offsetLeft = this.offsetLeft;
+    offsetTop = this.offsetTop;
+  }
+  return{"x":x * this.canvasWidth / this.aspectRatio + offsetLeft, "y":y * this.canvasWidcanvasHeight + offsetTop};
 };
 if (jasmin === undefined) {
   var jasmin = function() {
@@ -1705,6 +1720,7 @@ jasmin.TaskManager.RESPONSE_CORRECT = 1;
 jasmin.TaskManager.RESPONSE_INCORRECT = 2;
 jasmin.TaskManager.RESPONSE_TIMEOUT = 3;
 jasmin.TaskManager.RESPONSE_INVALID = 4;
+jasmin.TaskManager.RESPONSE_VALID = 5;
 jasmin.TaskManager.EVENT_RESPONSE = "response";
 jasmin.TaskManager.EVENT_NORESPONSE = "noresponse";
 jasmin.TaskManager.EVENT_CORRECT = "correct";
@@ -1797,7 +1813,7 @@ jasmin.TaskManager.prototype.trialStart = function() {
 };
 jasmin.TaskManager.prototype.trialEventStart = function(feedbackLog) {
   var eventLog = this.eventManager.getEventLog();
-  var eventConfig = this.task.trialEvent(this.eventNow, eventLog, feedbackLog, this.state);
+  var eventConfig = this.task.trialEvent(this.eventNow, eventLog, feedbackLog, this.state, this.eventManager.responseManager.getResponseLog());
   this.eventNext = eventConfig["next"];
   if (eventConfig["log"] !== undefined) {
     var logRow = this.collectLogs(eventConfig["log"]);
