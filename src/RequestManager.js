@@ -298,7 +298,7 @@ jasmin.RequestManager.prototype.imgRequest = function (stateId, transactionId) {
 // Downloading an audio
 jasmin.RequestManager.prototype.audioRequest = function (stateId, transactionId) {
    var sources = this.states[stateId]["request"];
-   console.log(url);
+   //console.log(url);
    
    // Report ajax
    DEBUG && console.log("RequestManager.audioRequest, stateId = " + stateId + ", transactionId = " + transactionId + ", url = " + url);
