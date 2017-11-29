@@ -24,7 +24,8 @@ var demoName   = "demo_RequestManager.js";
 load = function() {
     getScripts( [
             pathSrc + "RequestManager.js",
-            pathExt + "jquery.binarytransport-1.0.js"
+            pathExt + "jquery.binarytransport-1.0.js",
+            pathExt + "modernizr-audio-preload-3.5.0.js"
         ],
         start
     );
@@ -39,9 +40,14 @@ fail = function( message )
 // Called on load, setup RequestManager and do a request
 start = function()
 {
-    // Construct RequestManager 
-    io = new jasmin.RequestManager(fail);
-    demoJSON();
+  // Construct RequestManager 
+  io = new jasmin.RequestManager(fail);
+  demoJSON();
+  
+  // Check if audio preload is supported
+  Modernizr.on('audiopreload', function(result) {
+    $("#text_here").append("Audio preload supported? " + result);
+  });  
 }
 
 demoJSON = function() {
@@ -96,9 +102,10 @@ demoAudio = function( reply )
     io.request(
       jasmin.RequestManager.TYPE_AUDIO,
       {
-        "audio/mpeg" : "files/demo_RequestManager_audio.mp3"
+        "audio/mpeg" : "files/demo_RequestManager_audio.mp3",        
+        "audio/ogg"  : "files/demo_RequestManager_audio.ogg"
       },
-        demoCSS
+      demoCSS
     );    
 }
     
@@ -106,7 +113,7 @@ demoCSS = function( reply )
 {
     report( demoName, "received audio" );
     $("#text_here").append(
-      $("<a>").html("Audio loaded; click here to play sound").on("click", function() {
+      $("<a>").html("<br><br>Audio loaded; click here to play sound").on("click", function() {
         reply.play();
       })
     );

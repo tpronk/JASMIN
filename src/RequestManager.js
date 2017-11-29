@@ -48,6 +48,7 @@ jasmin.RequestManager = function (
    // For flushing (sending all remaining requests)
    this.flushing        = false;
    this.flushCallback   = undefined;
+   this.audioPreload    = undefined; // audio-preload supported?
 
    // Constants for request states
    this.STATE_OPEN   = 1;  // Request is being transmitted
@@ -60,7 +61,7 @@ jasmin.RequestManager = function (
    this.errorLogs = []; // Log of all errors
 
    this.failed = false;    // If we permanently failed; don't attempt any ajax requests anymore
-
+   
    // If we're active; start checking whether there is anything to do
    if(this.active) {
       this.check();
@@ -134,7 +135,17 @@ jasmin.RequestManager.prototype.request = function (type, request, callback, tim
  * Send all open states (that should be sent)
  * @private
  */
-jasmin.RequestManager.prototype.sendOpenRequests = function () {            
+jasmin.RequestManager.prototype.sendOpenRequests = function () {
+// Check audio preload support
+   if (this.audioPreload === undefined) {
+      var self = this;
+      Modernizr.on('audiopreload', function(result) {
+         self.audioPreload = result;
+         self.sendOpenRequests();
+      });
+      return;
+   }
+  
    // Only continue if we are active or flushing and didn't fail 
    if (!((this.active || this.flushing) && !this.failed)) {
      return;
@@ -303,27 +314,33 @@ jasmin.RequestManager.prototype.audioRequest = function (stateId, transactionId)
    // Report ajax
    DEBUG && console.log("RequestManager.audioRequest, stateId = " + stateId + ", transactionId = " + transactionId + ", url = " + url);
 
-   var self = this;
    var audio = document.createElement("audio");
-   this.states[stateId]["reply"] = audio;
-   self.states[stateId]["onerror"] = function () {
-      self.error("audio error, stateId " + stateId + ", transactionId " + transactionId + ", url " + sources);
-   };
-   self.states[stateId]["oncanplaythrough"] = function () {
-      audio.removeEventListener("error", self.states[stateId]["onerror"]);
-      audio.removeEventListener("canplaythrough", self.states[stateId]["oncanplaythrough"]);
-      self.success(stateId, self.states[stateId]["reply"]);
-   };
-   audio.addEventListener("error", self.states[stateId]["onerror"]);
-   audio.addEventListener("canplaythrough", self.states[stateId]["oncanplaythrough"]);
-   audio.preload = "auto";
-  
+   if (this.audioPreload) {
+      var self = this;
+      self.states[stateId]["reply"] = audio;
+      self.states[stateId]["onerror"] = function () {
+         self.error("audio error, stateId " + stateId + ", transactionId " + transactionId + ", url " + sources);
+      };
+      self.states[stateId]["oncanplaythrough"] = function () {
+         audio.removeEventListener("error", self.states[stateId]["onerror"]);
+         audio.removeEventListener("canplaythrough", self.states[stateId]["oncanplaythrough"]);
+         self.success(stateId, self.states[stateId]["reply"]);
+      };
+      audio.addEventListener("error", self.states[stateId]["onerror"]);
+      audio.addEventListener("canplaythrough", self.states[stateId]["oncanplaythrough"]);
+      audio.preload = "auto";
+   }  
+   
    var source
    for (source_i in sources) {
      source = document.createElement("source");
      source.setAttribute("type", source_i);
      source.setAttribute("src", sources[source_i]);
      audio.appendChild(source);
+   }
+   
+   if (!this.audioPreload) {
+     this.success(stateId, audio);
    }
    // audio.src = url;
 };
