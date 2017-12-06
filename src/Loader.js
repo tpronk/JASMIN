@@ -67,7 +67,13 @@ jasmin.Loader.prototype.load = function( requests, allLoaded, progressCallback )
         var closure = function( key, dataType, url, request ) {
             var requestType, request;
             if (self.baseUrls !== undefined && self.baseUrls[dataType] !== undefined) {
+              if (dataType !== "audio") {
                 url = self.baseUrls[dataType] + url;
+              } else {
+                for (var i in url) {
+                  url[i] = self.baseUrls[dataType] + url[i];
+                }
+              }
             }
             
             // Determine what kind of request to make

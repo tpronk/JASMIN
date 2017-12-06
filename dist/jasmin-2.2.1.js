@@ -150,7 +150,13 @@ jasmin.Loader.prototype.doRequests = function(requests) {
     var closure = function(key, dataType, url, request) {
       var requestType, request;
       if (self.baseUrls !== undefined && self.baseUrls[dataType] !== undefined) {
-        url = self.baseUrls[dataType] + url;
+        if (dataType !== "audio") {
+          url = self.baseUrls[dataType] + url;
+        } else {
+          for (var i in url) {
+            url[i] = self.baseUrls[dataType] + url[i];
+          }
+        }
       }
       switch(dataType) {
         case "css":
