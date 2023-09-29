@@ -1,3 +1,5 @@
+*JASMIN has reached the end of its service life in 2020. Hence, JASMIN is not maintained or supported anymore.*
+
 # What is JASMIN?
 JASMIN (Javascript As Sociopsychological Measurement INstrument) is a library of JavaScript modules for administering  response time tasks in a browser.
 
